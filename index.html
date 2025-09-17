@@ -7,7 +7,6 @@
   <style>
     /* Import a playful font */
     @import url("https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap");
-
     :root {
       --bg: #f0f8ff;
       --text: #444;
@@ -19,9 +18,7 @@
       --ok: #2e8b57;
       --no: #dc143c;
     }
-
     * { box-sizing: border-box; }
-
     body {
       font-family: "Fredoka One", cursive, sans-serif;
       background-color: var(--bg);
@@ -29,7 +26,6 @@
       text-align: center;
       padding: 20px;
     }
-
     #container {
       max-width: 900px;
       margin: 0 auto;
@@ -39,18 +35,14 @@
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
       border: 5px solid #fff;
     }
-
     h1 {
       color: var(--title);
       font-size: 3.2em;
       text-shadow: 2px 2px 0px var(--title-shadow);
       margin-bottom: 14px;
     }
-
     p { font-size: 1.15em; color: #555; line-height: 1.5; }
-
     .controls { margin: 14px 0 8px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-
     textarea {
       width: 100%;
       height: 150px;
@@ -64,7 +56,6 @@
       resize: vertical;
     }
     textarea:focus { outline: none; border-color: var(--brand); }
-
     button {
       background-color: var(--brand);
       color: white;
@@ -78,15 +69,12 @@
     }
     button:active { transform: translateY(2px); box-shadow: 0 2px var(--brand-dark); }
     button.secondary { background: #eee; color: #333; box-shadow: 0 4px #ccc; }
-
     #output { margin-top: 22px; text-align: left; }
-
     .word-section {
       padding: 20px;
       border-radius: 15px;
       margin-bottom: 18px;
     }
-
     /* Dynamic background and border colors for word sections */
     .bg-1 { background-color: #B3E5FC; border-left: 10px solid #039BE5; }
     .bg-2 { background-color: #FFF9C4; border-left: 10px solid #FFD54F; }
@@ -94,12 +82,10 @@
     .bg-4 { background-color: #C8E6C9; border-left: 10px solid #66BB6A; }
     .bg-5 { background-color: #F8BBD0; border-left: 10px solid #F06292; }
     .bg-6 { background-color: #E1BEE7; border-left: 10px solid #9575CD; }
-
     .word-title { font-size: 1.6em; color: var(--accent); font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;}
     .word-meta { font-size: .9em; color: #777; }
     
     .button-group { display: flex; gap: 8px; }
-
     .listen-button {
       background-color: #5cb85c;
       color: white;
@@ -137,9 +123,7 @@
         color: #888;
         letter-spacing: 2px;
     }
-
     .sentence { font-size: 1.15em; margin-bottom: 12px; line-height: 2.1; }
-
     .sentence-input {
       border: none;
       border-bottom: 3px dashed #aaa;
@@ -151,7 +135,6 @@
       padding: 2px 4px;
     }
     .sentence-input:focus { outline: none; border-bottom: 3px solid var(--accent); }
-
     .correct { color: var(--ok); border-bottom-color: var(--ok) !important; font-weight: bold; }
     .incorrect { color: var(--no); border-bottom-color: var(--no) !important; }
     
@@ -171,23 +154,21 @@
       transform: translateY(2px);
       box-shadow: 0 2px #00897b;
     }
-
     .helper { margin-top: 8px; font-size: .95em; color: #666; text-align: center; }
     
     /* Modal styles */
     .modal {
         display: none;
         position: fixed;
-        z-index: 10; /* A higher z-index to be on top of everything */
+        z-index: 10;
         left: 0;
         top: 0;
         width: 100%;
         height: 100%;
         overflow: auto;
-        background-color: rgba(0,0,0,0.95); /* Darkened background */
+        background-color: rgba(0,0,0,0.95);
         padding-top: 60px;
     }
-
     .modal-content {
         background-color: #fefefe;
         margin: 5% auto;
@@ -204,19 +185,16 @@
         from { opacity: 0; transform: scale(0.9); }
         to { opacity: 1; transform: scale(1); }
     }
-
     .modal-content h2 {
         color: var(--brand);
         font-size: 2em;
         margin-bottom: 10px;
     }
-
     .modal-content p {
         font-size: 1.2em;
         line-height: 1.4;
         margin-bottom: 20px;
     }
-
     .modal-input {
         width: 80%;
         padding: 10px;
@@ -235,7 +213,6 @@
     .show-message {
       display: block !important;
     }
-
     .message-box {
       background-color: white;
       border: 3px solid #ffa500;
@@ -249,19 +226,16 @@
       display: none;
       box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
-
     .message-box h3 {
       color: #ff4500;
       font-size: 1.5em;
       margin-bottom: 10px;
     }
-
     .message-box p {
       color: #555;
       font-size: 1.1em;
       margin-bottom: 15px;
     }
-
     .message-box button {
       background-color: var(--brand);
       color: white;
@@ -276,19 +250,15 @@
   <div id="container">
     <h1>🌟 Spelling Game 🌟</h1>
     <p>Enter up to <strong>10 words</strong> (one per line). For each word, <strong>10 sentences</strong> will be generated with a blank space for you to complete.</p>
-
     <textarea id="wordInput" rows="10" placeholder="Write your words here... for example:\nsun\nsea\nschool\nbook\ncar\ndog\ncat\ntree\nflowers\nhouse"></textarea>
-
     <div class="controls">
       <button id="btnGenerate">Generate Sentences!</button>
       <button class="secondary" id="btnClear">Clear</button>
     </div>
-
     <div id="helper" class="helper"></div>
     <div id="scoreDisplay">Score: 0</div>
     <div id="output"></div>
   </div>
-  
   <!-- Verification Modal -->
   <div id="verificationModal" class="modal">
     <div class="modal-content">
@@ -300,14 +270,12 @@
       <button id="modalSkipBtn" class="secondary">Skip</button>
     </div>
   </div>
-
   <!-- Custom Message Box -->
   <div id="messageBox" class="message-box">
     <h3 id="messageTitle"></h3>
     <p id="messageText"></p>
     <button id="messageOkBtn">OK</button>
   </div>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
   <script>
     const MAX_WORDS = 10;
@@ -327,30 +295,28 @@
     
     let currentWordToVerify = '';
     const backgroundColors = ['bg-1', 'bg-2', 'bg-3', 'bg-4', 'bg-5', 'bg-6'];
-
-    // Track the number of verified words
     let verifiedWordCount = 0;
     let totalWords = 0;
-
+    
     function showMessage(title, text) {
       messageTitle.textContent = title;
       messageText.textContent = text;
       messageBox.classList.add('show-message');
     }
-
+    
     messageOkBtn.addEventListener('click', () => {
       messageBox.classList.remove('show-message');
     });
-
+    
     function updateScore(delta) {
       score += delta;
       scoreDisplay.textContent = `Score: ${score}`;
     }
-
+    
     function escapeRegex(s) {
-      return s.replace(/[\-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+      return s.replace(/[\-\/\^$*+?.()|[\]{}]/g, "\\$&");
     }
-
+    
     function checkWord(inputElement) {
       const userInput = inputElement.value.trim().toLowerCase();
       const correctWord = inputElement.dataset.correct.toLowerCase();
@@ -375,45 +341,34 @@
           completedCount++;
         }
       });
-
       const progressSpan = section.querySelector('.progress-count');
       if (progressSpan) {
         progressSpan.textContent = `(${completedCount}/10)`;
       }
     }
-
-    // Function to play a celebratory jingle with a trumpet-like sound
+    
     async function playSuccessJingle() {
-      // Use Tone.js to create a synth with a brassy timbre
       const synth = new Tone.Synth({
         oscillator: { type: "sawtooth" },
         envelope: { attack: 0.05, decay: 0.5, sustain: 0.2, release: 0.8 },
       }).toDestination();
       
-      // Notes for the first part of the British National Anthem
       const notes = ["C4", "G3", "C4", "C4", "B3", "A3", "G3", "F#3", "G3", "A3", "B3", "C4"];
       const times = ["0", "0.5", "1", "1.5", "2.0", "2.5", "3.0", "3.5", "4.0", "4.5", "5.0", "5.5"];
       
-      // Create a sequence to play the notes
       const part = new Tone.Part((time, note) => {
         synth.triggerAttackRelease(note, "0.4", time);
       }, notes.map((note, index) => [times[index], note])).start(0);
-
-      // Make sure the audio context is running
+      
       if (Tone.context.state !== 'running') {
         await Tone.start();
       }
-
-      // Start the transport (timing)
       Tone.Transport.start();
-
-      // Stop the transport after the sequence finishes
       Tone.Transport.scheduleOnce(() => {
         Tone.Transport.stop();
       }, "6");
     }
-
-    // Function to show the verification modal
+    
     function showVerificationModal(word) {
       const sentences = wordSentenceMap[word.toLowerCase()] || generateDefaultSentences(word.toLowerCase());
       const randomIndex = Math.floor(Math.random() * sentences.length);
@@ -428,7 +383,6 @@
       modalInput.focus();
     }
     
-    // Function to verify the word from the modal
     function verifyWord() {
       const userInput = modalInput.value.trim().toLowerCase();
       const correctWord = modalInput.dataset.correct.toLowerCase();
@@ -459,8 +413,7 @@
       verificationModal.style.display = 'none';
       currentWordToVerify = '';
     }
-
-    // Modal button event listeners
+    
     modalVerifyBtn.addEventListener('click', verifyWord);
     modalInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
@@ -470,25 +423,22 @@
     modalSkipBtn.addEventListener('click', () => {
         hideModal();
     });
-
-    // Function to speak the word
+    
     function speakWord(buttonElement) {
       if ('speechSynthesis' in window) {
         const word = buttonElement.dataset.word;
         const utterance = new SpeechSynthesisUtterance(word);
-        utterance.lang = 'en-US'; // Set language to English
+        utterance.lang = 'en-US';
         window.speechSynthesis.speak(utterance);
       } else {
         showMessage("Speech API Not Supported", "The Web Speech API is not supported in this browser. Try Chrome or Firefox.");
       }
     }
     
-    // Function to provide a hint
     function giveHint(buttonElement) {
       const word = buttonElement.dataset.word;
       const hintDisplay = buttonElement.nextElementSibling;
       let hintIndex = parseInt(buttonElement.dataset.hintIndex, 10);
-
       if (hintIndex < word.length) {
           updateScore(-1);
           showMessage("Hint Used!", "You lost 1 point for using a hint. Keep going!");
@@ -496,19 +446,16 @@
           const hintedPart = word.substring(0, hintIndex + 1);
           const remainingPart = "_".repeat(word.length - (hintIndex + 1));
           hintDisplay.textContent = `${hintedPart}${remainingPart}`;
-
           hintIndex++;
           buttonElement.dataset.hintIndex = hintIndex;
       }
-
       if (hintIndex === word.length) {
           buttonElement.disabled = true;
           buttonElement.textContent = "Hint Given";
           buttonElement.style.opacity = 0.5;
       }
     }
-
-    // Pre-defined sentences for known words in English
+    
     const wordSentenceMap = {
       sun: [
         "The bright star that gives us light and warmth during the day.",
@@ -528,7 +475,7 @@
         "The waves of the .... crash onto the shore.",
         "Fish live deep in the .....",
         "Many people go to the .... on vacation to relax.",
-        "The beach is a great place to get ....",
+        "The beach is located next to the .....",
         "The sound of the ocean waves from the .... is very relaxing.",
         "I built a sandcastle near the .....",
         "When it is hot, we go to the .... to cool down.",
@@ -549,11 +496,11 @@
       book: [
         "It has many pages with words and pictures.",
         "I like to read a good .... before bed.",
-        "The library is a quiet place full of .....",
-        "You turn the pages to read the story inside.",
+        "The library is a quiet place full of ....s.",
+        "You turn the pages to read the story inside the .....",
         "An author is a person who writes a .....",
         "I use a bookmark to save my page in my .....",
-        "The story was about a brave knight and a dragon.",
+        "The story in this .... was about a brave knight and a dragon.",
         "The cover of the .... has a beautiful illustration.",
         "Chapter one is on the first page of the .....",
         "You can learn about dinosaurs from a science .....",
@@ -565,8 +512,8 @@
         "We need to get gas for the .....",
         "A family can take a road trip in a ....",
         "It has an engine, seats, and a steering wheel.",
-        "A traffic jam happens when there are too many .... on the street.",
-        "Before you cross the street, you must look both ways for any .....",
+        "A traffic jam happens when there are too many ....s on the street.",
+        "Before you cross the street, you must look both ways for any ....s.",
         "The mechanic is fixing the broken .....",
         "We parked our .... in the garage to keep it safe.",
       ],
@@ -632,44 +579,185 @@
       ],
     };
 
-    // Fallback: generates 10 sentences that directly contain the word (which then become blanks via regex)
+    // Funzione migliorata che genera frasi SEMPRE coerenti con la parola
     function generateDefaultSentences(word) {
-      const w = word;
-      const samples = [
-        `I saw a ${w} today at the park.`,
-        `Please spell the word ${w} in the blank space.`,
-        `This sentence is about a ${w}.`,
-        `The ${w} is on the table.`,
-        `Can you spell the word ${w}?`,
-        `I lost my ${w} this morning.`,
-        `Look at that beautiful ${w} over there!`,
-        `Do you like this ${w}?`,
-        `I need a ${w} for my project.`,
-        `We talked about the ${w} in class.`,
-        `I bought a ${w} yesterday.`,
-        `Here comes the ${w}!`,
-        `That ${w} is very important.`,
-        `Please do not forget your ${w}.`,
-        `This ${w} belongs to me.`,
-      ];
-      return samples.slice(0, 10);
+      const w = word.toLowerCase();
+      
+      // Categorie specifiche con controllo di coerenza
+      const isAnimal = ['bird', 'fish', 'horse', 'cow', 'pig', 'sheep', 'chicken', 'duck', 'goose', 'rabbit', 'mouse', 'rat', 'bear', 'lion', 'tiger', 'elephant', 'giraffe', 'monkey', 'snake', 'frog', 'spider', 'ant', 'bee', 'butterfly'].includes(w);
+      const isFood = ['apple', 'banana', 'orange', 'bread', 'milk', 'cheese', 'meat', 'fish', 'rice', 'pasta', 'pizza', 'cake', 'cookie', 'chocolate', 'water', 'juice', 'coffee', 'tea'].includes(w);
+      const isColor = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white', 'gray', 'grey'].includes(w);
+      const isVehicle = ['bike', 'bus', 'truck', 'plane', 'train', 'boat', 'ship', 'motorcycle', 'bicycle'].includes(w);
+      const isBodyPart = ['hand', 'foot', 'head', 'eye', 'ear', 'nose', 'mouth', 'arm', 'leg', 'finger', 'toe', 'hair', 'face', 'back', 'stomach'].includes(w);
+      const isPlace = ['park', 'store', 'hospital', 'library', 'restaurant', 'church', 'mall', 'beach', 'mountain', 'forest', 'city', 'town', 'village', 'farm'].includes(w);
+      const isObject = ['table', 'chair', 'bed', 'door', 'window', 'lamp', 'clock', 'phone', 'computer', 'television', 'radio', 'camera', 'pen', 'pencil', 'paper', 'bag', 'box'].includes(w);
+      const isClothing = ['shirt', 'pants', 'dress', 'shoes', 'hat', 'coat', 'jacket', 'socks', 'gloves', 'scarf', 'belt', 'tie'].includes(w);
+      const isWeather = ['rain', 'snow', 'wind', 'storm', 'thunder', 'lightning', 'cloud', 'fog', 'sunshine', 'rainbow'].includes(w);
+      const isEmotion = ['happy', 'sad', 'angry', 'excited', 'scared', 'surprised', 'tired', 'hungry', 'thirsty', 'sick'].includes(w);
+      
+      let templates = [];
+      
+      if (isAnimal) {
+        templates = [
+          `The .... is an animal that lives in nature.`,
+          `I saw a wild .... during my trip to the zoo.`,
+          `A baby .... is very small and cute.`,
+          `The .... makes sounds to communicate.`,
+          `In its habitat, a .... finds food and shelter.`,
+          `A .... needs water and food to survive.`,
+          `The .... moves around looking for food.`,
+          `Some people like to watch the .... in documentaries.`,
+          `A .... has special body parts that help it live.`,
+          `The .... is fascinating to study and observe.`
+        ];
+      } else if (isFood) {
+        templates = [
+          `I like to eat .... when I'm hungry.`,
+          `The .... tastes really good with salt.`,
+          `Fresh .... is available at the grocery store.`,
+          `This .... contains many healthy nutrients.`,
+          `My mother cooks .... for dinner sometimes.`,
+          `The smell of .... makes my mouth water.`,
+          `.... is one of my favorite things to eat.`,
+          `We should include .... in our daily meals.`,
+          `The restaurant serves delicious .... every day.`,
+          `I need to buy some .... for tonight's meal.`
+        ];
+      } else if (isColor) {
+        templates = [
+          `I have a .... shirt in my closet.`,
+          `The walls in my room are painted ....`,
+          `She chose a .... dress for the party.`,
+          `The .... flowers look beautiful in the garden.`,
+          `I like to draw with my .... crayon.`,
+          `The .... car is parked outside.`,
+          `His .... eyes are very striking.`,
+          `The .... paint dried quickly on the wall.`,
+          `I mixed colors to create this .... shade.`,
+          `The .... balloon floated up to the sky.`
+        ];
+      } else if (isVehicle) {
+        templates = [
+          `The .... arrived at the station exactly on time.`,
+          `I enjoy traveling by .... on long journeys.`,
+          `The .... was parked carefully in the lot.`,
+          `Learning to operate a .... requires practice.`,
+          `The .... engine started with a loud noise.`,
+          `We waited patiently for the .... to arrive.`,
+          `The .... can transport many people together.`,
+          `I noticed a brand new .... on the street.`,
+          `The .... needs regular maintenance to run well.`,
+          `The .... driver was very skilled and careful.`
+        ];
+      } else if (isBodyPart) {
+        templates = [
+          `I use my .... to do many activities.`,
+          `The doctor checked my .... during the visit.`,
+          `My .... feels much better after resting.`,
+          `I need to take good care of my ....`,
+          `The .... is an important part of my body.`,
+          `I can move my .... in different directions.`,
+          `My .... helps me with everyday tasks.`,
+          `I should protect my .... from injury.`,
+          `The .... allows me to sense things around me.`,
+          `I exercise to keep my .... strong and healthy.`
+        ];
+      } else if (isPlace) {
+        templates = [
+          `I like to visit the .... on weekends.`,
+          `The .... is located in the downtown area.`,
+          `We spent the afternoon at the local ....`,
+          `The .... opens early every morning.`,
+          `I work close to the .... in the city.`,
+          `The new .... has excellent facilities.`,
+          `Children love to play at the ....`,
+          `The .... gets crowded during holidays.`,
+          `I met my friends at the .... today.`,
+          `The .... provides services to the community.`
+        ];
+      } else if (isObject) {
+        templates = [
+          `I need to buy a new .... for my home.`,
+          `The .... broke and needs to be fixed.`,
+          `This .... is very useful in everyday life.`,
+          `The .... was made with high quality materials.`,
+          `I can't find my .... anywhere in the house.`,
+          `The .... is too heavy for me to lift.`,
+          `We use this .... almost every single day.`,
+          `The old .... was replaced with a newer one.`,
+          `This .... was given to me as a gift.`,
+          `The .... works perfectly after being cleaned.`
+        ];
+      } else if (isClothing) {
+        templates = [
+          `I bought a new .... for the special event.`,
+          `The .... fits me perfectly and looks great.`,
+          `My .... got dirty and needs to be washed.`,
+          `This .... is very comfortable to wear all day.`,
+          `The .... is made of soft, comfortable fabric.`,
+          `I can't decide which .... to wear today.`,
+          `The .... keeps me warm in cold weather.`,
+          `My favorite .... is hanging in the closet.`,
+          `The .... comes in many different colors and styles.`,
+          `I need to iron my .... before wearing it.`
+        ];
+      } else if (isWeather) {
+        templates = [
+          `The .... started suddenly this morning.`,
+          `I love listening to the sound of .... outside.`,
+          `The weather forecast predicts .... for tomorrow.`,
+          `We cancelled our outdoor plans because of the ....`,
+          `The .... made the temperature change quickly.`,
+          `Children enjoy playing outside in the light ....`,
+          `The .... created beautiful patterns across the sky.`,
+          `We stayed indoors during the heavy ....`,
+          `The .... lasted for several hours today.`,
+          `I enjoy watching the .... from my window.`
+        ];
+      } else if (isEmotion) {
+        templates = [
+          `I feel very .... about today's good news.`,
+          `She looked .... when she heard the announcement.`,
+          `The surprise made everyone feel ....`,
+          `I was .... to see my friend again.`,
+          `The movie made me feel quite ....`,
+          `He seemed .... during our conversation today.`,
+          `I can't help but feel .... right now.`,
+          `The music always makes me feel ....`,
+          `We were all .... after the long day.`,
+          `The good results made her feel ....`
+        ];
+      } else {
+        // Frasi universali che funzionano con QUALSIASI parola
+        templates = [
+          `I learned about .... in my class today.`,
+          `Can you spell the word .... correctly?`,
+          `The teacher wrote .... on the blackboard.`,
+          `We discussed .... during our lesson.`,
+          `I need to remember how to spell ....`,
+          `The word .... appears in many sentences.`,
+          `Please write .... in your notebook.`,
+          `I found .... in the dictionary.`,
+          `The meaning of .... is very interesting.`,
+          `Let me show you how to use .... properly.`
+        ];
+      }
+      
+      return templates.slice(0, 10);
     }
 
-    // Builds sentence nodes by replacing ALL occurrences of the placeholder or word with an <input>
     function buildSentenceNodes(sentence, lowerCaseWord) {
       const sentenceP = document.createElement("p");
       sentenceP.className = "sentence";
       const escaped = escapeRegex(lowerCaseWord);
       const regex = new RegExp(`\\b${escaped}\\b|\\.{3,}`, "gi");
-
       let lastIndex = 0;
       let anyMatch = false;
       let match;
+      
       while ((match = regex.exec(sentence)) !== null) {
         anyMatch = true;
-        // Text before the match
         sentenceP.appendChild(document.createTextNode(sentence.slice(lastIndex, match.index)));
-        // Replacement input
         const input = document.createElement("input");
         input.type = "text";
         input.className = "sentence-input";
@@ -682,10 +770,8 @@
         sentenceP.appendChild(input);
         lastIndex = match.index + match[0].length;
       }
-      // Remainder of the sentence
       sentenceP.appendChild(document.createTextNode(sentence.slice(lastIndex)));
-
-      // If no match is found, add an input at the end (prevents sentences without blanks)
+      
       if (!anyMatch) {
         const spacer = document.createTextNode(" ");
         sentenceP.appendChild(spacer);
@@ -700,17 +786,15 @@
         input.style.width = width + "px";
         sentenceP.appendChild(input);
       }
-
       return sentenceP;
     }
-
+    
     function renderWordSection(word, sentences, colorClass) {
       const section = document.createElement("div");
       section.className = "word-section";
       section.dataset.word = word;
       
       section.classList.add(colorClass);
-
       const title = document.createElement("div");
       title.className = "word-title";
       const titleText = document.createElement("span");
@@ -725,7 +809,6 @@
       const buttonGroup = document.createElement("div");
       buttonGroup.className = "button-group";
       title.appendChild(buttonGroup);
-
       const listenButton = document.createElement("button");
       listenButton.textContent = "Listen";
       listenButton.className = "listen-button";
@@ -740,30 +823,25 @@
       hintButton.setAttribute("data-hint-index", "0");
       hintButton.onclick = () => giveHint(hintButton);
       buttonGroup.appendChild(hintButton);
-
       const hintDisplay = document.createElement("span");
       hintDisplay.className = "hint-display";
       hintDisplay.textContent = "_".repeat(word.length);
       buttonGroup.appendChild(hintDisplay);
-
       section.appendChild(title);
-
+      
       sentences.slice(0, 10).forEach((sentence) => {
         const nodes = buildSentenceNodes(sentence, word.toLowerCase());
         section.appendChild(nodes);
       });
       
-      // Add the new "Verify" button
       const verifyButton = document.createElement("button");
       verifyButton.textContent = "Verify";
       verifyButton.className = "verify-button";
       verifyButton.onclick = () => showVerificationModal(word);
       section.appendChild(verifyButton);
-
       return section;
     }
-
-    // Fisher-Yates shuffle algorithm
+    
     function shuffleArray(array) {
       for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -771,21 +849,19 @@
       }
       return array;
     }
-
+    
     function generateSentences() {
       const raw = document.getElementById("wordInput").value.trim();
       const outputDiv = document.getElementById("output");
       const helper = document.getElementById("helper");
       outputDiv.innerHTML = "";
-      updateScore(-score); // Reset score
-      verifiedWordCount = 0; // Reset verified word count
-
-      // Normalize and limit to 10 words, remove empty lines and duplicates
+      updateScore(-score);
+      verifiedWordCount = 0;
+      
       let words = raw
         .split(/\r?\n/)
         .map((w) => w.trim())
         .filter(Boolean);
-
       const unique = [];
       const seen = new Set();
       for (const w of words) {
@@ -797,16 +873,15 @@
       }
       words = unique.slice(0, MAX_WORDS);
       totalWords = words.length;
-
+      
       if (words.length === 0) {
         helper.textContent = "Please enter at least one word (max 10).";
         return;
       }
-
+      
       helper.textContent = `Words used: ${words.length}/${MAX_WORDS}`;
       
       const shuffledColors = shuffleArray([...backgroundColors]);
-
       words.forEach((word, index) => {
         const key = word.toLowerCase();
         const sentences = wordSentenceMap[key] || generateDefaultSentences(key);
@@ -815,20 +890,18 @@
         outputDiv.appendChild(section);
       });
     }
-
-    // Buttons
+    
     document.getElementById("btnGenerate").addEventListener("click", generateSentences);
     document.getElementById("btnClear").addEventListener("click", () => {
       document.getElementById("wordInput").value = "";
       document.getElementById("output").innerHTML = "";
       document.getElementById("helper").textContent = "";
       updateScore(-score);
-      verifiedWordCount = 0; // Reset on clear
+      verifiedWordCount = 0;
       totalWords = 0;
       document.getElementById("wordInput").focus();
     });
-
-    // Quick submit with Ctrl+Enter / Cmd+Enter
+    
     document.getElementById("wordInput").addEventListener("keydown", (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         generateSentences();

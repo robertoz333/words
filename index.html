@@ -150,14 +150,128 @@
 
     .correct { color: var(--ok); border-bottom-color: var(--ok) !important; font-weight: bold; }
     .incorrect { color: var(--no); border-bottom-color: var(--no) !important; }
+    
+    .verify-button {
+      background-color: #26a69a;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 50px;
+      font-size: 1em;
+      cursor: pointer;
+      box-shadow: 0 4px #00897b;
+      font-family: "Fredoka One", cursive;
+      margin-top: 10px;
+    }
+    .verify-button:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px #00897b;
+    }
 
     .helper { margin-top: 8px; font-size: .95em; color: #666; text-align: center; }
+    
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 10; /* A higher z-index to be on top of everything */
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.95); /* Darkened background */
+        padding-top: 60px;
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 30px;
+        border: 5px solid var(--brand);
+        width: 80%;
+        max-width: 500px;
+        border-radius: 20px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        animation: fadeIn 0.5s;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-content h2 {
+        color: var(--brand);
+        font-size: 2em;
+        margin-bottom: 10px;
+    }
+
+    .modal-content p {
+        font-size: 1.2em;
+        line-height: 1.4;
+        margin-bottom: 20px;
+    }
+
+    .modal-input {
+        width: 80%;
+        padding: 10px;
+        font-size: 1.2em;
+        text-align: center;
+        border: 2px solid #ccc;
+        border-radius: 10px;
+        font-family: "Fredoka One", cursive;
+        margin-bottom: 10px;
+    }
+    .modal-input:focus {
+      outline: none;
+      border-color: var(--brand);
+    }
+    
+    .show-message {
+      display: block !important;
+    }
+
+    .message-box {
+      background-color: white;
+      border: 3px solid #ffa500;
+      border-radius: 15px;
+      padding: 20px;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      display: none;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .message-box h3 {
+      color: #ff4500;
+      font-size: 1.5em;
+      margin-bottom: 10px;
+    }
+
+    .message-box p {
+      color: #555;
+      font-size: 1.1em;
+      margin-bottom: 15px;
+    }
+
+    .message-box button {
+      background-color: var(--brand);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <div id="container">
     <h1>🌟 Spelling Game 🌟</h1>
-    <p>Type up to <strong>10 English words</strong> (one per line). For each word, <strong>10 sentences</strong> will be generated with a blank space for you to fill in.</p>
+    <p>Enter up to <strong>10 words</strong> (one per line). For each word, <strong>10 sentences</strong> will be generated with a blank space for you to fill in.</p>
 
     <textarea id="wordInput" rows="10" placeholder="Type your words here... for example:\nsun\nsea\nschool\nbook\ncar\ndog\ncat\ntree\nflowers\nhouse"></textarea>
 
@@ -170,11 +284,53 @@
     <div id="scoreDisplay">Score: 0</div>
     <div id="output"></div>
   </div>
+  
+  <!-- Verification Modal -->
+  <div id="verificationModal" class="modal">
+    <div class="modal-content">
+      <h2 id="modalTitle">Verification</h2>
+      <p id="modalSentence"></p>
+      <input type="text" id="modalInput" class="modal-input" placeholder="Type the word here..." autocomplete="off">
+      <br>
+      <button id="modalVerifyBtn">Verify</button>
+      <button id="modalSkipBtn" class="secondary">Skip</button>
+    </div>
+  </div>
+
+  <!-- Custom Message Box -->
+  <div id="messageBox" class="message-box">
+    <h3 id="messageTitle"></h3>
+    <p id="messageText"></p>
+    <button id="messageOkBtn">OK</button>
+  </div>
 
   <script>
     const MAX_WORDS = 10;
     let score = 0;
     const scoreDisplay = document.getElementById("scoreDisplay");
+    
+    const verificationModal = document.getElementById("verificationModal");
+    const modalSentence = document.getElementById("modalSentence");
+    const modalInput = document.getElementById("modalInput");
+    const modalVerifyBtn = document.getElementById("modalVerifyBtn");
+    const modalSkipBtn = document.getElementById("modalSkipBtn");
+    
+    const messageBox = document.getElementById("messageBox");
+    const messageTitle = document.getElementById("messageTitle");
+    const messageText = document.getElementById("messageText");
+    const messageOkBtn = document.getElementById("messageOkBtn");
+    
+    let currentWordToVerify = '';
+
+    function showMessage(title, text) {
+      messageTitle.textContent = title;
+      messageText.textContent = text;
+      messageBox.classList.add('show-message');
+    }
+
+    messageOkBtn.addEventListener('click', () => {
+      messageBox.classList.remove('show-message');
+    });
 
     function updateScore(delta) {
       score += delta;
@@ -188,32 +344,82 @@
     function checkWord(inputElement) {
       const userInput = inputElement.value.trim().toLowerCase();
       const correctWord = inputElement.dataset.correct.toLowerCase();
-      const isChecked = inputElement.dataset.checked === "true";
-
+      
       inputElement.classList.remove("correct", "incorrect");
       
       if (!userInput) {
-        if (isChecked) {
-          updateScore(-1);
-          inputElement.dataset.checked = "false";
-        }
         return;
       }
       
       if (userInput === correctWord) {
         inputElement.classList.add("correct");
-        if (!isChecked) {
-          updateScore(1);
-          inputElement.dataset.checked = "true";
-        }
       } else {
         inputElement.classList.add("incorrect");
-        if (isChecked) {
-          updateScore(-1);
-          inputElement.dataset.checked = "false";
+      }
+      
+      const section = inputElement.closest('.word-section');
+      const allInputs = section.querySelectorAll('.sentence-input');
+      let completedCount = 0;
+      allInputs.forEach(input => {
+        if (input.classList.contains('correct')) {
+          completedCount++;
         }
+      });
+
+      const progressSpan = section.querySelector('.progress-count');
+      if (progressSpan) {
+        progressSpan.textContent = `(${completedCount}/10)`;
       }
     }
+
+    // Function to show the verification modal
+    function showVerificationModal(word) {
+      const sentences = wordSentenceMap[word.toLowerCase()] || generateDefaultSentences(word.toLowerCase());
+      const randomIndex = Math.floor(Math.random() * sentences.length);
+      const sentence = sentences[randomIndex];
+      const displaySentence = sentence.replace(new RegExp(escapeRegex(word), 'gi'), '....');
+      
+      modalSentence.textContent = displaySentence;
+      modalInput.value = '';
+      modalInput.dataset.correct = word;
+      currentWordToVerify = word;
+      verificationModal.style.display = 'block';
+      modalInput.focus();
+    }
+    
+    // Function to verify the word from the modal
+    function verifyWord() {
+      const userInput = modalInput.value.trim().toLowerCase();
+      const correctWord = modalInput.dataset.correct.toLowerCase();
+      
+      if (userInput === correctWord) {
+          updateScore(1);
+          showMessage("Correct!", `Great! The word is "${correctWord}".`);
+          const section = document.querySelector(`.word-section[data-word="${currentWordToVerify}"]`);
+          if (section) {
+            section.querySelector('.word-title').style.color = 'var(--ok)';
+          }
+          hideModal();
+      } else {
+          showMessage("Try again!", `That's not quite right. Keep practicing!`);
+      }
+    }
+    
+    function hideModal() {
+      verificationModal.style.display = 'none';
+      currentWordToVerify = '';
+    }
+
+    // Modal button event listeners
+    modalVerifyBtn.addEventListener('click', verifyWord);
+    modalInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            verifyWord();
+        }
+    });
+    modalSkipBtn.addEventListener('click', () => {
+        hideModal();
+    });
 
     // Function to speak the word
     function speakWord(buttonElement) {
@@ -223,33 +429,32 @@
         utterance.lang = 'en-US'; // Set language to English
         window.speechSynthesis.speak(utterance);
       } else {
-        // Fallback for browsers that don't support Web Speech API
-        alert("The Web Speech API is not supported in this browser. Please try Chrome or Firefox.");
+        showMessage("Web Speech API not supported", "The Web Speech API is not supported in this browser. Please try Chrome or Firefox.");
       }
     }
     
     // Function to provide a hint
     function giveHint(buttonElement) {
-        const word = buttonElement.dataset.word;
-        const hintDisplay = buttonElement.nextElementSibling;
-        let hintIndex = parseInt(buttonElement.dataset.hintIndex, 10);
+      const word = buttonElement.dataset.word;
+      const hintDisplay = buttonElement.nextElementSibling;
+      let hintIndex = parseInt(buttonElement.dataset.hintIndex, 10);
 
-        if (hintIndex < word.length) {
-            updateScore(-1);
-            
-            const hintedPart = word.substring(0, hintIndex + 1);
-            const remainingPart = "_".repeat(word.length - (hintIndex + 1));
-            hintDisplay.textContent = `${hintedPart}${remainingPart}`;
+      if (hintIndex < word.length) {
+          updateScore(-1);
+          
+          const hintedPart = word.substring(0, hintIndex + 1);
+          const remainingPart = "_".repeat(word.length - (hintIndex + 1));
+          hintDisplay.textContent = `${hintedPart}${remainingPart}`;
 
-            hintIndex++;
-            buttonElement.dataset.hintIndex = hintIndex;
-        }
+          hintIndex++;
+          buttonElement.dataset.hintIndex = hintIndex;
+      }
 
-        if (hintIndex === word.length) {
-            buttonElement.disabled = true;
-            buttonElement.textContent = "Hinted";
-            buttonElement.style.opacity = 0.5;
-        }
+      if (hintIndex === word.length) {
+          buttonElement.disabled = true;
+          buttonElement.textContent = "Hinted";
+          buttonElement.style.opacity = 0.5;
+      }
     }
 
     // Pre-defined sentences for known words in English
@@ -451,12 +656,18 @@
     function renderWordSection(word, sentences) {
       const section = document.createElement("div");
       section.className = "word-section";
+      section.dataset.word = word;
 
       const title = document.createElement("div");
       title.className = "word-title";
       const titleText = document.createElement("span");
       titleText.textContent = `💡 Fill in the blanks! (The word is "${word}")`;
       title.appendChild(titleText);
+      
+      const progressCount = document.createElement("span");
+      progressCount.className = "word-meta progress-count";
+      progressCount.textContent = `(0/10)`;
+      title.appendChild(progressCount);
       
       const buttonGroup = document.createElement("div");
       buttonGroup.className = "button-group";
@@ -488,6 +699,13 @@
         const nodes = buildSentenceNodes(sentence, word.toLowerCase());
         section.appendChild(nodes);
       });
+      
+      // Add the new "Verify" button
+      const verifyButton = document.createElement("button");
+      verifyButton.textContent = "Verify";
+      verifyButton.className = "verify-button";
+      verifyButton.onclick = () => showVerificationModal(word);
+      section.appendChild(verifyButton);
 
       return section;
     }

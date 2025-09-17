@@ -3,161 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Spelling & Drawing Game</title>
+  <title>Spelling & Activity Game</title>
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap");
     :root {
-      --bg: #f0f8ff;
-      --text: #444;
-      --brand: #ff69b4;
-      --brand-dark: #d1478e;
-      --title: #ff6347;
-      --title-shadow: #ffb6c1;
-      --accent: #ff4500;
-      --ok: #2e8b57;
-      --no: #dc143c;
-      --draw: #4682B4; /* SteelBlue for Draw button */
-      --draw-dark: #4176a2;
+      --bg: #f0f8ff; --text: #444; --brand: #ff69b4; --brand-dark: #d1478e;
+      --title: #ff6347; --title-shadow: #ffb6c1; --accent: #ff4500;
+      --ok: #2e8b57; --no: #dc143c; --draw: #4682B4; --draw-dark: #4176a2;
+      --mime: #9370DB; --mime-dark: #825fbf;
     }
     * { box-sizing: border-box; }
-    body {
-      font-family: "Fredoka One", cursive, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      text-align: center;
-      padding: 20px;
-    }
-    #container {
-      max-width: 900px;
-      margin: 0 auto;
-      background-color: #ffffff;
-      padding: 30px;
-      border-radius: 30px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-      border: 5px solid #fff;
-    }
-    h1 {
-      color: var(--title);
-      font-size: 3.2em;
-      text-shadow: 2px 2px 0px var(--title-shadow);
-      margin-bottom: 14px;
-    }
+    body { font-family: "Fredoka One", cursive, sans-serif; background-color: var(--bg); color: var(--text); text-align: center; padding: 20px; }
+    #container { max-width: 900px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 5px solid #fff; }
+    h1 { color: var(--title); font-size: 3.2em; text-shadow: 2px 2px 0px var(--title-shadow); margin-bottom: 14px; }
     p { font-size: 1.15em; color: #555; line-height: 1.5; }
     .controls { margin: 14px 0 8px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-    textarea {
-      width: 100%;
-      height: 150px;
-      padding: 15px;
-      border-radius: 15px;
-      border: 3px dashed #add8e6;
-      font-size: 1.05em;
-      margin-bottom: 8px;
-      font-family: "Fredoka One", cursive;
-      background-color: #f0f8ff;
-      resize: vertical;
-    }
+    textarea { width: 100%; height: 150px; padding: 15px; border-radius: 15px; border: 3px dashed #add8e6; font-size: 1.05em; margin-bottom: 8px; font-family: "Fredoka One", cursive; background-color: #f0f8ff; resize: vertical; }
     textarea:focus { outline: none; border-color: var(--brand); }
-    button {
-      background-color: var(--brand);
-      color: white;
-      padding: 12px 22px;
-      border: none;
-      border-radius: 50px;
-      font-size: 1.2em;
-      cursor: pointer;
-      box-shadow: 0 4px var(--brand-dark);
-      font-family: "Fredoka One", cursive;
-    }
+    button { background-color: var(--brand); color: white; padding: 12px 22px; border: none; border-radius: 50px; font-size: 1.2em; cursor: pointer; box-shadow: 0 4px var(--brand-dark); font-family: "Fredoka One", cursive; }
     button:active { transform: translateY(2px); box-shadow: 0 2px var(--brand-dark); }
     button.secondary { background: #eee; color: #333; box-shadow: 0 4px #ccc; }
     #output { margin-top: 22px; text-align: left; }
-    .word-section {
-      padding: 20px;
-      border-radius: 15px;
-      margin-bottom: 18px;
-    }
-    .bg-1 { background-color: #B3E5FC; border-left: 10px solid #039BE5; }
-    .bg-2 { background-color: #FFF9C4; border-left: 10px solid #FFD54F; }
-    .bg-3 { background-color: #FFECB3; border-left: 10px solid #FFB74D; }
-    .bg-4 { background-color: #C8E6C9; border-left: 10px solid #66BB6A; }
-    .bg-5 { background-color: #F8BBD0; border-left: 10px solid #F06292; }
-    .bg-6 { background-color: #E1BEE7; border-left: 10px solid #9575CD; }
+    .word-section { padding: 20px; border-radius: 15px; margin-bottom: 18px; }
+    .bg-1 { background-color: #B3E5FC; border-left: 10px solid #039BE5; } .bg-2 { background-color: #FFF9C4; border-left: 10px solid #FFD54F; } .bg-3 { background-color: #FFECB3; border-left: 10px solid #FFB74D; } .bg-4 { background-color: #C8E6C9; border-left: 10px solid #66BB6A; } .bg-5 { background-color: #F8BBD0; border-left: 10px solid #F06292; } .bg-6 { background-color: #E1BEE7; border-left: 10px solid #9575CD; }
     .word-title { font-size: 1.6em; color: var(--accent); font-weight: bold; }
     .word-meta { font-size: .9em; color: #777; }
-    
-    .button-group { display: flex; gap: 8px; }
-    .action-button {
-      color: white;
-      padding: 6px 12px;
-      border: none;
-      border-radius: 20px;
-      font-size: 0.8em;
-      cursor: pointer;
-      font-family: "Fredoka One", cursive;
-    }
-    .listen-button { background-color: #5cb85c; box-shadow: 0 2px #449d44; }
-    .listen-button:active { transform: translateY(1px); box-shadow: 0 1px #449d44; }
-    .hint-button { background-color: #f0ad4e; box-shadow: 0 2px #ec971f; }
-    .hint-button:active { transform: translateY(1px); box-shadow: 0 1px #ec971f; }
-    .draw-button { background-color: var(--draw); box-shadow: 0 2px var(--draw-dark); }
-    .draw-button:active { transform: translateY(1px); box-shadow: 0 1px var(--draw-dark); }
-
+    .button-group { display: flex; gap: 8px; flex-wrap: wrap;}
+    .action-button { color: white; padding: 6px 12px; border: none; border-radius: 20px; font-size: 0.8em; cursor: pointer; font-family: "Fredoka One", cursive; }
+    .action-button:disabled { background-color: #ccc; box-shadow: none; cursor: not-allowed; }
+    .listen-button { background-color: #5cb85c; box-shadow: 0 2px #449d44; } .listen-button:active { transform: translateY(1px); box-shadow: 0 1px #449d44; }
+    .hint-button { background-color: #f0ad4e; box-shadow: 0 2px #ec971f; } .hint-button:active { transform: translateY(1px); box-shadow: 0 1px #ec971f; }
+    .draw-button { background-color: var(--draw); box-shadow: 0 2px var(--draw-dark); } .draw-button:active { transform: translateY(1px); box-shadow: 0 1px var(--draw-dark); }
+    .mime-button { background-color: var(--mime); box-shadow: 0 2px var(--mime-dark); } .mime-button:active { transform: translateY(1px); box-shadow: 0 1px var(--mime-dark); }
     .hint-display { font-size: 1em; font-weight: normal; margin-left: 10px; color: #888; letter-spacing: 2px; align-self: center; }
     .sentence { font-size: 1.15em; margin-bottom: 12px; line-height: 2.1; }
-    .sentence-input {
-      border: none;
-      border-bottom: 3px dashed #aaa;
-      font-family: "Fredoka One", cursive;
-      font-size: 1em;
-      text-align: center;
-      background-color: transparent;
-      min-width: 90px;
-      padding: 2px 4px;
-    }
+    .sentence-input { border: none; border-bottom: 3px dashed #aaa; font-family: "Fredoka One", cursive; font-size: 1em; text-align: center; background-color: transparent; min-width: 90px; padding: 2px 4px; }
     .sentence-input:focus { outline: none; border-bottom: 3px solid var(--accent); }
     .correct { color: var(--ok); border-bottom-color: var(--ok) !important; font-weight: bold; }
     .incorrect { color: var(--no); border-bottom-color: var(--no) !important; }
-    .verify-button {
-      background-color: #26a69a; color: white; padding: 10px 20px;
-      border: none; border-radius: 50px; font-size: 1em; cursor: pointer;
-      box-shadow: 0 4px #00897b; font-family: "Fredoka One", cursive;
-    }
+    .verify-button { background-color: #26a69a; color: white; padding: 10px 20px; border: none; border-radius: 50px; font-size: 1em; cursor: pointer; box-shadow: 0 4px #00897b; font-family: "Fredoka One", cursive; }
     .verify-button:active { transform: translateY(2px); box-shadow: 0 2px #00897b; }
     .helper { margin-top: 8px; font-size: .95em; color: #666; text-align: center; }
-
-    .modal {
-      display: none; position: fixed; z-index: 10; left: 0; top: 0;
-      width: 100%; height: 100%; overflow: auto;
-      background-color: rgba(0,0,0,0.85); padding-top: 30px;
-    }
-    .modal-content {
-      background-color: #fefefe; margin: 2% auto; padding: 20px;
-      border: 5px solid var(--brand); width: 90%; max-width: 600px;
-      border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-      animation: fadeIn 0.5s;
-    }
+    .modal { display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.85); padding-top: 30px; }
+    .modal-content { background-color: #fefefe; margin: 2% auto; padding: 20px; border: 5px solid var(--brand); width: 90%; max-width: 600px; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); animation: fadeIn 0.5s; }
     @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
     .modal-content h2 { color: var(--brand); font-size: 2em; margin-bottom: 10px; }
     .modal-content p { font-size: 1.2em; line-height: 1.4; margin-bottom: 20px; }
-    .modal-input {
-      width: 80%; padding: 10px; font-size: 1.2em; text-align: center;
-      border: 2px solid #ccc; border-radius: 10px; font-family: "Fredoka One", cursive; margin-bottom: 10px;
-    }
+    .modal-input { width: 80%; padding: 10px; font-size: 1.2em; text-align: center; border: 2px solid #ccc; border-radius: 10px; font-family: "Fredoka One", cursive; margin-bottom: 10px; }
     .modal-input:focus { outline: none; border-color: var(--brand); }
-
-    #drawingCanvas {
-        border: 3px solid #ddd;
-        border-radius: 10px;
-        cursor: crosshair;
-        touch-action: none; /* Prevent scrolling on touch devices */
-    }
-
+    #mimeTimer { font-size: 2em; color: var(--accent); margin-top: 10px; }
+    #drawingCanvas { border: 3px solid #ddd; border-radius: 10px; cursor: crosshair; touch-action: none; }
     .show-message { display: block !important; }
-    .message-box {
-      background-color: white; border: 3px solid #ffa500; border-radius: 15px; padding: 20px;
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      z-index: 10; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    }
+    .message-box { background-color: white; border: 3px solid #ffa500; border-radius: 15px; padding: 20px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
     .message-box h3 { color: #ff4500; font-size: 1.5em; margin-bottom: 10px; }
     .message-box p { color: #555; font-size: 1.1em; margin-bottom: 15px; }
     .message-box button { background-color: var(--brand); color: white; border: none; border-radius: 50px; padding: 10px 20px; cursor: pointer; }
@@ -165,9 +62,11 @@
 </head>
 <body>
   <div id="container">
-    <h1>🌟 Spelling & Drawing Game 🌟</h1>
-    <p>Enter up to <strong>10 words</strong> (one per line). For each word, <strong>10 sentences</strong> will be generated with a blank space for you to complete.</p>
+    <h1>🌟 Spelling & Activity Game 🌟</h1>
+    <p>First, fill in the blanks. After you check your word, you can <strong>unlock fun activities</strong> like drawing and miming!</p>
     <textarea id="wordInput" rows="10" placeholder="Write your words here... for example:
+run
+happy
 sun
 sea
 school
@@ -175,9 +74,7 @@ book
 car
 dog
 cat
-tree
-flowers
-house"></textarea>
+tree"></textarea>
     <div class="controls">
       <button id="btnGenerate">Generate Sentences!</button>
       <button class="secondary" id="btnClear">Clear</button>
@@ -187,103 +84,36 @@ house"></textarea>
     <div id="output"></div>
   </div>
 
-  <!-- Verification Modal -->
-  <div id="verificationModal" class="modal">
-    <div class="modal-content">
-      <h2 id="modalTitle">Verification</h2>
-      <p id="modalSentence"></p>
-      <input type="text" id="modalInput" class="modal-input" placeholder="Write the word here..." autocomplete="off">
-      <br>
-      <button id="modalVerifyBtn">Verify</button>
-      <button id="modalSkipBtn" class="secondary">Skip</button>
-    </div>
-  </div>
-  
-  <!-- Drawing Modal -->
-  <div id="drawModal" class="modal">
-      <div class="modal-content">
-          <h2 id="drawModalTitle">Draw the Word</h2>
-          <canvas id="drawingCanvas" width="550" height="350"></canvas>
-          <div class="controls" style="margin-top: 15px;">
-              <button id="drawClearBtn" class="secondary">Clear</button>
-              <button id="drawCloseBtn">Close</button>
-          </div>
-      </div>
-  </div>
-
-  <!-- Custom Message Box -->
-  <div id="messageBox" class="message-box">
-    <h3 id="messageTitle"></h3>
-    <p id="messageText"></p>
-    <button id="messageOkBtn">OK</button>
-  </div>
+  <div id="verificationModal" class="modal"> <div class="modal-content"> <h2 id="modalTitle">Verification</h2> <p id="modalSentence"></p> <input type="text" id="modalInput" class="modal-input" placeholder="Write the word here..." autocomplete="off"> <br> <button id="modalVerifyBtn">Verify</button> <button id="modalSkipBtn" class="secondary">Skip</button> </div> </div>
+  <div id="drawModal" class="modal"> <div class="modal-content"> <h2 id="drawModalTitle">Draw the Word</h2> <canvas id="drawingCanvas" width="550" height="350"></canvas> <div class="controls" style="margin-top: 15px;"> <button id="drawClearBtn" class="secondary">Clear</button> <button id="drawCloseBtn">Close</button> </div> </div> </div>
+  <div id="mimeModal" class="modal"> <div class="modal-content"> <h2 id="mimeModalTitle">Mime the Word!</h2> <p id="mimeSuggestion"></p> <div id="mimeTimer">10</div> <div class="controls" style="margin-top: 15px;"> <button id="mimeCloseBtn">Close</button> </div> </div> </div>
+  <div id="messageBox" class="message-box"> <h3 id="messageTitle"></h3> <p id="messageText"></p> <button id="messageOkBtn">OK</button> </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
   <script>
-    const MAX_WORDS = 10;
-    let score = 0;
-    const scoreDisplay = document.getElementById("scoreDisplay");
-
-    const verificationModal = document.getElementById("verificationModal");
-    const modalSentence = document.getElementById("modalSentence");
-    const modalInput = document.getElementById("modalInput");
-    const modalVerifyBtn = document.getElementById("modalVerifyBtn");
-    const modalSkipBtn = document.getElementById("modalSkipBtn");
-
-    const messageBox = document.getElementById("messageBox");
-    const messageTitle = document.getElementById("messageTitle");
-    const messageText = document.getElementById("messageText");
-    const messageOkBtn = document.getElementById("messageOkBtn");
-    
-    // Drawing Modal Elements
-    const drawModal = document.getElementById("drawModal");
-    const drawModalTitle = document.getElementById("drawModalTitle");
-    const drawingCanvas = document.getElementById("drawingCanvas");
-    const drawClearBtn = document.getElementById("drawClearBtn");
-    const drawCloseBtn = document.getElementById("drawCloseBtn");
-    const ctx = drawingCanvas.getContext("2d");
-    let isDrawing = false;
-
-    let currentWordToVerify = '';
+    const MAX_WORDS = 10, scoreDisplay = document.getElementById("scoreDisplay"), verificationModal = document.getElementById("verificationModal"), modalSentence = document.getElementById("modalSentence"), modalInput = document.getElementById("modalInput"), modalVerifyBtn = document.getElementById("modalVerifyBtn"), modalSkipBtn = document.getElementById("modalSkipBtn"), messageBox = document.getElementById("messageBox"), messageTitle = document.getElementById("messageTitle"), messageText = document.getElementById("messageText"), messageOkBtn = document.getElementById("messageOkBtn"), drawModal = document.getElementById("drawModal"), mimeModal = document.getElementById("mimeModal"), drawModalTitle = document.getElementById("drawModalTitle"), drawingCanvas = document.getElementById("drawingCanvas"), drawClearBtn = document.getElementById("drawClearBtn"), drawCloseBtn = document.getElementById("drawCloseBtn"), ctx = drawingCanvas.getContext("2d"), mimeModalTitle = document.getElementById("mimeModalTitle"), mimeSuggestion = document.getElementById("mimeSuggestion"), mimeTimerDisplay = document.getElementById("mimeTimer"), mimeCloseBtn = document.getElementById("mimeCloseBtn");
+    let score = 0, isDrawing = false, currentWordToVerify = '', verifiedWordCount = 0, totalWords = 0, mimeTimer;
     const backgroundColors = ['bg-1', 'bg-2', 'bg-3', 'bg-4', 'bg-5', 'bg-6'];
-    let verifiedWordCount = 0;
-    let totalWords = 0;
 
-    function showMessage(title, text) {
-      messageTitle.textContent = title;
-      messageText.textContent = text;
-      messageBox.classList.add('show-message');
-    }
+    function showMessage(title, text) { messageTitle.textContent = title; messageText.textContent = text; messageBox.classList.add('show-message'); }
     messageOkBtn.addEventListener('click', () => messageBox.classList.remove('show-message'));
-
-    function updateScore(delta) {
-      score += delta;
-      scoreDisplay.textContent = `Score: ${score}`;
-    }
-
-    function escapeRegex(s) {
-      return s.replace(/[-\/^$*+?.()|[\]{}]/g, "\\$&");
-    }
+    function updateScore(delta) { score += delta; scoreDisplay.textContent = `Score: ${score}`; }
+    function escapeRegex(s) { return s.replace(/[-\/^$*+?.()|[\]{}]/g, "\\$&"); }
 
     function checkWord(inputElement) {
-      const userInput = inputElement.value.trim().toLowerCase();
-      const correctWord = inputElement.dataset.correct.toLowerCase();
+      const userInput = inputElement.value.trim().toLowerCase(), correctWord = inputElement.dataset.correct.toLowerCase();
       inputElement.classList.remove("correct", "incorrect");
-      if (!userInput) return;
-      if (userInput === correctWord) inputElement.classList.add("correct");
-      else inputElement.classList.add("incorrect");
+      if (userInput) inputElement.classList.add(userInput === correctWord ? "correct" : "incorrect");
       const section = inputElement.closest('.word-section');
       const allInputs = section.querySelectorAll('.sentence-input');
       let completedCount = 0;
       allInputs.forEach(input => { if (input.classList.contains('correct')) completedCount++; });
-      const progressSpan = section.querySelector('.progress-count');
-      if (progressSpan) progressSpan.textContent = `(${completedCount}/10)`;
+      section.querySelector('.progress-count').textContent = `(${completedCount}/10)`;
     }
 
     async function playSuccessJingle() {
       const synth = new Tone.Synth({ oscillator: { type: "sawtooth" }, envelope: { attack: 0.05, decay: 0.5, sustain: 0.2, release: 0.8 } }).toDestination();
-      const notes = ["C4", "G3", "C4", "C4", "B3", "A3", "G3", "F#3", "G3", "A3", "B3", "C4"];
-      const part = new Tone.Part((time, note) => synth.triggerAttackRelease(note, "0.4", time), notes.map((n, i) => [i * 0.5, n])).start(0);
+      const part = new Tone.Part((time, note) => synth.triggerAttackRelease(note, "0.4", time), [["0", "C4"], ["0.5", "G3"], ["1", "C4"], ["1.5", "C4"], ["2", "B3"], ["2.5", "A3"], ["3", "G3"], ["3.5", "F#3"], ["4", "G3"], ["4.5", "A3"], ["5", "B3"], ["5.5", "C4"]]).start(0);
       if (Tone.context.state !== 'running') await Tone.start();
       Tone.Transport.start();
       Tone.Transport.scheduleOnce(() => Tone.Transport.stop(), "6");
@@ -291,311 +121,164 @@ house"></textarea>
 
     function showVerificationModal(word) {
       const sentences = wordSentenceMap[word.toLowerCase()] || generateContextualSentences(word.toLowerCase());
-      const sentence = sentences[Math.floor(Math.random() * sentences.length)];
-      modalSentence.textContent = sentence.replace(new RegExp(escapeRegex(word), 'gi'), '....');
-      modalInput.value = '';
-      modalInput.dataset.correct = word;
-      currentWordToVerify = word;
-      verificationModal.style.display = 'block';
-      modalInput.focus();
+      modalSentence.textContent = sentences[Math.floor(Math.random() * sentences.length)].replace(new RegExp(escapeRegex(word), 'gi'), '....');
+      modalInput.value = ''; modalInput.dataset.correct = word; currentWordToVerify = word;
+      verificationModal.style.display = 'block'; modalInput.focus();
     }
 
     function verifyWord() {
-      const userInput = modalInput.value.trim().toLowerCase();
-      const correctWord = modalInput.dataset.correct.toLowerCase();
+      const userInput = modalInput.value.trim().toLowerCase(), correctWord = modalInput.dataset.correct.toLowerCase();
       if (userInput === correctWord) {
-        updateScore(1);
-        showMessage("Correct!", `Great! The word is "${correctWord}".`);
+        updateScore(1); showMessage("Correct!", `Great! You unlocked the activities for "${correctWord}".`);
         const section = document.querySelector(`.word-section[data-word="${currentWordToVerify}"]`);
-        if (section) section.querySelector('.word-title').style.color = 'var(--ok)';
+        if (section) {
+            section.querySelector('.word-title').style.color = 'var(--ok)';
+            // Enable buttons
+            section.querySelector('.mime-button').disabled = false;
+            section.querySelector('.draw-button').disabled = false;
+        }
         verifiedWordCount++;
         if (verifiedWordCount >= totalWords) {
-          if (score === totalWords) {
-            showMessage("Perfect Score!", "Congratulations! You got a perfect score!");
-            playSuccessJingle();
-          } else {
-            showMessage("Game Over!", "You have completed all the words.");
-          }
+          if (score === totalWords) { showMessage("Perfect Score!", "Congratulations!"); playSuccessJingle(); } 
+          else { showMessage("Game Over!", "You have completed all the words."); }
         }
-        hideModal();
-      } else {
-        showMessage("Try Again!", `That's not quite right. Keep practicing!`);
-      }
+        hideAllModals();
+      } else { showMessage("Try Again!", `That's not quite right.`); }
     }
 
-    function hideModal() {
-      verificationModal.style.display = 'none';
-      drawModal.style.display = 'none';
-      currentWordToVerify = '';
+    function hideAllModals() {
+      verificationModal.style.display = 'none'; drawModal.style.display = 'none'; mimeModal.style.display = 'none';
+      clearInterval(mimeTimer); currentWordToVerify = '';
     }
-
-    modalVerifyBtn.addEventListener('click', verifyWord);
-    modalInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') verifyWord(); });
-    modalSkipBtn.addEventListener('click', hideModal);
-
-    // Drawing Logic
-    function startDrawing(e) {
-        isDrawing = true;
-        draw(e);
-    }
-    function stopDrawing() {
-        isDrawing = false;
-        ctx.beginPath();
-    }
+    modalVerifyBtn.addEventListener('click', verifyWord); modalInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') verifyWord(); }); modalSkipBtn.addEventListener('click', hideAllModals);
+    function startDrawing(e) { isDrawing = true; draw(e); }
+    function stopDrawing() { isDrawing = false; ctx.beginPath(); }
     function draw(e) {
-        if (!isDrawing) return;
-        e.preventDefault();
-        
-        let rect = drawingCanvas.getBoundingClientRect();
-        let x = (e.clientX || e.touches[0].clientX) - rect.left;
-        let y = (e.clientY || e.touches[0].clientY) - rect.top;
-
-        ctx.lineWidth = 5;
-        ctx.lineCap = 'round';
-        ctx.strokeStyle = '#333';
-        ctx.lineTo(x, y);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(x, y);
+      if (!isDrawing) return; e.preventDefault();
+      let rect = drawingCanvas.getBoundingClientRect(), x = (e.clientX || e.touches[0].clientX) - rect.left, y = (e.clientY || e.touches[0].clientY) - rect.top;
+      ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.strokeStyle = '#333';
+      ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
     }
-    drawingCanvas.addEventListener('mousedown', startDrawing);
-    drawingCanvas.addEventListener('mouseup', stopDrawing);
-    drawingCanvas.addEventListener('mouseleave', stopDrawing);
-    drawingCanvas.addEventListener('mousemove', draw);
-    drawingCanvas.addEventListener('touchstart', startDrawing);
-    drawingCanvas.addEventListener('touchend', stopDrawing);
-    drawingCanvas.addEventListener('touchmove', draw);
-    
-    function showDrawModal(word) {
-        drawModalTitle.textContent = `Draw the word: "${word}"`;
-        ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-        drawModal.style.display = 'block';
+    drawingCanvas.addEventListener('mousedown', startDrawing); drawingCanvas.addEventListener('mouseup', stopDrawing); drawingCanvas.addEventListener('mouseleave', stopDrawing);
+    drawingCanvas.addEventListener('mousemove', draw); drawingCanvas.addEventListener('touchstart', startDrawing); drawingCanvas.addEventListener('touchend', stopDrawing); drawingCanvas.addEventListener('touchmove', draw);
+    function showDrawModal(word) { drawModalTitle.textContent = `Draw the word: "${word}"`; ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height); drawModal.style.display = 'block'; }
+    drawClearBtn.addEventListener('click', () => ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height)); drawCloseBtn.addEventListener('click', hideAllModals);
+    const mimeSuggestions = { run: "Pretend to run on the spot!", jump: "Jump up and down!", happy: "Show me your biggest, happiest smile!", sad: "Pretend to cry or look very sad.", eat: "Pretend to eat your favourite food.", sleep: "Pretend to be fast asleep and snore.", read: "Pretend to hold a book and read it.", write: "Pretend you are writing with a pencil.", sing: "Pretend to sing into a microphone.", dance: "Show me your best dance moves!", big: "Use your arms to show something really big.", small: "Use your fingers to show something tiny." };
+    function showMimeModal(word) {
+      mimeModalTitle.textContent = `Mime the word: "${word}"`;
+      mimeSuggestion.textContent = mimeSuggestions[word.toLowerCase()] || "Invent your own action for this word!";
+      mimeModal.style.display = 'block'; let timeLeft = 10; mimeTimerDisplay.textContent = timeLeft;
+      mimeTimer = setInterval(() => { timeLeft--; mimeTimerDisplay.textContent = timeLeft; if (timeLeft <= 0) { clearInterval(mimeTimer); mimeTimerDisplay.textContent = "Time's up!"; } }, 1000);
     }
-    drawClearBtn.addEventListener('click', () => ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height));
-    drawCloseBtn.addEventListener('click', hideModal);
-    
-    // Speech Logic (robust version)
-    function chooseBritishVoice() {
-        const list = window.speechSynthesis.getVoices() || [];
-        return list.find(v => /en-GB/i.test(v.lang) && /female/i.test(v.name)) ||
-               list.find(v => /en-GB/i.test(v.lang)) ||
-               list.find(v => /UK|British/i.test(v.name)) ||
-               list.find(v => /^en[-_]/i.test(v.lang));
-    }
+    mimeCloseBtn.addEventListener('click', hideAllModals);
+    function chooseBritishVoice() { const list = window.speechSynthesis.getVoices() || []; return list.find(v => /en-GB/i.test(v.lang) && /female/i.test(v.name)) || list.find(v => /en-GB/i.test(v.lang)) || list.find(v => /UK|British/i.test(v.name)) || list.find(v => /^en[-_]/i.test(v.lang)); }
     function speakWord(buttonElement) {
-        if (!('speechSynthesis' in window)) return showMessage("Speech API Not Supported", "Try Chrome or Firefox.");
-        const word = buttonElement.dataset.word;
-        const utterance = new SpeechSynthesisUtterance(word);
-        const setVoiceAndSpeak = () => {
-            const voice = chooseBritishVoice();
-            if (voice) { utterance.voice = voice; utterance.lang = voice.lang; } 
-            else { utterance.lang = 'en-GB'; }
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(utterance);
-        };
-        if ((window.speechSynthesis.getVoices() || []).length === 0) window.speechSynthesis.onvoiceschanged = setVoiceAndSpeak;
-        else setVoiceAndSpeak();
+      if (!('speechSynthesis' in window)) return showMessage("Speech API Not Supported", "Try Chrome or Firefox.");
+      const word = buttonElement.dataset.word, utterance = new SpeechSynthesisUtterance(word);
+      const setVoiceAndSpeak = () => { const voice = chooseBritishVoice(); if (voice) { utterance.voice = voice; utterance.lang = voice.lang; } else { utterance.lang = 'en-GB'; } window.speechSynthesis.cancel(); window.speechSynthesis.speak(utterance); };
+      if ((window.speechSynthesis.getVoices() || []).length === 0) window.speechSynthesis.onvoiceschanged = setVoiceAndSpeak; else setVoiceAndSpeak();
     }
-
     function giveHint(buttonElement) {
-        const word = buttonElement.dataset.word;
-        const hintDisplay = buttonElement.nextElementSibling;
-        let hintIndex = parseInt(buttonElement.dataset.hintIndex, 10);
-        if (hintIndex < word.length) {
-            updateScore(-1);
-            showMessage("Hint Used!", "You lost 1 point for using a hint.");
-            const hintedPart = word.substring(0, hintIndex + 1);
-            hintDisplay.textContent = `${hintedPart}${"_".repeat(word.length - (hintIndex + 1))}`;
-            buttonElement.dataset.hintIndex = ++hintIndex;
-        }
-        if (hintIndex === word.length) {
-            buttonElement.disabled = true;
-            buttonElement.textContent = "Hint Given";
-            buttonElement.style.opacity = 0.5;
-        }
+      const word = buttonElement.dataset.word, hintDisplay = buttonElement.nextElementSibling;
+      let hintIndex = parseInt(buttonElement.dataset.hintIndex, 10);
+      if (hintIndex < word.length) {
+        updateScore(-1); showMessage("Hint Used!", "You lost 1 point for using a hint.");
+        hintDisplay.textContent = `${word.substring(0, hintIndex + 1)}${"_".repeat(word.length - (hintIndex + 1))}`;
+        buttonElement.dataset.hintIndex = ++hintIndex;
+      }
+      if (hintIndex === word.length) { buttonElement.disabled = true; buttonElement.textContent = "Hint Given"; buttonElement.style.opacity = 0.5; }
     }
-    
-    // ——————————————————————————————————————————————
-    // TIER 1: BANCA FRASI SPECIFICHE (MASSIMA PERTINENZA)
-    // ——————————————————————————————————————————————
-    const wordSentenceMap = {
-        sun: ["The .... is a giant star that gives us light and heat.", "Without the ...., plants couldn't grow.", "The .... rises in the east.", "On a clear day, you can feel the warmth of the ....", "A sunflower turns to follow the ...."],
-        moon: ["The .... lights up the night sky.", "Neil Armstrong was the first person to walk on the .....", "A full .... is big and round.", "The .... has craters on its surface.", "Wolves in stories howl at the ...."],
-        dog: ["A .... is often called 'man's best friend'.", "You might take your pet .... for a walk.", "A .... wags its tail when it's happy.", "A puppy is a baby .....", "A .... likes to fetch a ball."],
-        cat: ["A .... purrs when it is happy.", "A kitten is a baby ....", "A .... has sharp claws and soft fur.", "A .... often likes to sleep in a warm spot.", "A .... says 'meow'."],
-        sea: ["The .... is a large body of salt water.", "You build sandcastles on the beach next to the ....", "Boats and ships sail on the ....", "Fish and whales live in the ....", "The waves of the .... make a relaxing sound."],
-        school: [".... is where children go to learn.", "Your teacher helps you read and write at ....", "You play with your friends in the playground at ....", "A classroom is a room in a ....", "You carry your books to ...."],
-        book: ["You read a .... for stories and ideas.", "A library is a place full of ....", "Each .... has a cover and pages.", "You turn the page of a .... to continue.", "A story.... might have pictures."],
-        car: ["A .... has four wheels and drives on the road.", "You must wear a seatbelt in a ....", "A .... needs petrol or electricity to go.", "Traffic lights tell a .... when to stop.", "A garage is where you park a ...."],
-        tree: ["A .... has a trunk, branches, and leaves.", "Birds build nests in a ....", "In autumn, the leaves of a .... change colour.", "A forest is a place with many ....", "An apple .... grows apples."],
-        flowers: [".... are colourful plants in a garden.", "Bees visit .... to collect nectar.", "You can put a bunch of .... in a vase.", "Roses and daisies are types of ....", "Many .... have a lovely smell."],
-        house: ["A .... is a building where a family lives.", "Your .... has a roof to keep the rain out.", "A .... has rooms like a kitchen and bedroom.", "The front door of a .... has a number.", "You sleep in your bed in your ...."]
-    };
+    const wordSentenceMap = { sun: ["The .... is a giant star that gives us light and heat.", "Without the ...., plants couldn't grow.", "The .... rises in the east.", "On a clear day, you can feel the warmth of the ....", "A sunflower turns to follow the ...."], moon: ["The .... lights up the night sky.", "Neil Armstrong was the first person to walk on the .....", "A full .... is big and round.", "The .... has craters on its surface.", "Wolves in stories howl at the ...."], dog: ["A .... is often called 'man's best friend'.", "You might take your pet .... for a walk.", "A .... wags its tail when it's happy.", "A puppy is a baby .....", "A .... likes to fetch a ball."], cat: ["A .... purrs when it is happy.", "A kitten is a baby ....", "A .... has sharp claws and soft fur.", "A .... often likes to sleep in a warm spot.", "A .... says 'meow'."], sea: ["The .... is a large body of salt water.", "You build sandcastles on the beach next to the ....", "Boats and ships sail on the ....", "Fish and whales live in the ....", "The waves of the .... make a relaxing sound."], school: [".... is where children go to learn.", "Your teacher helps you read and write at ....", "You play with your friends in the playground at ....", "A classroom is a room in a ....", "You carry your books to ...."], book: ["You read a .... for stories and ideas.", "A library is a place full of ....", "Each .... has a cover and pages.", "You turn the page of a .... to continue.", "A story.... might have pictures."], car: ["A .... has four wheels and drives on the road.", "You must wear a seatbelt in a ....", "A .... needs petrol or electricity to go.", "Traffic lights tell a .... when to stop.", "A garage is where you park a ...."], tree: ["A .... has a trunk, branches, and leaves.", "Birds build nests in a ....", "In autumn, the leaves of a .... change colour.", "A forest is a place with many ....", "An apple .... grows apples."], flowers: [".... are colourful plants in a garden.", "Bees visit .... to collect nectar.", "You can put a bunch of .... in a vase.", "Roses and daisies are types of ....", "Many .... have a lovely smell."], house: ["A .... is a building where a family lives.", "Your .... has a roof to keep the rain out.", "A .... has rooms like a kitchen and bedroom.", "The front door of a .... has a number.", "You sleep in your bed in your ...."] };
+    const SENSES = { bat: [{clue:"An animal that flies at night is a ...."}, {clue:"To hit a baseball, you use a ...."}], seal: [{clue:"An animal that barks and swims is a ...."}, {clue:"To close a letter, you .... the envelope."}], bank: [{clue:"A place that keeps money safe is a ...."}, {clue:"The side of a river is called a river ...."}] };
+    function getArticle(w) { return /^[aeiou]/i.test(w) ? "an" : "a"; }
+    function syllableHint(w) { const n = (w.match(/[aeiouy]+/g)?.length||1); return `${n} syllable${n>1?"s":""}`; }
+    function simpleRhyme(w) { return ({sun:"run",moon:"spoon",star:"car",dog:"log",cat:"hat",bird:"word",red:"bed",blue:"shoe",apple:"dapple",bread:"head",tree:"see",car:"star"})[w.toLowerCase()] || null; }
+    function isVerb(w) { const wl = w.toLowerCase(); return (wl.length>3 && (wl.endsWith("ing")||wl.endsWith("ed"))) || ["run","jump","eat","sleep","read","write","sing","dance"].includes(wl); }
+    function isPlural(w) { return w.length>2 && w.endsWith("s") && !w.endsWith("ss"); }
 
-    // ——————————————————————————————————————————————
-    // TIER 2 & 3: GENERATORE CONTESTUALE MIGLIORATO
-    // ——————————————————————————————————————————————
-    function getArticle(word) { return /^[aeiou]/i.test(word) ? "an" : "a"; }
-    function syllableCount(w) { return (w.match(/[aeiouy]+/g)?.length || 1); }
-    function syllableHint(w) { const n = syllableCount(w); return `${n} syllable${n>1?"s":""}`; }
-    function ensureUnique(sentences) { const seen = new Set(), out = []; for (const s of sentences) { const norm = s.toLowerCase().replace(/\s+/g," ").replace(/[^\w. ]/g,"").trim(); if (norm && !seen.has(norm)) { seen.add(norm); out.push(s); } } return out; }
-    function shuffleAndPick(arr, count) { const a = [...arr]; for (let i=a.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a.slice(0, count); }
-    function simpleRhyme(word) {
-      const bank = { sun: "run", moon: "spoon", star: "car", dog: "log", cat: "hat", bird: "word", red: "bed", blue: "shoe", apple: "dapple", bread: "head", tree: "see", car: "star" };
-      return bank[word.toLowerCase()] || null;
+    function ensureUnique(arr) {
+        const seen = new Set();
+        return arr.filter(s => {
+            const norm = s.toLowerCase().replace(/[^a-z]/g, "");
+            return norm && !seen.has(norm) ? seen.add(norm) : false;
+        });
     }
-    function morphology(word) {
-      const w = word.toLowerCase();
-      const info = { suffix:null, isPlural:false, isVerb:false };
-      if (w.length > 3 && w.endsWith("ing")) { info.suffix = "-ing"; info.isVerb = true; }
-      else if (w.length > 3 && w.endsWith("ed")) { info.suffix = "-ed"; info.isVerb = true; }
-      else if (w.endsWith("s") && !w.endsWith("ss")) { info.suffix = "-s"; info.isPlural = !info.isVerb; }
-      return info;
-    }
-    const SENSES = {
-      bat: [{ cat:"animal", clue:"An animal that flies at night is a ...." }, { cat:"object", clue:"To hit a baseball, you use a ...." }],
-      seal: [{ cat:"animal", clue:"An animal that barks and swims is a ...." }, { cat:"action", clue:"To close a letter, you .... the envelope." }],
-      bank: [{ cat:"place", clue:"A place that keeps money safe is a ...." }, { cat:"nature", clue:"The side of a river is called a river ...." }],
-    };
 
     function generateContextualSentences(word) {
-      const w = word.toLowerCase();
-      const info = { word: w, article: getArticle(w), first: w[0]?.toUpperCase()||"", syllables: syllableHint(w), rhyme: simpleRhyme(w), morph: morphology(w), senses: SENSES[w] || null, isPlural: morphology(w).isPlural };
-      const patterns = [
-        { c: (i) => true, g: (i) => `The word .... starts with the letter ${i.first}.` },
-        { c: (i) => true, g: (i) => `The word .... has ${i.syllables}.` },
-        { c: (i) => i.rhyme, g: (i) => `The word .... rhymes with "${i.rhyme}".` },
-        { c: (i) => !i.isPlural, g: (i) => `${i.article.toUpperCase()} .... is a type of thing.` },
-        { c: (i) => i.isPlural, g: (i) => `.... are things you can count.` },
-        { c: (i) => i.senses, g: (i) => i.senses[0].clue },
-        { c: (i) => i.senses && i.senses.length > 1, g: (i) => i.senses[1].clue },
-        { c: (i) => !i.isPlural, g: (i) => `You can find ${i.article} .... in a story book.` },
-        { c: (i) => i.morph.isVerb, g: (i) => `To .... is an action.` },
-        { c: (i) => i.word === "big", g: (i) => `The opposite of small is ....` },
-        { c: (i) => i.word === "small", g: (i) => `The opposite of big is ....` },
-        { c: (i) => true, g: (i) => `Can you spell the word ....?` },
-        { c: (i) => true, g: (i) => `Write the word .... in the space.` },
-      ];
-      const candidates = patterns.filter(p => p.c(info)).map(p => p.g(info));
-      const unique = ensureUnique(candidates);
-      const shuffled = shuffleAndPick(unique, 15);
-      shuffled.sort((a,b) => a.length - b.length);
-      if (shuffled.length < 10) shuffled.push(`Say the sounds of .... out loud.`);
-      return ensureUnique(shuffled).slice(0, 10);
+        const w = word.toLowerCase(), info = { w, article: getArticle(w), first: w[0]?.toUpperCase()||"", syllables: syllableHint(w), rhyme: simpleRhyme(w), senses: SENSES[w] || null, plural: isPlural(w), verb: isVerb(w) };
+        let patterns = [
+            {c:()=>true, g:i=>`The word .... starts with the letter ${i.first}.`},
+            {c:()=>true, g:i=>`The word .... has ${i.syllables}.`},
+            {c:i=>i.rhyme, g:i=>`The word .... rhymes with "${i.rhyme}".`},
+            {c:i=>!i.plural, g:i=>`${i.article.toUpperCase()} .... is a type of thing.`},
+            {c:i=>i.plural, g:i=>`.... are things you can count.`},
+            {c:i=>i.senses, g:i=>i.senses[0].clue},
+            {c:i=>i.senses&&i.senses.length>1, g:i=>i.senses[1].clue},
+            {c:i=>i.verb, g:i=>`To .... is an action word.`},
+            {c:i=>i.w==="big", g:()=>`The opposite of small is ....`},
+            {c:i=>i.w==="small", g:()=>`The opposite of big is ....`},
+            {c:()=>true, g:()=>`Can you spell the word ....?`},
+            {c:()=>true, g:()=>`Write the word .... in the space.`},
+            {c:()=>true, g:()=>`What does the word .... mean?`},
+            {c:()=>true, g:()=>`Try to use .... in a new sentence.`},
+            {c:()=>true, g:()=>`Listen carefully to the sounds in ....`},
+        ];
+        let candidates = patterns.filter(p=>p.c(info)).map(p=>p.g(info));
+        let unique = ensureUnique(candidates);
+        let shuffled = [...unique].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, 10);
     }
 
     function buildSentenceNodes(sentence, lowerCaseWord) {
-        const sentenceP = document.createElement("p");
-        sentenceP.className = "sentence";
-        const regex = new RegExp(`\\b${escapeRegex(lowerCaseWord)}\\b|\\.{3,}`, "gi");
-        let lastIndex = 0; let anyMatch = false; let match;
-        while ((match = regex.exec(sentence)) !== null) {
-            anyMatch = true;
-            sentenceP.appendChild(document.createTextNode(sentence.slice(lastIndex, match.index)));
-            const input = document.createElement("input");
-            input.type = "text";
-            input.className = "sentence-input";
-            input.dataset.correct = lowerCaseWord;
-            input.setAttribute("oninput", "checkWord(this)");
-            input.setAttribute("autocomplete", "off");
-            input.style.width = `${Math.max(90, lowerCaseWord.length * 18 + 20)}px`;
-            sentenceP.appendChild(input);
-            lastIndex = match.index + match[0].length;
-        }
-        sentenceP.appendChild(document.createTextNode(sentence.slice(lastIndex)));
-        if (!anyMatch) {
-            sentenceP.appendChild(document.createTextNode(" "));
-            const input = document.createElement("input");
-            input.type = "text"; input.className = "sentence-input"; input.dataset.correct = lowerCaseWord;
-            input.setAttribute("oninput", "checkWord(this)"); input.setAttribute("autocomplete", "off");
-            input.style.width = `${Math.max(90, lowerCaseWord.length * 18 + 20)}px`;
-            sentenceP.appendChild(input);
-        }
-        return sentenceP;
+        const p = document.createElement("p"); p.className = "sentence";
+        const regex = new RegExp(`(\\b${escapeRegex(lowerCaseWord)}\\b|\\.{3,})`, "gi");
+        sentence.split(regex).forEach((part, i) => {
+            if (i % 2 === 1 && (part.toLowerCase() === lowerCaseWord || part.startsWith("..."))) {
+                const input = document.createElement("input");
+                input.type = "text"; input.className = "sentence-input"; input.dataset.correct = lowerCaseWord;
+                input.oninput = () => checkWord(input); input.autocomplete = "off";
+                input.style.width = `${Math.max(90, lowerCaseWord.length * 18 + 20)}px`;
+                p.appendChild(input);
+            } else {
+                p.appendChild(document.createTextNode(part));
+            }
+        });
+        return p;
     }
-
     function renderWordSection(word, sentences, colorClass) {
-        const section = document.createElement("div");
-        section.className = "word-section " + colorClass;
-        section.dataset.word = word;
-        const header = document.createElement('div');
-        header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px;';
-        const title = document.createElement("div");
-        title.className = "word-title";
-        title.textContent = `💡 Fill in the blanks!`;
-        header.appendChild(title);
-        const buttonGroup = document.createElement("div");
-        buttonGroup.className = "button-group";
-        const listenButton = document.createElement("button");
-        listenButton.textContent = "Listen";
-        listenButton.className = "action-button listen-button";
-        listenButton.dataset.word = word;
-        listenButton.onclick = () => speakWord(listenButton);
-        buttonGroup.appendChild(listenButton);
-        const drawButton = document.createElement("button");
-        drawButton.textContent = "Draw!";
-        drawButton.className = "action-button draw-button";
-        drawButton.onclick = () => showDrawModal(word);
-        buttonGroup.appendChild(drawButton);
-        const hintButton = document.createElement("button");
-        hintButton.textContent = "Hint";
-        hintButton.className = "action-button hint-button";
-        hintButton.dataset.word = word;
-        hintButton.dataset.hintIndex = "0";
-        hintButton.onclick = () => giveHint(hintButton);
-        buttonGroup.appendChild(hintButton);
-        const hintDisplay = document.createElement("span");
-        hintDisplay.className = "hint-display";
-        hintDisplay.textContent = "_".repeat(word.length);
-        buttonGroup.appendChild(hintDisplay);
-        header.appendChild(buttonGroup);
-        section.appendChild(header);
-        sentences.forEach(sentence => section.appendChild(buildSentenceNodes(sentence, word.toLowerCase())));
-        const footer = document.createElement('div');
-        footer.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-top: 15px;';
-        const verifyButton = document.createElement("button");
-        verifyButton.textContent = "Check Word";
-        verifyButton.className = "verify-button";
-        verifyButton.onclick = () => showVerificationModal(word);
-        footer.appendChild(verifyButton);
-        const progressCount = document.createElement("span");
-        progressCount.className = "word-meta progress-count";
-        progressCount.textContent = `(0/10)`;
-        footer.appendChild(progressCount);
-        section.appendChild(footer);
-        return section;
+        const section = document.createElement("div"); section.className = "word-section " + colorClass; section.dataset.word = word;
+        const header = document.createElement('div'); header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px;';
+        const title = document.createElement("div"); title.className = "word-title"; title.textContent = `💡 Fill in the blanks!`; header.appendChild(title);
+        const topButtonGroup = document.createElement("div"); topButtonGroup.className = "button-group";
+        const listenBtn=document.createElement("button"); listenBtn.textContent="Listen"; listenBtn.className="action-button listen-button"; listenBtn.dataset.word=word; listenBtn.onclick=()=>speakWord(listenBtn); topButtonGroup.appendChild(listenBtn);
+        const hintBtn=document.createElement("button"); hintBtn.textContent="Hint"; hintBtn.className="action-button hint-button"; hintBtn.dataset.word=word; hintBtn.dataset.hintIndex="0"; hintBtn.onclick=()=>giveHint(hintBtn); topButtonGroup.appendChild(hintBtn);
+        const hintDisplay = document.createElement("span"); hintDisplay.className = "hint-display"; hintDisplay.textContent = "_".repeat(word.length); topButtonGroup.appendChild(hintDisplay);
+        header.appendChild(topButtonGroup); section.appendChild(header);
+        sentences.forEach(s => section.appendChild(buildSentenceNodes(s, word.toLowerCase())));
+        const footer = document.createElement('div'); footer.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-top: 15px;';
+        const footerButtonGroup = document.createElement("div"); footerButtonGroup.className = "button-group";
+        const verifyBtn=document.createElement("button"); verifyBtn.textContent="Check Word"; verifyBtn.className="verify-button"; verifyBtn.onclick=()=>showVerificationModal(word); footerButtonGroup.appendChild(verifyBtn);
+        const mimeBtn=document.createElement("button"); mimeBtn.textContent="Mime!"; mimeBtn.className="action-button mime-button"; mimeBtn.onclick=()=>showMimeModal(word); mimeBtn.disabled = true; footerButtonGroup.appendChild(mimeBtn);
+        const drawBtn=document.createElement("button"); drawBtn.textContent="Draw!"; drawBtn.className="action-button draw-button"; drawBtn.onclick=()=>showDrawModal(word); drawBtn.disabled = true; footerButtonGroup.appendChild(drawBtn);
+        footer.appendChild(footerButtonGroup);
+        const progressCount = document.createElement("span"); progressCount.className = "word-meta progress-count"; progressCount.textContent = `(0/${sentences.length})`; footer.appendChild(progressCount);
+        section.appendChild(footer); return section;
     }
-    
-    function shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
     function generateSentences() {
-      const raw = document.getElementById("wordInput").value.trim();
-      const outputDiv = document.getElementById("output");
-      outputDiv.innerHTML = "";
-      updateScore(-score);
-      verifiedWordCount = 0;
-      let words = raw.split(/\r?\n/).map(w => w.trim()).filter(Boolean);
-      const unique = []; const seen = new Set();
-      for (const w of words) { const key = w.toLowerCase(); if (!seen.has(key)) { unique.push(w); seen.add(key); } }
-      words = unique.slice(0, MAX_WORDS);
-      totalWords = words.length;
+      const raw = document.getElementById("wordInput").value.trim(), outputDiv = document.getElementById("output");
+      outputDiv.innerHTML = ""; updateScore(-score); verifiedWordCount = 0;
+      const unique = [...new Set(raw.split(/\r?\n/).map(w => w.trim().toLowerCase()).filter(Boolean))];
+      const words = unique.slice(0, MAX_WORDS); totalWords = words.length;
       if (words.length === 0) return document.getElementById("helper").textContent = "Please enter at least one word.";
       document.getElementById("helper").textContent = `Words used: ${words.length}/${MAX_WORDS}`;
-      const shuffledColors = shuffleArray([...backgroundColors]);
+      const shuffledColors = [...backgroundColors].sort(()=>0.5-Math.random());
       words.forEach((word, index) => {
-        const key = word.toLowerCase();
-        const sentences = wordSentenceMap[key] || generateContextualSentences(key);
-        const colorClass = shuffledColors[index % shuffledColors.length];
-        outputDiv.appendChild(renderWordSection(word, sentences, colorClass));
+        const sentences = wordSentenceMap[word] || generateContextualSentences(word);
+        outputDiv.appendChild(renderWordSection(word, sentences, shuffledColors[index % shuffledColors.length]));
       });
     }
-
     document.getElementById("btnGenerate").addEventListener("click", generateSentences);
-    document.getElementById("btnClear").addEventListener("click", () => {
-      document.getElementById("wordInput").value = "";
-      document.getElementById("output").innerHTML = "";
-      document.getElementById("helper").textContent = "";
-      updateScore(-score);
-    });
+    document.getElementById("btnClear").addEventListener("click", () => { document.getElementById("wordInput").value = ""; document.getElementById("output").innerHTML = ""; document.getElementById("helper").textContent = ""; updateScore(-score); });
     document.getElementById("wordInput").addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") generateSentences(); });
   </script>
 </body>

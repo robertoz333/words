@@ -15,8 +15,6 @@
       --brand-dark: #d1478e;
       --title: #ff6347;
       --title-shadow: #ffb6c1;
-      --section-bg: #fffacd;
-      --section-border: #ffa500;
       --accent: #ff4500;
       --ok: #2e8b57;
       --no: #dc143c;
@@ -84,12 +82,18 @@
     #output { margin-top: 22px; text-align: left; }
 
     .word-section {
-      background-color: var(--section-bg);
       padding: 20px;
       border-radius: 15px;
       margin-bottom: 18px;
-      border-left: 10px solid var(--section-border);
     }
+
+    /* Dynamic background and border colors for word sections */
+    .bg-1 { background-color: #B3E5FC; border-left: 10px solid #039BE5; }
+    .bg-2 { background-color: #FFF9C4; border-left: 10px solid #FFD54F; }
+    .bg-3 { background-color: #FFECB3; border-left: 10px solid #FFB74D; }
+    .bg-4 { background-color: #C8E6C9; border-left: 10px solid #66BB6A; }
+    .bg-5 { background-color: #F8BBD0; border-left: 10px solid #F06292; }
+    .bg-6 { background-color: #E1BEE7; border-left: 10px solid #9575CD; }
 
     .word-title { font-size: 1.6em; color: var(--accent); font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;}
     .word-meta { font-size: .9em; color: #777; }
@@ -271,12 +275,12 @@
 <body>
   <div id="container">
     <h1>🌟 Spelling Game 🌟</h1>
-    <p>Enter up to <strong>10 words</strong> (one per line). For each word, <strong>10 sentences</strong> will be generated with a blank space for you to fill in.</p>
+    <p>Enter up to <strong>10 words</strong> (one per line). For each word, <strong>10 sentences</strong> will be generated with a blank space for you to complete.</p>
 
-    <textarea id="wordInput" rows="10" placeholder="Type your words here... for example:\nsun\nsea\nschool\nbook\ncar\ndog\ncat\ntree\nflowers\nhouse"></textarea>
+    <textarea id="wordInput" rows="10" placeholder="Write your words here... for example:\nsun\nsea\nschool\nbook\ncar\ndog\ncat\ntree\nflowers\nhouse"></textarea>
 
     <div class="controls">
-      <button id="btnGenerate">Create Sentences!</button>
+      <button id="btnGenerate">Generate Sentences!</button>
       <button class="secondary" id="btnClear">Clear</button>
     </div>
 
@@ -290,7 +294,7 @@
     <div class="modal-content">
       <h2 id="modalTitle">Verification</h2>
       <p id="modalSentence"></p>
-      <input type="text" id="modalInput" class="modal-input" placeholder="Type the word here..." autocomplete="off">
+      <input type="text" id="modalInput" class="modal-input" placeholder="Write the word here..." autocomplete="off">
       <br>
       <button id="modalVerifyBtn">Verify</button>
       <button id="modalSkipBtn" class="secondary">Skip</button>
@@ -321,6 +325,7 @@
     const messageOkBtn = document.getElementById("messageOkBtn");
     
     let currentWordToVerify = '';
+    const backgroundColors = ['bg-1', 'bg-2', 'bg-3', 'bg-4', 'bg-5', 'bg-6'];
 
     function showMessage(title, text) {
       messageTitle.textContent = title;
@@ -394,14 +399,14 @@
       
       if (userInput === correctWord) {
           updateScore(1);
-          showMessage("Correct!", `Great! The word is "${correctWord}".`);
+          showMessage("Correct!", `Great! The word is "${correctWord}". You earned 1 point!`);
           const section = document.querySelector(`.word-section[data-word="${currentWordToVerify}"]`);
           if (section) {
             section.querySelector('.word-title').style.color = 'var(--ok)';
           }
           hideModal();
       } else {
-          showMessage("Try again!", `That's not quite right. Keep practicing!`);
+          showMessage("Try Again!", `That's not quite right. Keep practicing!`);
       }
     }
     
@@ -429,7 +434,7 @@
         utterance.lang = 'en-US'; // Set language to English
         window.speechSynthesis.speak(utterance);
       } else {
-        showMessage("Web Speech API not supported", "The Web Speech API is not supported in this browser. Please try Chrome or Firefox.");
+        showMessage("Speech API Not Supported", "The Web Speech API is not supported in this browser. Try Chrome or Firefox.");
       }
     }
     
@@ -441,6 +446,7 @@
 
       if (hintIndex < word.length) {
           updateScore(-1);
+          showMessage("Hint Used!", "You lost 1 point for using a hint. Keep going!");
           
           const hintedPart = word.substring(0, hintIndex + 1);
           const remainingPart = "_".repeat(word.length - (hintIndex + 1));
@@ -452,7 +458,7 @@
 
       if (hintIndex === word.length) {
           buttonElement.disabled = true;
-          buttonElement.textContent = "Hinted";
+          buttonElement.textContent = "Hint Given";
           buttonElement.style.opacity = 0.5;
       }
     }
@@ -653,10 +659,12 @@
       return sentenceP;
     }
 
-    function renderWordSection(word, sentences) {
+    function renderWordSection(word, sentences, colorClass) {
       const section = document.createElement("div");
       section.className = "word-section";
       section.dataset.word = word;
+      
+      section.classList.add(colorClass);
 
       const title = document.createElement("div");
       title.className = "word-title";
@@ -710,6 +718,15 @@
       return section;
     }
 
+    // Fisher-Yates shuffle algorithm
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
     function generateSentences() {
       const raw = document.getElementById("wordInput").value.trim();
       const outputDiv = document.getElementById("output");
@@ -740,11 +757,14 @@
       }
 
       helper.textContent = `Words used: ${words.length}/${MAX_WORDS}`;
+      
+      const shuffledColors = shuffleArray([...backgroundColors]);
 
-      words.forEach((word) => {
+      words.forEach((word, index) => {
         const key = word.toLowerCase();
         const sentences = wordSentenceMap[key] || generateDefaultSentences(key);
-        const section = renderWordSection(word, sentences);
+        const colorClass = shuffledColors[index % shuffledColors.length];
+        const section = renderWordSection(word, sentences, colorClass);
         outputDiv.appendChild(section);
       });
     }

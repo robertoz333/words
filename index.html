@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Spelling & Activity Game</title>
+  <title>Spelling & Riddle Game</title>
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap");
     :root {
@@ -36,7 +36,7 @@
     .draw-button { background-color: var(--draw); box-shadow: 0 2px var(--draw-dark); } .draw-button:active { transform: translateY(1px); box-shadow: 0 1px var(--draw-dark); }
     .mime-button { background-color: var(--mime); box-shadow: 0 2px var(--mime-dark); } .mime-button:active { transform: translateY(1px); box-shadow: 0 1px var(--mime-dark); }
     .hint-display { font-size: 1em; font-weight: normal; margin-left: 10px; color: #888; letter-spacing: 2px; align-self: center; }
-    .sentence { font-size: 1.15em; margin-bottom: 12px; line-height: 2.1; }
+    .sentence { font-size: 1.15em; margin-bottom: 12px; line-height: 2.1; font-style: italic; color: #555;}
     .sentence-input { border: none; border-bottom: 3px dashed #aaa; font-family: "Fredoka One", cursive; font-size: 1em; text-align: center; background-color: transparent; min-width: 90px; padding: 2px 4px; }
     .sentence-input:focus { outline: none; border-bottom: 3px solid var(--accent); }
     .correct { color: var(--ok); border-bottom-color: var(--ok) !important; font-weight: bold; }
@@ -62,21 +62,20 @@
 </head>
 <body>
   <div id="container">
-    <h1>🌟 Spelling & Activity Game 🌟</h1>
-    <p>First, fill in the blanks. After you check your word, you can <strong>unlock fun activities</strong> like drawing and miming!</p>
+    <h1>🌟 Spelling & Riddle Game 🌟</h1>
+    <p>First, solve the riddle to guess the word, then fill in the blanks!</p>
     <textarea id="wordInput" rows="10" placeholder="Write your words here... for example:
-run
-happy
+moon
 sun
-sea
-school
-book
-car
 dog
 cat
-tree"></textarea>
+book
+car
+tree
+happy
+run"></textarea>
     <div class="controls">
-      <button id="btnGenerate">Generate Sentences!</button>
+      <button id="btnGenerate">Generate Riddles!</button>
       <button class="secondary" id="btnClear">Clear</button>
     </div>
     <div id="helper" class="helper"></div>
@@ -104,11 +103,10 @@ tree"></textarea>
       const userInput = inputElement.value.trim().toLowerCase(), correctWord = inputElement.dataset.correct.toLowerCase();
       inputElement.classList.remove("correct", "incorrect");
       if (userInput) inputElement.classList.add(userInput === correctWord ? "correct" : "incorrect");
-      const section = inputElement.closest('.word-section');
-      const allInputs = section.querySelectorAll('.sentence-input');
+      const section = inputElement.closest('.word-section'), allInputs = section.querySelectorAll('.sentence-input');
       let completedCount = 0;
       allInputs.forEach(input => { if (input.classList.contains('correct')) completedCount++; });
-      section.querySelector('.progress-count').textContent = `(${completedCount}/10)`;
+      section.querySelector('.progress-count').textContent = `(${completedCount}/${allInputs.length})`;
     }
 
     async function playSuccessJingle() {
@@ -120,8 +118,9 @@ tree"></textarea>
     }
 
     function showVerificationModal(word) {
-      const sentences = wordSentenceMap[word.toLowerCase()] || generateContextualSentences(word.toLowerCase());
-      modalSentence.textContent = sentences[Math.floor(Math.random() * sentences.length)].replace(new RegExp(escapeRegex(word), 'gi'), '....');
+      const sentences = generateContextualSentences(word);
+      const randomSentence = sentences[Math.floor(Math.random() * sentences.length)];
+      modalSentence.textContent = randomSentence.replace(new RegExp(escapeRegex(word), 'gi'), '....');
       modalInput.value = ''; modalInput.dataset.correct = word; currentWordToVerify = word;
       verificationModal.style.display = 'block'; modalInput.focus();
     }
@@ -133,7 +132,6 @@ tree"></textarea>
         const section = document.querySelector(`.word-section[data-word="${currentWordToVerify}"]`);
         if (section) {
             section.querySelector('.word-title').style.color = 'var(--ok)';
-            // Enable buttons
             section.querySelector('.mime-button').disabled = false;
             section.querySelector('.draw-button').disabled = false;
         }
@@ -188,13 +186,8 @@ tree"></textarea>
       }
       if (hintIndex === word.length) { buttonElement.disabled = true; buttonElement.textContent = "Hint Given"; buttonElement.style.opacity = 0.5; }
     }
-    const wordSentenceMap = { sun: ["The .... is a giant star that gives us light and heat.", "Without the ...., plants couldn't grow.", "The .... rises in the east.", "On a clear day, you can feel the warmth of the ....", "A sunflower turns to follow the ...."], moon: ["The .... lights up the night sky.", "Neil Armstrong was the first person to walk on the .....", "A full .... is big and round.", "The .... has craters on its surface.", "Wolves in stories howl at the ...."], dog: ["A .... is often called 'man's best friend'.", "You might take your pet .... for a walk.", "A .... wags its tail when it's happy.", "A puppy is a baby .....", "A .... likes to fetch a ball."], cat: ["A .... purrs when it is happy.", "A kitten is a baby ....", "A .... has sharp claws and soft fur.", "A .... often likes to sleep in a warm spot.", "A .... says 'meow'."], sea: ["The .... is a large body of salt water.", "You build sandcastles on the beach next to the ....", "Boats and ships sail on the ....", "Fish and whales live in the ....", "The waves of the .... make a relaxing sound."], school: [".... is where children go to learn.", "Your teacher helps you read and write at ....", "You play with your friends in the playground at ....", "A classroom is a room in a ....", "You carry your books to ...."], book: ["You read a .... for stories and ideas.", "A library is a place full of ....", "Each .... has a cover and pages.", "You turn the page of a .... to continue.", "A story.... might have pictures."], car: ["A .... has four wheels and drives on the road.", "You must wear a seatbelt in a ....", "A .... needs petrol or electricity to go.", "Traffic lights tell a .... when to stop.", "A garage is where you park a ...."], tree: ["A .... has a trunk, branches, and leaves.", "Birds build nests in a ....", "In autumn, the leaves of a .... change colour.", "A forest is a place with many ....", "An apple .... grows apples."], flowers: [".... are colourful plants in a garden.", "Bees visit .... to collect nectar.", "You can put a bunch of .... in a vase.", "Roses and daisies are types of ....", "Many .... have a lovely smell."], house: ["A .... is a building where a family lives.", "Your .... has a roof to keep the rain out.", "A .... has rooms like a kitchen and bedroom.", "The front door of a .... has a number.", "You sleep in your bed in your ...."] };
-    const SENSES = { bat: [{clue:"An animal that flies at night is a ...."}, {clue:"To hit a baseball, you use a ...."}], seal: [{clue:"An animal that barks and swims is a ...."}, {clue:"To close a letter, you .... the envelope."}], bank: [{clue:"A place that keeps money safe is a ...."}, {clue:"The side of a river is called a river ...."}] };
-    function getArticle(w) { return /^[aeiou]/i.test(w) ? "an" : "a"; }
-    function syllableHint(w) { const n = (w.match(/[aeiouy]+/g)?.length||1); return `${n} syllable${n>1?"s":""}`; }
-    function simpleRhyme(w) { return ({sun:"run",moon:"spoon",star:"car",dog:"log",cat:"hat",bird:"word",red:"bed",blue:"shoe",apple:"dapple",bread:"head",tree:"see",car:"star"})[w.toLowerCase()] || null; }
-    function isVerb(w) { const wl = w.toLowerCase(); return (wl.length>3 && (wl.endsWith("ing")||wl.endsWith("ed"))) || ["run","jump","eat","sleep","read","write","sing","dance"].includes(wl); }
-    function isPlural(w) { return w.length>2 && w.endsWith("s") && !w.endsWith("ss"); }
+    
+    const riddleMap = { sun: "I am a giant star. I give you light and heat. What am I?", moon: "I appear at night. Sometimes I'm a full circle, sometimes just a slice. What am I?", dog: "I am a loyal friend. I wag my tail and bark. What am I?", cat: "I am a pet with soft fur. I like to chase mice and I say 'meow'. What am I?", book: "I have pages and a cover. I take you on adventures. What am I?", car: "I have four wheels and an engine and drive on roads. What am I?", tree: "I have a trunk and branches, and my leaves fall in autumn. What am I?", happy: "This feeling is the opposite of sad. It makes you smile. What is it?", run: "This is an action faster than walking. What is it?", sea: "I am a huge body of salt water with waves. What am I?", school: "I am a place with classrooms where children learn. What am I?" };
 
     function ensureUnique(arr) {
         const seen = new Set();
@@ -205,42 +198,56 @@ tree"></textarea>
     }
 
     function generateContextualSentences(word) {
-        const w = word.toLowerCase(), info = { w, article: getArticle(w), first: w[0]?.toUpperCase()||"", syllables: syllableHint(w), rhyme: simpleRhyme(w), senses: SENSES[w] || null, plural: isPlural(w), verb: isVerb(w) };
-        let patterns = [
-            {c:()=>true, g:i=>`The word .... starts with the letter ${i.first}.`},
-            {c:()=>true, g:i=>`The word .... has ${i.syllables}.`},
-            {c:i=>i.rhyme, g:i=>`The word .... rhymes with "${i.rhyme}".`},
-            {c:i=>!i.plural, g:i=>`${i.article.toUpperCase()} .... is a type of thing.`},
-            {c:i=>i.plural, g:i=>`.... are things you can count.`},
-            {c:i=>i.senses, g:i=>i.senses[0].clue},
-            {c:i=>i.senses&&i.senses.length>1, g:i=>i.senses[1].clue},
-            {c:i=>i.verb, g:i=>`To .... is an action word.`},
-            {c:i=>i.w==="big", g:()=>`The opposite of small is ....`},
-            {c:i=>i.w==="small", g:()=>`The opposite of big is ....`},
-            {c:()=>true, g:()=>`Can you spell the word ....?`},
-            {c:()=>true, g:()=>`Write the word .... in the space.`},
-            {c:()=>true, g:()=>`What does the word .... mean?`},
-            {c:()=>true, g:()=>`Try to use .... in a new sentence.`},
-            {c:()=>true, g:()=>`Listen carefully to the sounds in ....`},
-        ];
-        let candidates = patterns.filter(p=>p.c(info)).map(p=>p.g(info));
-        let unique = ensureUnique(candidates);
-        let shuffled = [...unique].sort(() => 0.5 - Math.random());
+        const w = word.toLowerCase();
+        let sentences = [];
+        
+        if (riddleMap[w]) {
+            sentences.push(riddleMap[w].replace("What am I?", "What am I? The ...."));
+        } else {
+            sentences.push(`I start with '${w[0]}' and have ${(w.match(/[aeiouy]+/g)?.length||1)} syllable(s). What am I? The ....`);
+        }
+        
+        sentences.push(`The word .... starts with the letter ${w[0].toUpperCase()}.`);
+        sentences.push(`Listen to the sounds to spell the ....`);
+        sentences.push(`Write the word .... in the blank space.`);
+        sentences.push(`Can you think of the word ....?`);
+        
+        const SENSES = { bat: [{clue:"An animal that flies is a ...."}, {clue:"You use a .... to hit a ball."}], bank: [{clue:"You keep money in a ...."}, {clue:"A river .... is made of soil."}] };
+        if(SENSES[w]) { sentences.push(...SENSES[w].map(s=>s.clue)); }
+        
+        let uniqueSentences = ensureUnique(sentences);
+        let shuffled = [...uniqueSentences].sort(() => 0.5 - Math.random());
+        
+        const riddle = shuffled.find(s => s.includes("What am I?"));
+        if (riddle) {
+            shuffled = shuffled.filter(s => s !== riddle);
+            shuffled.unshift(riddle);
+        }
+
+        while (shuffled.length < 10) {
+            const fallbacks = ["Try your best to spell it.", "Think hard, you can do it!", "What could the word be?", "Another clue for the word ....", "Spell it out loud.", "Sound it out: ...."];
+            let newFallback = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+            if (!shuffled.some(s => s.includes(newFallback.substring(0,10)))) {
+                 shuffled.push(newFallback);
+            }
+            shuffled = ensureUnique(shuffled); // re-check to avoid adding duplicates in the loop
+        }
+
         return shuffled.slice(0, 10);
     }
 
     function buildSentenceNodes(sentence, lowerCaseWord) {
         const p = document.createElement("p"); p.className = "sentence";
-        const regex = new RegExp(`(\\b${escapeRegex(lowerCaseWord)}\\b|\\.{3,})`, "gi");
-        sentence.split(regex).forEach((part, i) => {
-            if (i % 2 === 1 && (part.toLowerCase() === lowerCaseWord || part.startsWith("..."))) {
+        const placeholder = "....";
+        const parts = sentence.split(placeholder);
+        parts.forEach((part, i) => {
+            p.appendChild(document.createTextNode(part));
+            if (i < parts.length - 1) {
                 const input = document.createElement("input");
                 input.type = "text"; input.className = "sentence-input"; input.dataset.correct = lowerCaseWord;
                 input.oninput = () => checkWord(input); input.autocomplete = "off";
                 input.style.width = `${Math.max(90, lowerCaseWord.length * 18 + 20)}px`;
                 p.appendChild(input);
-            } else {
-                p.appendChild(document.createTextNode(part));
             }
         });
         return p;
@@ -248,7 +255,7 @@ tree"></textarea>
     function renderWordSection(word, sentences, colorClass) {
         const section = document.createElement("div"); section.className = "word-section " + colorClass; section.dataset.word = word;
         const header = document.createElement('div'); header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px;';
-        const title = document.createElement("div"); title.className = "word-title"; title.textContent = `💡 Fill in the blanks!`; header.appendChild(title);
+        const title = document.createElement("div"); title.className = "word-title"; title.textContent = `🤔 Solve the Riddle!`; header.appendChild(title);
         const topButtonGroup = document.createElement("div"); topButtonGroup.className = "button-group";
         const listenBtn=document.createElement("button"); listenBtn.textContent="Listen"; listenBtn.className="action-button listen-button"; listenBtn.dataset.word=word; listenBtn.onclick=()=>speakWord(listenBtn); topButtonGroup.appendChild(listenBtn);
         const hintBtn=document.createElement("button"); hintBtn.textContent="Hint"; hintBtn.className="action-button hint-button"; hintBtn.dataset.word=word; hintBtn.dataset.hintIndex="0"; hintBtn.onclick=()=>giveHint(hintBtn); topButtonGroup.appendChild(hintBtn);
@@ -273,7 +280,7 @@ tree"></textarea>
       document.getElementById("helper").textContent = `Words used: ${words.length}/${MAX_WORDS}`;
       const shuffledColors = [...backgroundColors].sort(()=>0.5-Math.random());
       words.forEach((word, index) => {
-        const sentences = wordSentenceMap[word] || generateContextualSentences(word);
+        const sentences = generateContextualSentences(word);
         outputDiv.appendChild(renderWordSection(word, sentences, shuffledColors[index % shuffledColors.length]));
       });
     }

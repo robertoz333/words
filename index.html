@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Spelling Game</title>
   <style>
-    /* Import a playful font */
     @import url("https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap");
     :root {
       --bg: #f0f8ff;
@@ -75,7 +74,6 @@
       border-radius: 15px;
       margin-bottom: 18px;
     }
-    /* Dynamic background and border colors for word sections */
     .bg-1 { background-color: #B3E5FC; border-left: 10px solid #039BE5; }
     .bg-2 { background-color: #FFF9C4; border-left: 10px solid #FFD54F; }
     .bg-3 { background-color: #FFECB3; border-left: 10px solid #FFB74D; }
@@ -84,7 +82,6 @@
     .bg-6 { background-color: #E1BEE7; border-left: 10px solid #9575CD; }
     .word-title { font-size: 1.6em; color: var(--accent); font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;}
     .word-meta { font-size: .9em; color: #777; }
-    
     .button-group { display: flex; gap: 8px; }
     .listen-button {
       background-color: #5cb85c;
@@ -97,10 +94,7 @@
       box-shadow: 0 2px #449d44;
       font-family: "Fredoka One", cursive;
     }
-    .listen-button:active {
-      transform: translateY(1px);
-      box-shadow: 0 1px #449d44;
-    }
+    .listen-button:active { transform: translateY(1px); box-shadow: 0 1px #449d44; }
     .hint-button {
       background-color: #f0ad4e;
       color: white;
@@ -112,16 +106,13 @@
       box-shadow: 0 2px #ec971f;
       font-family: "Fredoka One", cursive;
     }
-    .hint-button:active {
-      transform: translateY(1px);
-      box-shadow: 0 1px #ec971f;
-    }
+    .hint-button:active { transform: translateY(1px); box-shadow: 0 1px #ec971f; }
     .hint-display {
-        font-size: 1em;
-        font-weight: normal;
-        margin-left: 10px;
-        color: #888;
-        letter-spacing: 2px;
+      font-size: 1em;
+      font-weight: normal;
+      margin-left: 10px;
+      color: #888;
+      letter-spacing: 2px;
     }
     .sentence { font-size: 1.15em; margin-bottom: 12px; line-height: 2.1; }
     .sentence-input {
@@ -137,7 +128,6 @@
     .sentence-input:focus { outline: none; border-bottom: 3px solid var(--accent); }
     .correct { color: var(--ok); border-bottom-color: var(--ok) !important; font-weight: bold; }
     .incorrect { color: var(--no); border-bottom-color: var(--no) !important; }
-    
     .verify-button {
       background-color: #26a69a;
       color: white;
@@ -150,107 +140,55 @@
       font-family: "Fredoka One", cursive;
       margin-top: 10px;
     }
-    .verify-button:active {
-      transform: translateY(2px);
-      box-shadow: 0 2px #00897b;
-    }
+    .verify-button:active { transform: translateY(2px); box-shadow: 0 2px #00897b; }
     .helper { margin-top: 8px; font-size: .95em; color: #666; text-align: center; }
-    
-    /* Modal styles */
+
     .modal {
-        display: none;
-        position: fixed;
-        z-index: 10;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0,0,0,0.95);
-        padding-top: 60px;
+      display: none; position: fixed; z-index: 10; left: 0; top: 0;
+      width: 100%; height: 100%; overflow: auto;
+      background-color: rgba(0,0,0,0.95); padding-top: 60px;
     }
     .modal-content {
-        background-color: #fefefe;
-        margin: 5% auto;
-        padding: 30px;
-        border: 5px solid var(--brand);
-        width: 80%;
-        max-width: 500px;
-        border-radius: 20px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        animation: fadeIn 0.5s;
+      background-color: #fefefe; margin: 5% auto; padding: 30px;
+      border: 5px solid var(--brand); width: 80%; max-width: 500px;
+      border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      animation: fadeIn 0.5s;
     }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; transform: scale(0.9); }
-        to { opacity: 1; transform: scale(1); }
-    }
-    .modal-content h2 {
-        color: var(--brand);
-        font-size: 2em;
-        margin-bottom: 10px;
-    }
-    .modal-content p {
-        font-size: 1.2em;
-        line-height: 1.4;
-        margin-bottom: 20px;
-    }
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    .modal-content h2 { color: var(--brand); font-size: 2em; margin-bottom: 10px; }
+    .modal-content p { font-size: 1.2em; line-height: 1.4; margin-bottom: 20px; }
     .modal-input {
-        width: 80%;
-        padding: 10px;
-        font-size: 1.2em;
-        text-align: center;
-        border: 2px solid #ccc;
-        border-radius: 10px;
-        font-family: "Fredoka One", cursive;
-        margin-bottom: 10px;
+      width: 80%; padding: 10px; font-size: 1.2em; text-align: center;
+      border: 2px solid #ccc; border-radius: 10px; font-family: "Fredoka One", cursive; margin-bottom: 10px;
     }
-    .modal-input:focus {
-      outline: none;
-      border-color: var(--brand);
-    }
-    
-    .show-message {
-      display: block !important;
-    }
+    .modal-input:focus { outline: none; border-color: var(--brand); }
+
+    .show-message { display: block !important; }
     .message-box {
-      background-color: white;
-      border: 3px solid #ffa500;
-      border-radius: 15px;
-      padding: 20px;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 10;
-      display: none;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      background-color: white; border: 3px solid #ffa500; border-radius: 15px; padding: 20px;
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      z-index: 10; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
-    .message-box h3 {
-      color: #ff4500;
-      font-size: 1.5em;
-      margin-bottom: 10px;
-    }
-    .message-box p {
-      color: #555;
-      font-size: 1.1em;
-      margin-bottom: 15px;
-    }
-    .message-box button {
-      background-color: var(--brand);
-      color: white;
-      border: none;
-      border-radius: 50px;
-      padding: 10px 20px;
-      cursor: pointer;
-    }
+    .message-box h3 { color: #ff4500; font-size: 1.5em; margin-bottom: 10px; }
+    .message-box p { color: #555; font-size: 1.1em; margin-bottom: 15px; }
+    .message-box button { background-color: var(--brand); color: white; border: none; border-radius: 50px; padding: 10px 20px; cursor: pointer; }
   </style>
 </head>
 <body>
   <div id="container">
     <h1>🌟 Spelling Game 🌟</h1>
     <p>Enter up to <strong>10 words</strong> (one per line). For each word, <strong>10 sentences</strong> will be generated with a blank space for you to complete.</p>
-    <textarea id="wordInput" rows="10" placeholder="Write your words here... for example:\nsun\nsea\nschool\nbook\ncar\ndog\ncat\ntree\nflowers\nhouse"></textarea>
+    <textarea id="wordInput" rows="10" placeholder="Write your words here... for example:
+sun
+sea
+school
+book
+car
+dog
+cat
+tree
+flowers
+house"></textarea>
     <div class="controls">
       <button id="btnGenerate">Generate Sentences!</button>
       <button class="secondary" id="btnClear">Clear</button>
@@ -259,7 +197,7 @@
     <div id="scoreDisplay">Score: 0</div>
     <div id="output"></div>
   </div>
-  <!-- Verification Modal -->
+
   <div id="verificationModal" class="modal">
     <div class="modal-content">
       <h2 id="modalTitle">Verification</h2>
@@ -270,111 +208,98 @@
       <button id="modalSkipBtn" class="secondary">Skip</button>
     </div>
   </div>
-  <!-- Custom Message Box -->
+
   <div id="messageBox" class="message-box">
     <h3 id="messageTitle"></h3>
     <p id="messageText"></p>
     <button id="messageOkBtn">OK</button>
   </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
   <script>
     const MAX_WORDS = 10;
     let score = 0;
     const scoreDisplay = document.getElementById("scoreDisplay");
-    
+
     const verificationModal = document.getElementById("verificationModal");
     const modalSentence = document.getElementById("modalSentence");
     const modalInput = document.getElementById("modalInput");
     const modalVerifyBtn = document.getElementById("modalVerifyBtn");
     const modalSkipBtn = document.getElementById("modalSkipBtn");
-    
+
     const messageBox = document.getElementById("messageBox");
     const messageTitle = document.getElementById("messageTitle");
     const messageText = document.getElementById("messageText");
     const messageOkBtn = document.getElementById("messageOkBtn");
-    
+
     let currentWordToVerify = '';
     const backgroundColors = ['bg-1', 'bg-2', 'bg-3', 'bg-4', 'bg-5', 'bg-6'];
     let verifiedWordCount = 0;
     let totalWords = 0;
-    
+
     function showMessage(title, text) {
       messageTitle.textContent = title;
       messageText.textContent = text;
       messageBox.classList.add('show-message');
     }
-    
-    messageOkBtn.addEventListener('click', () => {
-      messageBox.classList.remove('show-message');
-    });
-    
+    messageOkBtn.addEventListener('click', () => messageBox.classList.remove('show-message'));
+
     function updateScore(delta) {
       score += delta;
       scoreDisplay.textContent = `Score: ${score}`;
     }
-    
+
     function escapeRegex(s) {
-      return s.replace(/[\-\/\^$*+?.()|[\]{}]/g, "\\$&");
+      return s.replace(/[-\/^$*+?.()|[\]{}]/g, "\\$&");
     }
-    
+
     function checkWord(inputElement) {
       const userInput = inputElement.value.trim().toLowerCase();
       const correctWord = inputElement.dataset.correct.toLowerCase();
-      
+
       inputElement.classList.remove("correct", "incorrect");
-      
-      if (!userInput) {
-        return;
-      }
-      
+      if (!userInput) return;
+
       if (userInput === correctWord) {
         inputElement.classList.add("correct");
       } else {
         inputElement.classList.add("incorrect");
       }
-      
+
       const section = inputElement.closest('.word-section');
       const allInputs = section.querySelectorAll('.sentence-input');
       let completedCount = 0;
       allInputs.forEach(input => {
-        if (input.classList.contains('correct')) {
-          completedCount++;
-        }
+        if (input.classList.contains('correct')) { completedCount++; }
       });
       const progressSpan = section.querySelector('.progress-count');
-      if (progressSpan) {
-        progressSpan.textContent = `(${completedCount}/10)`;
-      }
+      if (progressSpan) { progressSpan.textContent = `(${completedCount}/10)`; }
     }
-    
+
     async function playSuccessJingle() {
       const synth = new Tone.Synth({
         oscillator: { type: "sawtooth" },
         envelope: { attack: 0.05, decay: 0.5, sustain: 0.2, release: 0.8 },
       }).toDestination();
-      
+
       const notes = ["C4", "G3", "C4", "C4", "B3", "A3", "G3", "F#3", "G3", "A3", "B3", "C4"];
       const times = ["0", "0.5", "1", "1.5", "2.0", "2.5", "3.0", "3.5", "4.0", "4.5", "5.0", "5.5"];
-      
+
       const part = new Tone.Part((time, note) => {
         synth.triggerAttackRelease(note, "0.4", time);
       }, notes.map((note, index) => [times[index], note])).start(0);
-      
-      if (Tone.context.state !== 'running') {
-        await Tone.start();
-      }
+
+      if (Tone.context.state !== 'running') { await Tone.start(); }
       Tone.Transport.start();
-      Tone.Transport.scheduleOnce(() => {
-        Tone.Transport.stop();
-      }, "6");
+      Tone.Transport.scheduleOnce(() => { Tone.Transport.stop(); }, "6");
     }
-    
+
     function showVerificationModal(word) {
-      const sentences = wordSentenceMap[word.toLowerCase()] || generateDefaultSentences(word.toLowerCase());
+      const sentences = wordSentenceMap[word.toLowerCase()] || generateContextualSentences(word.toLowerCase());
       const randomIndex = Math.floor(Math.random() * sentences.length);
       const sentence = sentences[randomIndex];
       const displaySentence = sentence.replace(new RegExp(escapeRegex(word), 'gi'), '....');
-      
+
       modalSentence.textContent = displaySentence;
       modalInput.value = '';
       modalInput.dataset.correct = word;
@@ -382,370 +307,289 @@
       verificationModal.style.display = 'block';
       modalInput.focus();
     }
-    
+
     function verifyWord() {
       const userInput = modalInput.value.trim().toLowerCase();
       const correctWord = modalInput.dataset.correct.toLowerCase();
-      
+
       if (userInput === correctWord) {
-          updateScore(1);
-          showMessage("Correct!", `Great! The word is "${correctWord}". You earned 1 point!`);
-          const section = document.querySelector(`.word-section[data-word="${currentWordToVerify}"]`);
-          if (section) {
-            section.querySelector('.word-title').style.color = 'var(--ok)';
+        updateScore(1);
+        showMessage("Correct!", `Great! The word is "${correctWord}". You earned 1 point!`);
+        const section = document.querySelector(`.word-section[data-word="${currentWordToVerify}"]`);
+        if (section) { section.querySelector('.word-title').style.color = 'var(--ok)'; }
+        verifiedWordCount++;
+        if (verifiedWordCount >= totalWords) {
+          if (score === totalWords) {
+            showMessage("Perfect Score!", "Congratulations! You spelled all words correctly and earned a perfect score!");
+            playSuccessJingle();
+          } else {
+            showMessage("Game Over!", "You have completed all the words. Try again to get a perfect score!");
           }
-          verifiedWordCount++;
-          if (verifiedWordCount >= totalWords) {
-            if (score === totalWords) {
-              showMessage("Perfect Score!", "Congratulations! You spelled all words correctly and earned a perfect score!");
-              playSuccessJingle();
-            } else {
-              showMessage("Game Over!", "You have completed all the words. Try again to get a perfect score!");
-            }
-          }
-          hideModal();
+        }
+        hideModal();
       } else {
-          showMessage("Try Again!", `That's not quite right. Keep practicing!`);
+        showMessage("Try Again!", `That's not quite right. Keep practicing!`);
       }
     }
-    
+
     function hideModal() {
       verificationModal.style.display = 'none';
       currentWordToVerify = '';
     }
-    
+
     modalVerifyBtn.addEventListener('click', verifyWord);
-    modalInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            verifyWord();
-        }
-    });
-    modalSkipBtn.addEventListener('click', () => {
-        hideModal();
-    });
-    
+    modalInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') verifyWord(); });
+    modalSkipBtn.addEventListener('click', () => hideModal());
+
+    // Prefer British English voice (en-GB). Fallback to lang only.
+    function chooseBritishVoice() {
+      const list = window.speechSynthesis.getVoices() || [];
+      return list.find(v => /en-GB/i.test(v.lang) && /female/i.test(v.name)) ||
+             list.find(v => /en-GB/i.test(v.lang)) ||
+             list.find(v => /UK|British/i.test(v.name)) ||
+             list.find(v => /^en[-_]/i.test(v.lang));
+    }
+
     function speakWord(buttonElement) {
-      if ('speechSynthesis' in window) {
-        const word = buttonElement.dataset.word;
-        const utterance = new SpeechSynthesisUtterance(word);
-        utterance.lang = 'en-US';
-        window.speechSynthesis.speak(utterance);
-      } else {
+      if (!('speechSynthesis' in window)) {
         showMessage("Speech API Not Supported", "The Web Speech API is not supported in this browser. Try Chrome or Firefox.");
+        return;
+      }
+      const word = buttonElement.dataset.word;
+      const utterance = new SpeechSynthesisUtterance(word);
+      
+      const setVoiceAndSpeak = () => {
+        const voice = chooseBritishVoice();
+        if (voice) {
+          utterance.voice = voice;
+          utterance.lang = voice.lang; 
+        } else {
+          utterance.lang = 'en-GB';
+        }
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+      };
+
+      if ((window.speechSynthesis.getVoices() || []).length === 0) {
+        window.speechSynthesis.onvoiceschanged = setVoiceAndSpeak;
+      } else {
+        setVoiceAndSpeak();
       }
     }
-    
+
     function giveHint(buttonElement) {
       const word = buttonElement.dataset.word;
       const hintDisplay = buttonElement.nextElementSibling;
       let hintIndex = parseInt(buttonElement.dataset.hintIndex, 10);
       if (hintIndex < word.length) {
-          updateScore(-1);
-          showMessage("Hint Used!", "You lost 1 point for using a hint. Keep going!");
-          
-          const hintedPart = word.substring(0, hintIndex + 1);
-          const remainingPart = "_".repeat(word.length - (hintIndex + 1));
-          hintDisplay.textContent = `${hintedPart}${remainingPart}`;
-          hintIndex++;
-          buttonElement.dataset.hintIndex = hintIndex;
+        updateScore(-1);
+        showMessage("Hint Used!", "You lost 1 point for using a hint. Keep going!");
+        const hintedPart = word.substring(0, hintIndex + 1);
+        const remainingPart = "_".repeat(word.length - (hintIndex + 1));
+        hintDisplay.textContent = `${hintedPart}${remainingPart}`;
+        hintIndex++;
+        buttonElement.dataset.hintIndex = hintIndex;
       }
       if (hintIndex === word.length) {
-          buttonElement.disabled = true;
-          buttonElement.textContent = "Hint Given";
-          buttonElement.style.opacity = 0.5;
+        buttonElement.disabled = true;
+        buttonElement.textContent = "Hint Given";
+        buttonElement.style.opacity = 0.5;
       }
     }
-    
+
+    // ——————————————————————————————————————————————
+    // TIER 1: BANCA FRASI SPECIFICHE (MASSIMA PERTINENZA)
+    // ——————————————————————————————————————————————
     const wordSentenceMap = {
       sun: [
-        "The bright star that gives us light and warmth during the day.",
-        "The .... rises in the morning and sets in the evening.",
-        "Plants need the light from the .... to grow.",
-        "On a clear day, the .... shines brightly in the sky.",
-        "We wear ....glasses to protect our eyes.",
-        "The surface of the .... is very hot.",
-        "A sunflower is a plant that turns to face the .....",
-        "Without the ...., our planet would be a cold, dark place.",
-        "You can get a sunburn if you stay in the .... for too long.",
-        "The moon reflects the light of the .....",
+        "The .... is a giant star that gives us light and heat every day.",
+        "Without the ...., plants couldn't make their own food.",
+        "The .... rises in the east and sets in the west.",
+        "On a clear day, you can feel the warmth of the .... on your skin.",
+        "A sunflower turns its head to follow the .... across the sky.",
       ],
-      sea: [
-        "It is a very large body of salt water.",
-        "I love to swim in the .... during the summer.",
-        "The waves of the .... crash onto the shore.",
-        "Fish live deep in the .....",
-        "Many people go to the .... on vacation to relax.",
-        "The beach is located next to the .....",
-        "The sound of the ocean waves from the .... is very relaxing.",
-        "I built a sandcastle near the .....",
-        "When it is hot, we go to the .... to cool down.",
-        "The wind blows lightly and ripples the surface of the .....",
-      ],
-      school: [
-        "It is a place where children go to learn.",
-        "Today at .... I learned how to do division.",
-        "The .... building is very big and has many classrooms.",
-        "You have to go to .... to meet your friends.",
-        "The first day of .... is always exciting.",
-        "My teacher at .... helped me with my homework.",
-        "When classes are over, I walk out of the .....",
-        "At .... we have recess and play games together.",
-        "Books are essential for studying at .....",
-        "My .... has a large playground where we can play.",
-      ],
-      book: [
-        "It has many pages with words and pictures.",
-        "I like to read a good .... before bed.",
-        "The library is a quiet place full of ....s.",
-        "You turn the pages to read the story inside the .....",
-        "An author is a person who writes a .....",
-        "I use a bookmark to save my page in my .....",
-        "The story in this .... was about a brave knight and a dragon.",
-        "The cover of the .... has a beautiful illustration.",
-        "Chapter one is on the first page of the .....",
-        "You can learn about dinosaurs from a science .....",
-      ],
-      car: [
-        "You drive it on the road; it has four wheels.",
-        "My dad washes his shiny red .... every weekend.",
-        "The toy .... makes a 'vroom vroom' sound on the floor.",
-        "We need to get gas for the .....",
-        "A family can take a road trip in a ....",
-        "It has an engine, seats, and a steering wheel.",
-        "A traffic jam happens when there are too many ....s on the street.",
-        "Before you cross the street, you must look both ways for any ....s.",
-        "The mechanic is fixing the broken .....",
-        "We parked our .... in the garage to keep it safe.",
+      moon: [
+        "The .... lights up the night sky and it changes shape.",
+        "Neil Armstrong was the first person to walk on the .....",
+        "A full .... is big and round and very bright.",
+        "The .... has craters on its surface that you can see with a telescope.",
+        "Wolves in stories sometimes howl at the full ....",
       ],
       dog: [
-        "It is a pet that barks and wags its tail.",
-        "My .... loves to go for walks in the park.",
-        "This animal is known as 'man's best friend'.",
-        "The .... was chewing on a bone.",
-        "The tiny puppy will grow into a big .....",
-        "I have to feed my .... every morning and evening.",
-        "When the doorbell rings, my .... starts to bark loudly.",
-        "You should be gentle when you pet a friendly .....",
-        "The sheep were rounded up by a clever sheep .....",
-        "A leash helps you walk your .... safely.",
+        "A .... is often called 'man's best friend' because it is loyal.",
+        "You might take your pet .... for a walk in the park.",
+        "A .... wags its tail when it's happy to see you.",
+        "A puppy is a baby .... that is very playful.",
+        "A .... likes to fetch a ball or a stick.",
       ],
       cat: [
-        "It is a pet that purrs and loves to sleep.",
-        "My .... rubs against my legs for attention.",
-        "Sometimes the .... loves to climb trees.",
-        "The .... fell asleep on the warm couch.",
-        "....s love to chase mice.",
-        "When my .... is hungry, it meows for food.",
-        "I bought some new toys for my .....",
-        "The .... has bright eyes that shine in the dark.",
-        "The .... licks its paw to clean its face.",
-        "I like to watch the .... play with a ball of yarn.",
+          "A .... purrs when it is happy and content.",
+          "A kitten is a baby .... that loves to play with string.",
+          "A .... has sharp claws and soft fur.",
+          "Unlike a dog, a .... often likes to sleep in a warm spot.",
+          "A .... says 'meow' when it wants food.",
+      ],
+      sea: [
+          "The .... is a large body of salt water.",
+          "You can build sandcastles on the beach next to the ....",
+          "Boats and ships sail on the .... to travel to other places.",
+          "Fish, whales, and crabs live in the ....",
+          "The waves of the .... make a relaxing sound.",
+      ],
+      school: [
+          ".... is a place where children go to learn new things.",
+          "Your teacher helps you read and write at ....",
+          "You play with your friends in the playground at ....",
+          "A classroom is a room in a .... with desks and a board.",
+          "You carry your books in a bag to ....",
+      ],
+      book: [
+          "You read a .... to learn about new stories and ideas.",
+          "A library is a place full of many different .... to borrow.",
+          "Each .... has a cover, pages, and words inside.",
+          "You turn the page of a .... to continue the story.",
+          "A story.... might have pictures to go with the words.",
+      ],
+      car: [
+          "A .... is a vehicle with four wheels that you drive on the road.",
+          "You must wear a seatbelt when you are riding in a ....",
+          "A .... needs petrol or electricity to make it go.",
+          "Traffic lights tell a .... when to stop and when to go.",
+          "A garage is where you park a .... at night.",
       ],
       tree: [
-        "It is a tall plant with a trunk, branches, and leaves.",
-        "Birds often build their nests in a .....",
-        "In the autumn, the leaves on the .... change color.",
-        "A .... provides cool shade on a hot day.",
-        "Paper is made from the wood of a .....",
-        "A squirrel scampered quickly up the side of the ....",
-        "We have a swing hanging from a big branch of a .....",
-        "The roots of a .... grow deep into the ground.",
-        "We decorated the Christmas .... with lights and ornaments.",
-        "An acorn is the seed that can grow a mighty oak .....",
+          "A .... has a trunk, branches, and green leaves.",
+          "Birds often build their nests high up in a ....",
+          "In autumn, the leaves of a .... might turn red, yellow, or brown.",
+          "A forest is a place with many, many .... growing together.",
+          "An apple .... grows apples that you can eat.",
       ],
       flowers: [
-        "They are colorful plants that grow in gardens.",
-        "The .... smell so nice in the spring.",
-        "I gave a bouquet of .... to my grandmother.",
-        "Bees love to suck the nectar from .....",
-        "There are so many different types of .... in the field.",
-        "I enjoy watering the .... in my garden.",
-        "A meadow full of .... is a beautiful sight.",
-        "I learned the names of different .... in school.",
-        "The .... have bloomed in all sorts of colors.",
-        "I planted some seeds to grow some .....",
+          ".... are colourful plants that grow in a garden or a park.",
+          "Bees like to visit .... to collect nectar.",
+          "You can pick a bunch of .... to put in a vase.",
+          "Roses, daisies, and tulips are all types of ....",
+          "Many .... have a lovely, sweet smell.",
       ],
       house: [
-        "It is a building where a family lives.",
-        "My .... has a kitchen, a living room, and bedrooms.",
-        "The roof of the .... keeps out the rain.",
-        "I love coming back to my cozy .... after school.",
-        "The mailman delivers letters to our .....",
-        "Our .... has a bright blue front door.",
-        "We have a big green backyard behind our .....",
-        "My address tells people where my .... is located.",
-        "At night, we turn on all the lights inside our .....",
-        "A chimney allows smoke to escape from a fireplace in a .....",
+          "A .... is a building where a family lives.",
+          "Your .... has a roof to keep the rain out.",
+          "A .... has rooms like a kitchen, a bedroom, and a living room.",
+          "The front door of a .... has a number on it.",
+          "You sleep in your bed in your .... at night.",
+      ]
+    };
+
+    // ——————————————————————————————————————————————
+    // TIER 2 & 3: GENERATORE CONTESTUALE MIGLIORATO
+    // ——————————————————————————————————————————————
+    function getArticle(word) { return /^[aeiou]/i.test(word) ? "an" : "a"; }
+    function syllableCount(w) { return (w.match(/[aeiouy]+/g)?.length || 1); }
+    function syllableHint(w) {
+      const n = syllableCount(w);
+      return `${n} syllable${n>1?"s":""}`;
+    }
+    function ensureUnique(sentences) {
+      const seen = new Set();
+      const out = [];
+      for (const s of sentences) {
+        const norm = s.toLowerCase().replace(/\s+/g," ").replace(/[^\w. ]/g,"").trim();
+        if (norm && !seen.has(norm)) { seen.add(norm); out.push(s); }
+      }
+      return out;
+    }
+    function shuffleAndPick(arr, count) {
+      const a = [...arr];
+      for (let i=a.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+      return a.slice(0, count);
+    }
+    function simpleRhyme(word) {
+      const bank = {
+        sun: "run", moon: "spoon", star: "car", dog: "log", cat: "hat", bird: "word",
+        red: "bed", blue: "shoe", apple: "dapple", bread: "head", tree: "see", car: "star"
+      };
+      return bank[word.toLowerCase()] || null;
+    }
+    function morphology(word) {
+      const w = word.toLowerCase();
+      const info = { suffix:null, isPlural:false, isVerb:false };
+      if (w.length > 3 && w.endsWith("ing")) { info.suffix = "-ing"; info.isVerb = true; }
+      else if (w.length > 3 && w.endsWith("ed")) { info.suffix = "-ed"; info.isVerb = true; }
+      else if (w.endsWith("s") && !w.endsWith("ss")) { info.suffix = "-s"; info.isPlural = !info.isVerb; }
+      return info;
+    }
+    const SENSES = {
+      bat: [
+        { cat:"animal", clue:"An animal that flies at night is a ...." },
+        { cat:"object", clue:"To hit a baseball, you use a ...." }
+      ],
+      seal: [
+        { cat:"animal", clue:"An animal that barks and swims in the sea is a ...." },
+        { cat:"action", clue:"To close a letter, you .... the envelope." }
+      ],
+      bank: [
+        { cat:"place", clue:"A place that keeps money safe is a ...." },
+        { cat:"nature", clue:"The side of a river is called a river ...." }
       ],
     };
 
-    // Funzione migliorata che genera frasi SEMPRE coerenti con la parola
-    function generateDefaultSentences(word) {
+    function generateContextualSentences(word) {
       const w = word.toLowerCase();
-      
-      // Categorie specifiche con controllo di coerenza
-      const isAnimal = ['bird', 'fish', 'horse', 'cow', 'pig', 'sheep', 'chicken', 'duck', 'goose', 'rabbit', 'mouse', 'rat', 'bear', 'lion', 'tiger', 'elephant', 'giraffe', 'monkey', 'snake', 'frog', 'spider', 'ant', 'bee', 'butterfly'].includes(w);
-      const isFood = ['apple', 'banana', 'orange', 'bread', 'milk', 'cheese', 'meat', 'fish', 'rice', 'pasta', 'pizza', 'cake', 'cookie', 'chocolate', 'water', 'juice', 'coffee', 'tea'].includes(w);
-      const isColor = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white', 'gray', 'grey'].includes(w);
-      const isVehicle = ['bike', 'bus', 'truck', 'plane', 'train', 'boat', 'ship', 'motorcycle', 'bicycle'].includes(w);
-      const isBodyPart = ['hand', 'foot', 'head', 'eye', 'ear', 'nose', 'mouth', 'arm', 'leg', 'finger', 'toe', 'hair', 'face', 'back', 'stomach'].includes(w);
-      const isPlace = ['park', 'store', 'hospital', 'library', 'restaurant', 'church', 'mall', 'beach', 'mountain', 'forest', 'city', 'town', 'village', 'farm'].includes(w);
-      const isObject = ['table', 'chair', 'bed', 'door', 'window', 'lamp', 'clock', 'phone', 'computer', 'television', 'radio', 'camera', 'pen', 'pencil', 'paper', 'bag', 'box'].includes(w);
-      const isClothing = ['shirt', 'pants', 'dress', 'shoes', 'hat', 'coat', 'jacket', 'socks', 'gloves', 'scarf', 'belt', 'tie'].includes(w);
-      const isWeather = ['rain', 'snow', 'wind', 'storm', 'thunder', 'lightning', 'cloud', 'fog', 'sunshine', 'rainbow'].includes(w);
-      const isEmotion = ['happy', 'sad', 'angry', 'excited', 'scared', 'surprised', 'tired', 'hungry', 'thirsty', 'sick'].includes(w);
-      
-      let templates = [];
-      
-      if (isAnimal) {
-        templates = [
-          `The .... is an animal that lives in nature.`,
-          `I saw a wild .... during my trip to the zoo.`,
-          `A baby .... is very small and cute.`,
-          `The .... makes sounds to communicate.`,
-          `In its habitat, a .... finds food and shelter.`,
-          `A .... needs water and food to survive.`,
-          `The .... moves around looking for food.`,
-          `Some people like to watch the .... in documentaries.`,
-          `A .... has special body parts that help it live.`,
-          `The .... is fascinating to study and observe.`
-        ];
-      } else if (isFood) {
-        templates = [
-          `I like to eat .... when I'm hungry.`,
-          `The .... tastes really good with salt.`,
-          `Fresh .... is available at the grocery store.`,
-          `This .... contains many healthy nutrients.`,
-          `My mother cooks .... for dinner sometimes.`,
-          `The smell of .... makes my mouth water.`,
-          `.... is one of my favorite things to eat.`,
-          `We should include .... in our daily meals.`,
-          `The restaurant serves delicious .... every day.`,
-          `I need to buy some .... for tonight's meal.`
-        ];
-      } else if (isColor) {
-        templates = [
-          `I have a .... shirt in my closet.`,
-          `The walls in my room are painted ....`,
-          `She chose a .... dress for the party.`,
-          `The .... flowers look beautiful in the garden.`,
-          `I like to draw with my .... crayon.`,
-          `The .... car is parked outside.`,
-          `His .... eyes are very striking.`,
-          `The .... paint dried quickly on the wall.`,
-          `I mixed colors to create this .... shade.`,
-          `The .... balloon floated up to the sky.`
-        ];
-      } else if (isVehicle) {
-        templates = [
-          `The .... arrived at the station exactly on time.`,
-          `I enjoy traveling by .... on long journeys.`,
-          `The .... was parked carefully in the lot.`,
-          `Learning to operate a .... requires practice.`,
-          `The .... engine started with a loud noise.`,
-          `We waited patiently for the .... to arrive.`,
-          `The .... can transport many people together.`,
-          `I noticed a brand new .... on the street.`,
-          `The .... needs regular maintenance to run well.`,
-          `The .... driver was very skilled and careful.`
-        ];
-      } else if (isBodyPart) {
-        templates = [
-          `I use my .... to do many activities.`,
-          `The doctor checked my .... during the visit.`,
-          `My .... feels much better after resting.`,
-          `I need to take good care of my ....`,
-          `The .... is an important part of my body.`,
-          `I can move my .... in different directions.`,
-          `My .... helps me with everyday tasks.`,
-          `I should protect my .... from injury.`,
-          `The .... allows me to sense things around me.`,
-          `I exercise to keep my .... strong and healthy.`
-        ];
-      } else if (isPlace) {
-        templates = [
-          `I like to visit the .... on weekends.`,
-          `The .... is located in the downtown area.`,
-          `We spent the afternoon at the local ....`,
-          `The .... opens early every morning.`,
-          `I work close to the .... in the city.`,
-          `The new .... has excellent facilities.`,
-          `Children love to play at the ....`,
-          `The .... gets crowded during holidays.`,
-          `I met my friends at the .... today.`,
-          `The .... provides services to the community.`
-        ];
-      } else if (isObject) {
-        templates = [
-          `I need to buy a new .... for my home.`,
-          `The .... broke and needs to be fixed.`,
-          `This .... is very useful in everyday life.`,
-          `The .... was made with high quality materials.`,
-          `I can't find my .... anywhere in the house.`,
-          `The .... is too heavy for me to lift.`,
-          `We use this .... almost every single day.`,
-          `The old .... was replaced with a newer one.`,
-          `This .... was given to me as a gift.`,
-          `The .... works perfectly after being cleaned.`
-        ];
-      } else if (isClothing) {
-        templates = [
-          `I bought a new .... for the special event.`,
-          `The .... fits me perfectly and looks great.`,
-          `My .... got dirty and needs to be washed.`,
-          `This .... is very comfortable to wear all day.`,
-          `The .... is made of soft, comfortable fabric.`,
-          `I can't decide which .... to wear today.`,
-          `The .... keeps me warm in cold weather.`,
-          `My favorite .... is hanging in the closet.`,
-          `The .... comes in many different colors and styles.`,
-          `I need to iron my .... before wearing it.`
-        ];
-      } else if (isWeather) {
-        templates = [
-          `The .... started suddenly this morning.`,
-          `I love listening to the sound of .... outside.`,
-          `The weather forecast predicts .... for tomorrow.`,
-          `We cancelled our outdoor plans because of the ....`,
-          `The .... made the temperature change quickly.`,
-          `Children enjoy playing outside in the light ....`,
-          `The .... created beautiful patterns across the sky.`,
-          `We stayed indoors during the heavy ....`,
-          `The .... lasted for several hours today.`,
-          `I enjoy watching the .... from my window.`
-        ];
-      } else if (isEmotion) {
-        templates = [
-          `I feel very .... about today's good news.`,
-          `She looked .... when she heard the announcement.`,
-          `The surprise made everyone feel ....`,
-          `I was .... to see my friend again.`,
-          `The movie made me feel quite ....`,
-          `He seemed .... during our conversation today.`,
-          `I can't help but feel .... right now.`,
-          `The music always makes me feel ....`,
-          `We were all .... after the long day.`,
-          `The good results made her feel ....`
-        ];
-      } else {
-        // Frasi universali che funzionano con QUALSIASI parola
-        templates = [
-          `I learned about .... in my class today.`,
-          `Can you spell the word .... correctly?`,
-          `The teacher wrote .... on the blackboard.`,
-          `We discussed .... during our lesson.`,
-          `I need to remember how to spell ....`,
-          `The word .... appears in many sentences.`,
-          `Please write .... in your notebook.`,
-          `I found .... in the dictionary.`,
-          `The meaning of .... is very interesting.`,
-          `Let me show you how to use .... properly.`
-        ];
-      }
-      
-      return templates.slice(0, 10);
-    }
+      const info = {
+        word: w,
+        article: getArticle(w),
+        first: w[0]?.toUpperCase() || "",
+        syllables: syllableHint(w),
+        rhyme: simpleRhyme(w),
+        morph: morphology(w),
+        senses: SENSES[w] || null,
+        isPlural: morphology(w).isPlural,
+      };
 
+      const patterns = [
+        // Phonics / Structure
+        { condition: (i) => true, generator: (i) => `The word .... starts with the letter ${i.first}.` },
+        { condition: (i) => true, generator: (i) => `The word .... has ${i.syllables}.` },
+        { condition: (i) => i.rhyme, generator: (i) => `The word .... rhymes with "${i.rhyme}".` },
+        // Simple Definition / Category
+        { condition: (i) => !i.isPlural, generator: (i) => `${i.article.toUpperCase()} .... is a type of thing you can see.` },
+        { condition: (i) => i.isPlural, generator: (i) => `.... are things you can count.` },
+        // Senses (if available)
+        { condition: (i) => i.senses, generator: (i) => i.senses[0].clue },
+        { condition: (i) => i.senses && i.senses.length > 1, generator: (i) => i.senses[1].clue },
+        // Simple context
+        { condition: (i) => !i.isPlural, generator: (i) => `You can find ${i.article} .... in a story book.` },
+        { condition: (i) => i.isPlural, generator: (i) => `You can find .... in many places.` },
+        { condition: (i) => !i.isPlural, generator: (i) => `Think about what ${i.article} .... is used for.` },
+        // Action / Use
+        { condition: (i) => i.morph.isVerb, generator: (i) => `To .... is an action you can do.` },
+        // Contrast
+        { condition: (i) => i.word === "big", generator: (i) => `The opposite of small is ....` },
+        { condition: (i) => i.word === "small", generator: (i) => `The opposite of big is ....` },
+        { condition: (i) => i.word === "hot", generator: (i) => `The opposite of cold is ....` },
+        { condition: (i) => i.word === "cold", generator: (i) => `The opposite of hot is ....` },
+        // Fallbacks
+        { condition: (i) => true, generator: (i) => `Can you spell the word ....?` },
+        { condition: (i) => true, generator: (i) => `Try to write the word .... in the space.` },
+      ];
+
+      const applicable = patterns.filter(p => p.condition(info));
+      const candidates = applicable.map(p => p.generator(info));
+      
+      const uniqueSentences = ensureUnique(candidates);
+      const shuffled = shuffleAndPick(uniqueSentences, 15); // get more than 10 to ensure variety
+      
+      // Sort by length to have simpler sentences first
+      shuffled.sort((a,b) => a.length - b.length);
+
+      // Add a final, always-useful hint if space allows
+      if (shuffled.length < 10) {
+        shuffled.push(`Say the sounds of the .... out loud to help you spell it.`);
+      }
+
+      return ensureUnique(shuffled).slice(0, 10);
+    }
+    
     function buildSentenceNodes(sentence, lowerCaseWord) {
       const sentenceP = document.createElement("p");
       sentenceP.className = "sentence";
@@ -754,7 +598,7 @@
       let lastIndex = 0;
       let anyMatch = false;
       let match;
-      
+
       while ((match = regex.exec(sentence)) !== null) {
         anyMatch = true;
         sentenceP.appendChild(document.createTextNode(sentence.slice(lastIndex, match.index)));
@@ -771,10 +615,9 @@
         lastIndex = match.index + match[0].length;
       }
       sentenceP.appendChild(document.createTextNode(sentence.slice(lastIndex)));
-      
+
       if (!anyMatch) {
-        const spacer = document.createTextNode(" ");
-        sentenceP.appendChild(spacer);
+        sentenceP.appendChild(document.createTextNode(" "));
         const input = document.createElement("input");
         input.type = "text";
         input.className = "sentence-input";
@@ -788,34 +631,29 @@
       }
       return sentenceP;
     }
-    
+
     function renderWordSection(word, sentences, colorClass) {
       const section = document.createElement("div");
       section.className = "word-section";
       section.dataset.word = word;
-      
       section.classList.add(colorClass);
+
       const title = document.createElement("div");
       title.className = "word-title";
       const titleText = document.createElement("span");
-      titleText.textContent = `💡 Fill in the blanks! (The word is "${word}")`;
+      titleText.textContent = `💡 Fill in the blanks!`;
       title.appendChild(titleText);
-      
-      const progressCount = document.createElement("span");
-      progressCount.className = "word-meta progress-count";
-      progressCount.textContent = `(0/10)`;
-      title.appendChild(progressCount);
       
       const buttonGroup = document.createElement("div");
       buttonGroup.className = "button-group";
-      title.appendChild(buttonGroup);
+      
       const listenButton = document.createElement("button");
       listenButton.textContent = "Listen";
       listenButton.className = "listen-button";
       listenButton.setAttribute("data-word", word);
       listenButton.onclick = () => speakWord(listenButton);
       buttonGroup.appendChild(listenButton);
-      
+
       const hintButton = document.createElement("button");
       hintButton.textContent = "Hint";
       hintButton.className = "hint-button";
@@ -823,25 +661,47 @@
       hintButton.setAttribute("data-hint-index", "0");
       hintButton.onclick = () => giveHint(hintButton);
       buttonGroup.appendChild(hintButton);
+
       const hintDisplay = document.createElement("span");
       hintDisplay.className = "hint-display";
       hintDisplay.textContent = "_".repeat(word.length);
       buttonGroup.appendChild(hintDisplay);
-      section.appendChild(title);
+
+      const progressCount = document.createElement("span");
+      progressCount.className = "word-meta progress-count";
+      progressCount.textContent = `(0/10)`;
       
-      sentences.slice(0, 10).forEach((sentence) => {
+      const header = document.createElement('div');
+      header.style.display = 'flex';
+      header.style.justifyContent = 'space-between';
+      header.style.alignItems = 'center';
+      header.style.width = '100%';
+      header.appendChild(title);
+      header.appendChild(buttonGroup);
+      section.appendChild(header);
+
+      sentences.forEach((sentence) => {
         const nodes = buildSentenceNodes(sentence, word.toLowerCase());
         section.appendChild(nodes);
       });
       
+      const footer = document.createElement('div');
+      footer.style.display = 'flex';
+      footer.style.justifyContent = 'space-between';
+      footer.style.alignItems = 'center';
+      footer.style.marginTop = '15px';
+      
       const verifyButton = document.createElement("button");
-      verifyButton.textContent = "Verify";
+      verifyButton.textContent = "Check Word";
       verifyButton.className = "verify-button";
       verifyButton.onclick = () => showVerificationModal(word);
-      section.appendChild(verifyButton);
+      footer.appendChild(verifyButton);
+      footer.appendChild(progressCount);
+      section.appendChild(footer);
+
       return section;
     }
-    
+
     function shuffleArray(array) {
       for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -849,7 +709,7 @@
       }
       return array;
     }
-    
+
     function generateSentences() {
       const raw = document.getElementById("wordInput").value.trim();
       const outputDiv = document.getElementById("output");
@@ -857,40 +717,35 @@
       outputDiv.innerHTML = "";
       updateScore(-score);
       verifiedWordCount = 0;
-      
-      let words = raw
-        .split(/\r?\n/)
-        .map((w) => w.trim())
-        .filter(Boolean);
+
+      let words = raw.split(/\r?\n/).map((w) => w.trim()).filter(Boolean);
       const unique = [];
       const seen = new Set();
       for (const w of words) {
         const key = w.toLowerCase();
-        if (!seen.has(key)) {
-          unique.push(w);
-          seen.add(key);
-        }
+        if (!seen.has(key)) { unique.push(w); seen.add(key); }
       }
       words = unique.slice(0, MAX_WORDS);
       totalWords = words.length;
-      
+
       if (words.length === 0) {
         helper.textContent = "Please enter at least one word (max 10).";
         return;
       }
-      
       helper.textContent = `Words used: ${words.length}/${MAX_WORDS}`;
-      
+
       const shuffledColors = shuffleArray([...backgroundColors]);
       words.forEach((word, index) => {
         const key = word.toLowerCase();
-        const sentences = wordSentenceMap[key] || generateDefaultSentences(key);
+        // Tiered approach: use specific map first, then fall back to generator
+        const sentencesRaw = wordSentenceMap[key] || generateContextualSentences(key);
+        const sentences = ensureUnique(sentencesRaw).slice(0, 10);
         const colorClass = shuffledColors[index % shuffledColors.length];
         const section = renderWordSection(word, sentences, colorClass);
         outputDiv.appendChild(section);
       });
     }
-    
+
     document.getElementById("btnGenerate").addEventListener("click", generateSentences);
     document.getElementById("btnClear").addEventListener("click", () => {
       document.getElementById("wordInput").value = "";
@@ -901,11 +756,8 @@
       totalWords = 0;
       document.getElementById("wordInput").focus();
     });
-    
     document.getElementById("wordInput").addEventListener("keydown", (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-        generateSentences();
-      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") generateSentences();
     });
   </script>
 </body>

@@ -308,6 +308,7 @@
     <button id="messageOkBtn">OK</button>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
   <script>
     const MAX_WORDS = 10;
     let score = 0;
@@ -326,6 +327,10 @@
     
     let currentWordToVerify = '';
     const backgroundColors = ['bg-1', 'bg-2', 'bg-3', 'bg-4', 'bg-5', 'bg-6'];
+
+    // Track the number of verified words
+    let verifiedWordCount = 0;
+    let totalWords = 0;
 
     function showMessage(title, text) {
       messageTitle.textContent = title;
@@ -377,6 +382,37 @@
       }
     }
 
+    // Function to play a celebratory jingle with a trumpet-like sound
+    async function playSuccessJingle() {
+      // Use Tone.js to create a synth with a brassy timbre
+      const synth = new Tone.Synth({
+        oscillator: { type: "sawtooth" },
+        envelope: { attack: 0.05, decay: 0.5, sustain: 0.2, release: 0.8 },
+      }).toDestination();
+      
+      // Notes for the first part of the British National Anthem
+      const notes = ["C4", "G3", "C4", "C4", "B3", "A3", "G3", "F#3", "G3", "A3", "B3", "C4"];
+      const times = ["0", "0.5", "1", "1.5", "2.0", "2.5", "3.0", "3.5", "4.0", "4.5", "5.0", "5.5"];
+      
+      // Create a sequence to play the notes
+      const part = new Tone.Part((time, note) => {
+        synth.triggerAttackRelease(note, "0.4", time);
+      }, notes.map((note, index) => [times[index], note])).start(0);
+
+      // Make sure the audio context is running
+      if (Tone.context.state !== 'running') {
+        await Tone.start();
+      }
+
+      // Start the transport (timing)
+      Tone.Transport.start();
+
+      // Stop the transport after the sequence finishes
+      Tone.Transport.scheduleOnce(() => {
+        Tone.Transport.stop();
+      }, "6");
+    }
+
     // Function to show the verification modal
     function showVerificationModal(word) {
       const sentences = wordSentenceMap[word.toLowerCase()] || generateDefaultSentences(word.toLowerCase());
@@ -403,6 +439,15 @@
           const section = document.querySelector(`.word-section[data-word="${currentWordToVerify}"]`);
           if (section) {
             section.querySelector('.word-title').style.color = 'var(--ok)';
+          }
+          verifiedWordCount++;
+          if (verifiedWordCount >= totalWords) {
+            if (score === totalWords) {
+              showMessage("Perfect Score!", "Congratulations! You spelled all words correctly and earned a perfect score!");
+              playSuccessJingle();
+            } else {
+              showMessage("Game Over!", "You have completed all the words. Try again to get a perfect score!");
+            }
           }
           hideModal();
       } else {
@@ -733,6 +778,7 @@
       const helper = document.getElementById("helper");
       outputDiv.innerHTML = "";
       updateScore(-score); // Reset score
+      verifiedWordCount = 0; // Reset verified word count
 
       // Normalize and limit to 10 words, remove empty lines and duplicates
       let words = raw
@@ -750,6 +796,7 @@
         }
       }
       words = unique.slice(0, MAX_WORDS);
+      totalWords = words.length;
 
       if (words.length === 0) {
         helper.textContent = "Please enter at least one word (max 10).";
@@ -776,6 +823,8 @@
       document.getElementById("output").innerHTML = "";
       document.getElementById("helper").textContent = "";
       updateScore(-score);
+      verifiedWordCount = 0; // Reset on clear
+      totalWords = 0;
       document.getElementById("wordInput").focus();
     });
 

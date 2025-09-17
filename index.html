@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Words</title>
+  <title>Spelling Game</title>
   <style>
     /* Import a playful font */
     @import url("https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap");
@@ -91,8 +91,24 @@
       border-left: 10px solid var(--section-border);
     }
 
-    .word-title { font-size: 1.6em; color: var(--accent); font-weight: bold; margin-bottom: 10px; }
+    .word-title { font-size: 1.6em; color: var(--accent); font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;}
     .word-meta { font-size: .9em; color: #777; }
+    .listen-button {
+      background-color: #5cb85c;
+      color: white;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 20px;
+      font-size: 0.8em;
+      cursor: pointer;
+      margin-left: 10px;
+      box-shadow: 0 2px #449d44;
+      font-family: "Fredoka One", cursive;
+    }
+    .listen-button:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px #449d44;
+    }
 
     .sentence { font-size: 1.15em; margin-bottom: 12px; line-height: 2.1; }
 
@@ -116,10 +132,10 @@
 </head>
 <body>
   <div id="container">
-    <h1>🌟 Words 🌟</h1>
-    <p>Type up to <strong>10 English words</strong> (one per line). For each word, <strong>10 sentences</strong> with a blank to fill will be generated.</p>
+    <h1>🌟 Spelling Game 🌟</h1>
+    <p>Type up to <strong>10 English words</strong> (one per line). For each word, <strong>10 sentences</strong> will be generated with a blank space for you to fill in.</p>
 
-    <textarea id="wordInput" rows="10" placeholder="Write your words here... for example:\ncar\nhouse\ndog\nsun\nball\napple\nbook\ntree\nwater\nchair"></textarea>
+    <textarea id="wordInput" rows="10" placeholder="Type your words here... for example:\nsun\nsea\nschool\nbook\ncar\ndog\ncat\ntree\nflowers\nhouse"></textarea>
 
     <div class="controls">
       <button id="btnGenerate">Create Sentences!</button>
@@ -127,11 +143,19 @@
     </div>
 
     <div id="helper" class="helper"></div>
+    <div id="scoreDisplay">Score: 0</div>
     <div id="output"></div>
   </div>
 
   <script>
     const MAX_WORDS = 10;
+    let score = 0;
+    const scoreDisplay = document.getElementById("scoreDisplay");
+
+    function updateScore(delta) {
+      score += delta;
+      scoreDisplay.textContent = `Score: ${score}`;
+    }
 
     function escapeRegex(s) {
       return s.replace(/[\-\/\\^$*+?.()|[\]{}]/g, "\\$&");
@@ -140,133 +164,166 @@
     function checkWord(inputElement) {
       const userInput = inputElement.value.trim().toLowerCase();
       const correctWord = inputElement.dataset.correct.toLowerCase();
+      const isChecked = inputElement.dataset.checked === "true";
 
       inputElement.classList.remove("correct", "incorrect");
-      if (!userInput) return;
-      inputElement.classList.add(userInput === correctWord ? "correct" : "incorrect");
+      
+      if (!userInput) {
+        if (isChecked) {
+          updateScore(-1);
+          inputElement.dataset.checked = "false";
+        }
+        return;
+      }
+      
+      if (userInput === correctWord) {
+        inputElement.classList.add("correct");
+        if (!isChecked) {
+          updateScore(1);
+          inputElement.dataset.checked = "true";
+        }
+      } else {
+        inputElement.classList.add("incorrect");
+        if (isChecked) {
+          updateScore(-1);
+          inputElement.dataset.checked = "false";
+        }
+      }
     }
 
-    // Predefined sentences for known words
+    // New function to speak the word
+    function speakWord(buttonElement) {
+      if ('speechSynthesis' in window) {
+        const word = buttonElement.dataset.word;
+        const utterance = new SpeechSynthesisUtterance(word);
+        utterance.lang = 'en-US'; // Set language to English
+        window.speechSynthesis.speak(utterance);
+      } else {
+        alert("The Web Speech API is not supported in this browser. Please try Chrome or Firefox.");
+      }
+    }
+
+    // Pre-defined sentences for known words in English
     const wordSentenceMap = {
-      car: [
-        "You drive it on the road; it has four wheels.",
-        "My dad washes his shiny red .... every weekend.",
-        "The toy .... goes 'vroom vroom' across the floor.",
-        "We need to put gasoline in the .....",
-        "A family can take a road trip in their .....",
-        "It has an engine, seats, and a steering wheel.",
-        "A traffic jam happens when there are too many .... on the street.",
-        "Before crossing the street, you should look both ways for any .....",
-        "The mechanic is fixing the broken .....",
-        "We parked our .... in the garage to keep it safe.",
-      ],
-      house: [
-        "It's a building where a family lives.",
-        "My .... has a kitchen, a living room, and bedrooms.",
-        "The roof of the .... keeps the rain out.",
-        "I love coming back to my cozy .... after school.",
-        "The mailman brings letters to our .....",
-        "Our .... has a bright blue front door.",
-        "We have a big, green garden behind our .....",
-        "My address tells people where my .... is located.",
-        "At night, we turn on all the lights inside our .....",
-        "A chimney lets smoke out from the fireplace in a .....",
-      ],
-      dog: [
-        "It's a pet that barks and wags its tail.",
-        "My .... loves to go for walks in the park.",
-        "This animal is known as 'man's best friend'.",
-        "The .... was chewing on a bone.",
-        "The little puppy will grow up to be a big ....",
-        "I have to feed my .... every morning and night.",
-        "When the doorbell rings, my .... starts to bark loudly.",
-        "You should be gentle when you pet a friendly .....",
-        "The sheep were herded by a clever sheep....",
-        "A leash helps you walk your .... safely.",
-      ],
       sun: [
-        "It's the big, bright star that gives us light during the day.",
+        "The bright star that gives us light and warmth during the day.",
         "The .... rises in the morning and sets in the evening.",
-        "Plants need light from the .... to grow.",
+        "Plants need the light from the .... to grow.",
         "On a clear day, the .... shines brightly in the sky.",
-        "We wear sunglasses to protect our eyes from the .....",
-        "It is very hot on the surface of the .....",
+        "We wear ....glasses to protect our eyes.",
+        "The surface of the .... is very hot.",
         "A sunflower is a plant that turns to face the .....",
         "Without the ...., our planet would be a cold, dark place.",
         "You can get a sunburn if you stay in the .... for too long.",
-        "The moon reflects the light from the .....",
+        "The moon reflects the light of the .....",
       ],
-      ball: [
-        "It's a round toy that you can throw, catch, and kick.",
-        "The children were playing with a .... in the yard.",
-        "A basketball player bounces the .....",
-        "A soccer player kicks the .... into the goal.",
-        "A tennis player hits the .... with a racket.",
-        "The baby loves to play with a soft, colorful .....",
-        "The .... rolled down the hill and into a puddle.",
-        "Let's play a game of catch with this .....",
-        "The bowling .... is very heavy and has three holes.",
-        "A beach .... is light and gets blown by the wind.",
+      sea: [
+        "It is a very large body of salt water.",
+        "I love to swim in the .... during the summer.",
+        "The waves of the .... crash onto the shore.",
+        "Fish live deep in the .....",
+        "Many people go to the .... on vacation to relax.",
+        "The beach is a great place to get ....",
+        "The sound of the ocean waves from the .... is very relaxing.",
+        "I built a sandcastle near the .....",
+        "When it is hot, we go to the .... to cool down.",
+        "The wind blows lightly and ripples the surface of the .....",
       ],
-      apple: [
-        "It's a round fruit that can be red or green.",
-        "An .... a day keeps the doctor away.",
-        "I like to eat a crunchy .... for a snack.",
-        "This sweet fruit grows on trees in an orchard.",
-        "You can make a pie or juice with this fruit.",
-        "The teacher had a shiny red .... on her desk.",
-        "A worm was hiding inside my .....",
-        "I like to dip my .... slices in peanut butter.",
-        "The core of an .... has seeds inside it.",
-        "Snow White ate a poisoned .... and fell asleep.",
+      school: [
+        "It is a place where children go to learn.",
+        "Today at .... I learned how to do division.",
+        "The .... building is very big and has many classrooms.",
+        "You have to go to .... to meet your friends.",
+        "The first day of .... is always exciting.",
+        "My teacher at .... helped me with my homework.",
+        "When classes are over, I walk out of the .....",
+        "At .... we have recess and play games together.",
+        "Books are essential for studying at .....",
+        "My .... has a large playground where we can play.",
       ],
       book: [
         "It has many pages with words and pictures.",
-        "I love to read a good .... before bed.",
+        "I like to read a good .... before bed.",
         "The library is a quiet place full of .....",
         "You turn the pages to read the story inside.",
         "An author is a person who writes a .....",
-        "I use a bookmark to save my place in my .....",
+        "I use a bookmark to save my page in my .....",
         "The story was about a brave knight and a dragon.",
         "The cover of the .... has a beautiful illustration.",
         "Chapter one is on the first page of the .....",
         "You can learn about dinosaurs from a science .....",
       ],
+      car: [
+        "You drive it on the road; it has four wheels.",
+        "My dad washes his shiny red .... every weekend.",
+        "The toy .... makes a 'vroom vroom' sound on the floor.",
+        "We need to get gas for the .....",
+        "A family can take a road trip in a ....",
+        "It has an engine, seats, and a steering wheel.",
+        "A traffic jam happens when there are too many .... on the street.",
+        "Before you cross the street, you must look both ways for any .....",
+        "The mechanic is fixing the broken .....",
+        "We parked our .... in the garage to keep it safe.",
+      ],
+      dog: [
+        "It is a pet that barks and wags its tail.",
+        "My .... loves to go for walks in the park.",
+        "This animal is known as 'man's best friend'.",
+        "The .... was chewing on a bone.",
+        "The tiny puppy will grow into a big .....",
+        "I have to feed my .... every morning and evening.",
+        "When the doorbell rings, my .... starts to bark loudly.",
+        "You should be gentle when you pet a friendly .....",
+        "The sheep were rounded up by a clever sheep .....",
+        "A leash helps you walk your .... safely.",
+      ],
+      cat: [
+        "It is a pet that purrs and loves to sleep.",
+        "My .... rubs against my legs for attention.",
+        "Sometimes the .... loves to climb trees.",
+        "The .... fell asleep on the warm couch.",
+        "....s love to chase mice.",
+        "When my .... is hungry, it meows for food.",
+        "I bought some new toys for my .....",
+        "The .... has bright eyes that shine in the dark.",
+        "The .... licks its paw to clean its face.",
+        "I like to watch the .... play with a ball of yarn.",
+      ],
       tree: [
-        "It's a tall plant with a trunk, branches, and leaves.",
+        "It is a tall plant with a trunk, branches, and leaves.",
         "Birds often build their nests in a .....",
-        "In the fall, the leaves of the .... change color.",
+        "In the autumn, the leaves on the .... change color.",
         "A .... provides cool shade on a hot day.",
         "Paper is made from the wood of a .....",
-        "A squirrel quickly ran up the side of the .....",
+        "A squirrel scampered quickly up the side of the ....",
         "We have a swing hanging from a big branch of a .....",
         "The roots of a .... grow deep into the ground.",
         "We decorated the Christmas .... with lights and ornaments.",
-        "An acorn is the seed that can grow into a mighty oak .....",
+        "An acorn is the seed that can grow a mighty oak .....",
       ],
-      water: [
-        "It's a clear liquid that you drink when you are thirsty.",
-        "You should drink plenty of .... every day.",
-        "Fish can't live without .....",
-        "We use soap and .... to wash our hands.",
-        "When it gets very cold, .... turns into ice.",
-        "A boat floats on top of the .....",
-        "Rain is .... that falls from the clouds.",
-        "Let's go for a swim in the cool .... of the lake.",
-        "You need to .... the plants so they can grow.",
-        "A river is a large, flowing body of .....",
+      flowers: [
+        "They are colorful plants that grow in gardens.",
+        "The .... smell so nice in the spring.",
+        "I gave a bouquet of .... to my grandmother.",
+        "Bees love to suck the nectar from .....",
+        "There are so many different types of .... in the field.",
+        "I enjoy watering the .... in my garden.",
+        "A meadow full of .... is a beautiful sight.",
+        "I learned the names of different .... in school.",
+        "The .... have bloomed in all sorts of colors.",
+        "I planted some seeds to grow some .....",
       ],
-      chair: [
-        "It's a piece of furniture with four legs that you can sit on.",
-        "I sat on the .... to eat my dinner at the table.",
-        "The classroom was full of desks and .....",
-        "The baby sat in a high .....",
-        "The cat was sleeping on the comfy .....",
-        "Please pull up a .... and join us.",
-        "The king and queen sat on fancy thrones, which are a type of .....",
-        "This wooden .... is a little hard to sit on.",
-        "A rocking .... moves back and forth.",
-        "There are four .... around our kitchen table.",
+      house: [
+        "It is a building where a family lives.",
+        "My .... has a kitchen, a living room, and bedrooms.",
+        "The roof of the .... keeps out the rain.",
+        "I love coming back to my cozy .... after school.",
+        "The mailman delivers letters to our .....",
+        "Our .... has a bright blue front door.",
+        "We have a big green backyard behind our .....",
+        "My address tells people where my .... is located.",
+        "At night, we turn on all the lights inside our .....",
+        "A chimney allows smoke to escape from a fireplace in a .....",
       ],
     };
 
@@ -275,25 +332,25 @@
       const w = word;
       const samples = [
         `I saw a ${w} today at the park.`,
-        `Please write the word ${w} in the blank.`,
+        `Please spell the word ${w} in the blank space.`,
         `This sentence is about a ${w}.`,
         `The ${w} is on the table.`,
-        `Can you spell ${w}?`,
+        `Can you spell the word ${w}?`,
         `I lost my ${w} this morning.`,
-        `Look at that ${w} over there!`,
+        `Look at that beautiful ${w} over there!`,
         `Do you like this ${w}?`,
         `I need a ${w} for my project.`,
         `We talked about the ${w} in class.`,
-        `Yesterday I bought a ${w}.`,
+        `I bought a ${w} yesterday.`,
         `Here comes the ${w}!`,
         `That ${w} is very important.`,
-        `Please don't forget your ${w}.`,
+        `Please do not forget your ${w}.`,
         `This ${w} belongs to me.`,
       ];
       return samples.slice(0, 10);
     }
 
-    // Builds a sentence's nodes by replacing ALL occurrences of the placeholder or word with an <input>
+    // Builds sentence nodes by replacing ALL occurrences of the placeholder or word with an <input>
     function buildSentenceNodes(sentence, lowerCaseWord) {
       const sentenceP = document.createElement("p");
       sentenceP.className = "sentence";
@@ -320,10 +377,10 @@
         sentenceP.appendChild(input);
         lastIndex = match.index + match[0].length;
       }
-      // Rest of the sentence
+      // Remainder of the sentence
       sentenceP.appendChild(document.createTextNode(sentence.slice(lastIndex)));
 
-      // If no occurrences are found, add an input at the end (avoids sentences without blanks)
+      // If no match is found, add an input at the end (prevents sentences without blanks)
       if (!anyMatch) {
         const spacer = document.createTextNode(" ");
         sentenceP.appendChild(spacer);
@@ -348,7 +405,17 @@
 
       const title = document.createElement("div");
       title.className = "word-title";
-      title.innerHTML = `💡 Fill in the blanks! <span class="word-meta">(The word is "${word}")</span>`;
+      const titleText = document.createElement("span");
+      titleText.textContent = `💡 Fill in the blanks! (The word is "${word}")`;
+      title.appendChild(titleText);
+      
+      const listenButton = document.createElement("button");
+      listenButton.textContent = "Listen";
+      listenButton.className = "listen-button";
+      listenButton.setAttribute("data-word", word);
+      listenButton.onclick = () => speakWord(listenButton);
+      title.appendChild(listenButton);
+
       section.appendChild(title);
 
       sentences.slice(0, 10).forEach((sentence) => {
@@ -364,6 +431,7 @@
       const outputDiv = document.getElementById("output");
       const helper = document.getElementById("helper");
       outputDiv.innerHTML = "";
+      updateScore(-score); // Reset score
 
       // Normalize and limit to 10 words, remove empty lines and duplicates
       let words = raw
@@ -403,6 +471,7 @@
       document.getElementById("wordInput").value = "";
       document.getElementById("output").innerHTML = "";
       document.getElementById("helper").textContent = "";
+      updateScore(-score);
       document.getElementById("wordInput").focus();
     });
 

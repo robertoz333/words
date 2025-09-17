@@ -93,6 +93,9 @@
 
     .word-title { font-size: 1.6em; color: var(--accent); font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;}
     .word-meta { font-size: .9em; color: #777; }
+    
+    .button-group { display: flex; gap: 8px; }
+
     .listen-button {
       background-color: #5cb85c;
       color: white;
@@ -101,13 +104,34 @@
       border-radius: 20px;
       font-size: 0.8em;
       cursor: pointer;
-      margin-left: 10px;
       box-shadow: 0 2px #449d44;
       font-family: "Fredoka One", cursive;
     }
     .listen-button:active {
       transform: translateY(1px);
       box-shadow: 0 1px #449d44;
+    }
+    .hint-button {
+      background-color: #f0ad4e;
+      color: white;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 20px;
+      font-size: 0.8em;
+      cursor: pointer;
+      box-shadow: 0 2px #ec971f;
+      font-family: "Fredoka One", cursive;
+    }
+    .hint-button:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px #ec971f;
+    }
+    .hint-display {
+        font-size: 1em;
+        font-weight: normal;
+        margin-left: 10px;
+        color: #888;
+        letter-spacing: 2px;
     }
 
     .sentence { font-size: 1.15em; margin-bottom: 12px; line-height: 2.1; }
@@ -191,7 +215,7 @@
       }
     }
 
-    // New function to speak the word
+    // Function to speak the word
     function speakWord(buttonElement) {
       if ('speechSynthesis' in window) {
         const word = buttonElement.dataset.word;
@@ -199,8 +223,33 @@
         utterance.lang = 'en-US'; // Set language to English
         window.speechSynthesis.speak(utterance);
       } else {
+        // Fallback for browsers that don't support Web Speech API
         alert("The Web Speech API is not supported in this browser. Please try Chrome or Firefox.");
       }
+    }
+    
+    // Function to provide a hint
+    function giveHint(buttonElement) {
+        const word = buttonElement.dataset.word;
+        const hintDisplay = buttonElement.nextElementSibling;
+        let hintIndex = parseInt(buttonElement.dataset.hintIndex, 10);
+
+        if (hintIndex < word.length) {
+            updateScore(-1);
+            
+            const hintedPart = word.substring(0, hintIndex + 1);
+            const remainingPart = "_".repeat(word.length - (hintIndex + 1));
+            hintDisplay.textContent = `${hintedPart}${remainingPart}`;
+
+            hintIndex++;
+            buttonElement.dataset.hintIndex = hintIndex;
+        }
+
+        if (hintIndex === word.length) {
+            buttonElement.disabled = true;
+            buttonElement.textContent = "Hinted";
+            buttonElement.style.opacity = 0.5;
+        }
     }
 
     // Pre-defined sentences for known words in English
@@ -409,12 +458,29 @@
       titleText.textContent = `💡 Fill in the blanks! (The word is "${word}")`;
       title.appendChild(titleText);
       
+      const buttonGroup = document.createElement("div");
+      buttonGroup.className = "button-group";
+      title.appendChild(buttonGroup);
+
       const listenButton = document.createElement("button");
       listenButton.textContent = "Listen";
       listenButton.className = "listen-button";
       listenButton.setAttribute("data-word", word);
       listenButton.onclick = () => speakWord(listenButton);
-      title.appendChild(listenButton);
+      buttonGroup.appendChild(listenButton);
+      
+      const hintButton = document.createElement("button");
+      hintButton.textContent = "Hint";
+      hintButton.className = "hint-button";
+      hintButton.setAttribute("data-word", word);
+      hintButton.setAttribute("data-hint-index", "0");
+      hintButton.onclick = () => giveHint(hintButton);
+      buttonGroup.appendChild(hintButton);
+
+      const hintDisplay = document.createElement("span");
+      hintDisplay.className = "hint-display";
+      hintDisplay.textContent = "_".repeat(word.length);
+      buttonGroup.appendChild(hintDisplay);
 
       section.appendChild(title);
 

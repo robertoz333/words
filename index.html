@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Words</title>
+  <style>
+    /* Import a playful font */
+    @import url("https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap");
+
+    :root {
+      --bg: #f0f8ff;
+      --text: #444;
+      --brand: #ff69b4;
+      --brand-dark: #d1478e;
+      --title: #ff6347;
+      --title-shadow: #ffb6c1;
+      --section-bg: #fffacd;
+      --section-border: #ffa500;
+      --accent: #ff4500;
+      --ok: #2e8b57;
+      --no: #dc143c;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: "Fredoka One", cursive, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      text-align: center;
+      padding: 20px;
+    }
+
+    #container {
+      max-width: 900px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 30px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      border: 5px solid #fff;
+    }
+
+    h1 {
+      color: var(--title);
+      font-size: 3.2em;
+      text-shadow: 2px 2px 0px var(--title-shadow);
+      margin-bottom: 14px;
+    }
+
+    p { font-size: 1.15em; color: #555; line-height: 1.5; }
+
+    .controls { margin: 14px 0 8px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+    textarea {
+      width: 100%;
+      height: 150px;
+      padding: 15px;
+      border-radius: 15px;
+      border: 3px dashed #add8e6;
+      font-size: 1.05em;
+      margin-bottom: 8px;
+      font-family: "Fredoka One", cursive;
+      background-color: #f0f8ff;
+      resize: vertical;
+    }
+    textarea:focus { outline: none; border-color: var(--brand); }
+
+    button {
+      background-color: var(--brand);
+      color: white;
+      padding: 12px 22px;
+      border: none;
+      border-radius: 50px;
+      font-size: 1.2em;
+      cursor: pointer;
+      box-shadow: 0 4px var(--brand-dark);
+      font-family: "Fredoka One", cursive;
+    }
+    button:active { transform: translateY(2px); box-shadow: 0 2px var(--brand-dark); }
+    button.secondary { background: #eee; color: #333; box-shadow: 0 4px #ccc; }
+
+    #output { margin-top: 22px; text-align: left; }
+
+    .word-section {
+      background-color: var(--section-bg);
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 18px;
+      border-left: 10px solid var(--section-border);
+    }
+
+    .word-title { font-size: 1.6em; color: var(--accent); font-weight: bold; margin-bottom: 10px; }
+    .word-meta { font-size: .9em; color: #777; }
+
+    .sentence { font-size: 1.15em; margin-bottom: 12px; line-height: 2.1; }
+
+    .sentence-input {
+      border: none;
+      border-bottom: 3px dashed #aaa;
+      font-family: "Fredoka One", cursive;
+      font-size: 1em;
+      text-align: center;
+      background-color: transparent;
+      min-width: 90px;
+      padding: 2px 4px;
+    }
+    .sentence-input:focus { outline: none; border-bottom: 3px solid var(--accent); }
+
+    .correct { color: var(--ok); border-bottom-color: var(--ok) !important; font-weight: bold; }
+    .incorrect { color: var(--no); border-bottom-color: var(--no) !important; }
+
+    .helper { margin-top: 8px; font-size: .95em; color: #666; text-align: center; }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <h1>🌟 Words 🌟</h1>
+    <p>Scrivi fino a <strong>10 parole inglesi</strong> (una per riga). Per ogni parola verranno generate <strong>10 frasi</strong> con uno spazio da completare.</p>
+
+    <textarea id="wordInput" rows="10" placeholder="Write your words here... for example:\ncar\nhouse\ndog\nsun\nball\napple\nbook\ntree\nwater\nchair"></textarea>
+
+    <div class="controls">
+      <button id="btnGenerate">Create Sentences!</button>
+      <button class="secondary" id="btnClear">Clear</button>
+    </div>
+
+    <div id="helper" class="helper"></div>
+    <div id="output"></div>
+  </div>
+
+  <script>
+    const MAX_WORDS = 10;
+
+    function escapeRegex(s) {
+      return s.replace(/[\-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+    }
+
+    function checkWord(inputElement) {
+      const userInput = inputElement.value.trim().toLowerCase();
+      const correctWord = inputElement.dataset.correct.toLowerCase();
+
+      inputElement.classList.remove("correct", "incorrect");
+      if (!userInput) return;
+      inputElement.classList.add(userInput === correctWord ? "correct" : "incorrect");
+    }
+
+    // Sentenze predefinite per parole conosciute (come nel tuo esempio)
+    const wordSentenceMap = {
+      car: [
+        "You drive it on the road; it has four wheels.",
+        "My dad washes his shiny red .... every weekend.",
+        "The toy .... goes 'vroom vroom' across the floor.",
+        "We need to put gasoline in the .....",
+        "A family can take a road trip in their .....",
+        "It has an engine, seats, and a steering wheel.",
+        "A traffic jam happens when there are too many .... on the street.",
+        "Before crossing the street, you should look both ways for any .....",
+        "The mechanic is fixing the broken .....",
+        "We parked our .... in the garage to keep it safe.",
+      ],
+      house: [
+        "It's a building where a family lives.",
+        "My .... has a kitchen, a living room, and bedrooms.",
+        "The roof of the .... keeps the rain out.",
+        "I love coming back to my cozy .... after school.",
+        "The mailman brings letters to our .....",
+        "Our .... has a bright blue front door.",
+        "We have a big, green garden behind our .....",
+        "My address tells people where my .... is located.",
+        "At night, we turn on all the lights inside our .....",
+        "A chimney lets smoke out from the fireplace in a .....",
+      ],
+      dog: [
+        "It's a pet that barks and wags its tail.",
+        "My .... loves to go for walks in the park.",
+        "This animal is known as 'man's best friend'.",
+        "The .... was chewing on a bone.",
+        "The little puppy will grow up to be a big ....",
+        "I have to feed my .... every morning and night.",
+        "When the doorbell rings, my .... starts to bark loudly.",
+        "You should be gentle when you pet a friendly .....",
+        "The sheep were herded by a clever sheep....",
+        "A leash helps you walk your .... safely.",
+      ],
+      sun: [
+        "It's the big, bright star that gives us light during the day.",
+        "The .... rises in the morning and sets in the evening.",
+        "Plants need light from the .... to grow.",
+        "On a clear day, the .... shines brightly in the sky.",
+        "We wear sunglasses to protect our eyes from the .....",
+        "It is very hot on the surface of the .....",
+        "A sunflower is a plant that turns to face the .....",
+        "Without the ...., our planet would be a cold, dark place.",
+        "You can get a sunburn if you stay in the .... for too long.",
+        "The moon reflects the light from the .....",
+      ],
+      ball: [
+        "It's a round toy that you can throw, catch, and kick.",
+        "The children were playing with a .... in the yard.",
+        "A basketball player bounces the .....",
+        "A soccer player kicks the .... into the goal.",
+        "A tennis player hits the .... with a racket.",
+        "The baby loves to play with a soft, colorful .....",
+        "The .... rolled down the hill and into a puddle.",
+        "Let's play a game of catch with this .....",
+        "The bowling .... is very heavy and has three holes.",
+        "A beach .... is light and gets blown by the wind.",
+      ],
+      apple: [
+        "It's a round fruit that can be red or green.",
+        "An .... a day keeps the doctor away.",
+        "I like to eat a crunchy .... for a snack.",
+        "This sweet fruit grows on trees in an orchard.",
+        "You can make a pie or juice with this fruit.",
+        "The teacher had a shiny red .... on her desk.",
+        "A worm was hiding inside my .....",
+        "I like to dip my .... slices in peanut butter.",
+        "The core of an .... has seeds inside it.",
+        "Snow White ate a poisoned .... and fell asleep.",
+      ],
+      book: [
+        "It has many pages with words and pictures.",
+        "I love to read a good .... before bed.",
+        "The library is a quiet place full of .....",
+        "You turn the pages to read the story inside.",
+        "An author is a person who writes a .....",
+        "I use a bookmark to save my place in my .....",
+        "The story was about a brave knight and a dragon.",
+        "The cover of the .... has a beautiful illustration.",
+        "Chapter one is on the first page of the .....",
+        "You can learn about dinosaurs from a science .....",
+      ],
+      tree: [
+        "It's a tall plant with a trunk, branches, and leaves.",
+        "Birds often build their nests in a .....",
+        "In the fall, the leaves of the .... change color.",
+        "A .... provides cool shade on a hot day.",
+        "Paper is made from the wood of a .....",
+        "A squirrel quickly ran up the side of the .....",
+        "We have a swing hanging from a big branch of a .....",
+        "The roots of a .... grow deep into the ground.",
+        "We decorated the Christmas .... with lights and ornaments.",
+        "An acorn is the seed that can grow into a mighty oak .....",
+      ],
+      water: [
+        "It's a clear liquid that you drink when you are thirsty.",
+        "You should drink plenty of .... every day.",
+        "Fish can't live without .....",
+        "We use soap and .... to wash our hands.",
+        "When it gets very cold, .... turns into ice.",
+        "A boat floats on top of the .....",
+        "Rain is .... that falls from the clouds.",
+        "Let's go for a swim in the cool .... of the lake.",
+        "You need to .... the plants so they can grow.",
+        "A river is a large, flowing body of .....",
+      ],
+      chair: [
+        "It's a piece of furniture with four legs that you can sit on.",
+        "I sat on the .... to eat my dinner at the table.",
+        "The classroom was full of desks and .....",
+        "The baby sat in a high .....",
+        "The cat was sleeping on the comfy .....",
+        "Please pull up a .... and join us.",
+        "The king and queen sat on fancy thrones, which are a type of .....",
+        "This wooden .... is a little hard to sit on.",
+        "A rocking .... moves back and forth.",
+        "There are four .... around our kitchen table.",
+      ],
+    };
+
+    // Fallback: genera 10 frasi che contengono direttamente la parola (così diventano spazi grazie al regex)
+    function generateDefaultSentences(word) {
+      const w = word;
+      const samples = [
+        `I saw a ${w} today at the park.`,
+        `Please write the word ${w} in the blank.`,
+        `This sentence is about a ${w}.`,
+        `The ${w} is on the table.`,
+        `Can you spell ${w}?`,
+        `I lost my ${w} this morning.`,
+        `Look at that ${w} over there!`,
+        `Do you like this ${w}?`,
+        `I need a ${w} for my project.`,
+        `We talked about the ${w} in class.`,
+        `Yesterday I bought a ${w}.`,
+        `Here comes the ${w}!`,
+        `That ${w} is very important.`,
+        `Please don't forget your ${w}.`,
+        `This ${w} belongs to me.`,
+      ];
+      return samples.slice(0, 10);
+    }
+
+    // Costruisce i nodi di una frase sostituendo TUTTE le occorrenze del placeholder o della parola con <input>
+    function buildSentenceNodes(sentence, lowerCaseWord) {
+      const sentenceP = document.createElement("p");
+      sentenceP.className = "sentence";
+      const escaped = escapeRegex(lowerCaseWord);
+      const regex = new RegExp(`\\b${escaped}\\b|\\.{3,}`, "gi");
+
+      let lastIndex = 0;
+      let anyMatch = false;
+      let match;
+      while ((match = regex.exec(sentence)) !== null) {
+        anyMatch = true;
+        // Testo prima del match
+        sentenceP.appendChild(document.createTextNode(sentence.slice(lastIndex, match.index)));
+        // Input sostitutivo
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "sentence-input";
+        input.dataset.correct = lowerCaseWord;
+        input.setAttribute("oninput", "checkWord(this)");
+        input.setAttribute("autocomplete", "off");
+        input.setAttribute("aria-label", `Fill in: ${lowerCaseWord}`);
+        const width = Math.max(90, lowerCaseWord.length * 18 + 20);
+        input.style.width = width + "px";
+        sentenceP.appendChild(input);
+        lastIndex = match.index + match[0].length;
+      }
+      // Resto della frase
+      sentenceP.appendChild(document.createTextNode(sentence.slice(lastIndex)));
+
+      // Se nessuna occorrenza trovata, aggiungi un input alla fine (evita frasi senza spazio)
+      if (!anyMatch) {
+        const spacer = document.createTextNode(" ");
+        sentenceP.appendChild(spacer);
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "sentence-input";
+        input.dataset.correct = lowerCaseWord;
+        input.setAttribute("oninput", "checkWord(this)");
+        input.setAttribute("autocomplete", "off");
+        input.setAttribute("aria-label", `Fill in: ${lowerCaseWord}`);
+        const width = Math.max(90, lowerCaseWord.length * 18 + 20);
+        input.style.width = width + "px";
+        sentenceP.appendChild(input);
+      }
+
+      return sentenceP;
+    }
+
+    function renderWordSection(word, sentences) {
+      const section = document.createElement("div");
+      section.className = "word-section";
+
+      const title = document.createElement("div");
+      title.className = "word-title";
+      title.innerHTML = `💡 Fill in the blanks! <span class="word-meta">(The word is "${word}")</span>`;
+      section.appendChild(title);
+
+      sentences.slice(0, 10).forEach((sentence) => {
+        const nodes = buildSentenceNodes(sentence, word.toLowerCase());
+        section.appendChild(nodes);
+      });
+
+      return section;
+    }
+
+    function generateSentences() {
+      const raw = document.getElementById("wordInput").value.trim();
+      const outputDiv = document.getElementById("output");
+      const helper = document.getElementById("helper");
+      outputDiv.innerHTML = "";
+
+      // Normalizza e limita a 10 parole, rimuove righe vuote e duplicati
+      let words = raw
+        .split(/\r?\n/)
+        .map((w) => w.trim())
+        .filter(Boolean);
+
+      const unique = [];
+      const seen = new Set();
+      for (const w of words) {
+        const key = w.toLowerCase();
+        if (!seen.has(key)) {
+          unique.push(w);
+          seen.add(key);
+        }
+      }
+      words = unique.slice(0, MAX_WORDS);
+
+      if (words.length === 0) {
+        helper.textContent = "Inserisci almeno una parola (max 10).";
+        return;
+      }
+
+      helper.textContent = `Parole usate: ${words.length}/${MAX_WORDS}`;
+
+      words.forEach((word) => {
+        const key = word.toLowerCase();
+        const sentences = wordSentenceMap[key] || generateDefaultSentences(key);
+        const section = renderWordSection(word, sentences);
+        outputDiv.appendChild(section);
+      });
+    }
+
+    // Pulsanti
+    document.getElementById("btnGenerate").addEventListener("click", generateSentences);
+    document.getElementById("btnClear").addEventListener("click", () => {
+      document.getElementById("wordInput").value = "";
+      document.getElementById("output").innerHTML = "";
+      document.getElementById("helper").textContent = "";
+      document.getElementById("wordInput").focus();
+    });
+
+    // Invio rapido con Ctrl+Enter / Cmd+Enter
+    document.getElementById("wordInput").addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        generateSentences();
+      }
+    });
+  </script>
+</body>
+</html>

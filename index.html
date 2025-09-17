@@ -117,7 +117,7 @@
 <body>
   <div id="container">
     <h1>🌟 Words 🌟</h1>
-    <p>Scrivi fino a <strong>10 parole inglesi</strong> (una per riga). Per ogni parola verranno generate <strong>10 frasi</strong> con uno spazio da completare.</p>
+    <p>Type up to <strong>10 English words</strong> (one per line). For each word, <strong>10 sentences</strong> with a blank to fill will be generated.</p>
 
     <textarea id="wordInput" rows="10" placeholder="Write your words here... for example:\ncar\nhouse\ndog\nsun\nball\napple\nbook\ntree\nwater\nchair"></textarea>
 
@@ -146,7 +146,7 @@
       inputElement.classList.add(userInput === correctWord ? "correct" : "incorrect");
     }
 
-    // Sentenze predefinite per parole conosciute (come nel tuo esempio)
+    // Predefined sentences for known words
     const wordSentenceMap = {
       car: [
         "You drive it on the road; it has four wheels.",
@@ -270,7 +270,7 @@
       ],
     };
 
-    // Fallback: genera 10 frasi che contengono direttamente la parola (così diventano spazi grazie al regex)
+    // Fallback: generates 10 sentences that directly contain the word (which then become blanks via regex)
     function generateDefaultSentences(word) {
       const w = word;
       const samples = [
@@ -293,7 +293,7 @@
       return samples.slice(0, 10);
     }
 
-    // Costruisce i nodi di una frase sostituendo TUTTE le occorrenze del placeholder o della parola con <input>
+    // Builds a sentence's nodes by replacing ALL occurrences of the placeholder or word with an <input>
     function buildSentenceNodes(sentence, lowerCaseWord) {
       const sentenceP = document.createElement("p");
       sentenceP.className = "sentence";
@@ -305,9 +305,9 @@
       let match;
       while ((match = regex.exec(sentence)) !== null) {
         anyMatch = true;
-        // Testo prima del match
+        // Text before the match
         sentenceP.appendChild(document.createTextNode(sentence.slice(lastIndex, match.index)));
-        // Input sostitutivo
+        // Replacement input
         const input = document.createElement("input");
         input.type = "text";
         input.className = "sentence-input";
@@ -320,10 +320,10 @@
         sentenceP.appendChild(input);
         lastIndex = match.index + match[0].length;
       }
-      // Resto della frase
+      // Rest of the sentence
       sentenceP.appendChild(document.createTextNode(sentence.slice(lastIndex)));
 
-      // Se nessuna occorrenza trovata, aggiungi un input alla fine (evita frasi senza spazio)
+      // If no occurrences are found, add an input at the end (avoids sentences without blanks)
       if (!anyMatch) {
         const spacer = document.createTextNode(" ");
         sentenceP.appendChild(spacer);
@@ -365,7 +365,7 @@
       const helper = document.getElementById("helper");
       outputDiv.innerHTML = "";
 
-      // Normalizza e limita a 10 parole, rimuove righe vuote e duplicati
+      // Normalize and limit to 10 words, remove empty lines and duplicates
       let words = raw
         .split(/\r?\n/)
         .map((w) => w.trim())
@@ -383,11 +383,11 @@
       words = unique.slice(0, MAX_WORDS);
 
       if (words.length === 0) {
-        helper.textContent = "Inserisci almeno una parola (max 10).";
+        helper.textContent = "Please enter at least one word (max 10).";
         return;
       }
 
-      helper.textContent = `Parole usate: ${words.length}/${MAX_WORDS}`;
+      helper.textContent = `Words used: ${words.length}/${MAX_WORDS}`;
 
       words.forEach((word) => {
         const key = word.toLowerCase();
@@ -397,7 +397,7 @@
       });
     }
 
-    // Pulsanti
+    // Buttons
     document.getElementById("btnGenerate").addEventListener("click", generateSentences);
     document.getElementById("btnClear").addEventListener("click", () => {
       document.getElementById("wordInput").value = "";
@@ -406,7 +406,7 @@
       document.getElementById("wordInput").focus();
     });
 
-    // Invio rapido con Ctrl+Enter / Cmd+Enter
+    // Quick submit with Ctrl+Enter / Cmd+Enter
     document.getElementById("wordInput").addEventListener("keydown", (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         generateSentences();

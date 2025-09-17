@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Spelling Game</title>
+  <title>Spelling & Drawing Game</title>
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap");
     :root {
@@ -16,6 +16,8 @@
       --accent: #ff4500;
       --ok: #2e8b57;
       --no: #dc143c;
+      --draw: #4682B4; /* SteelBlue for Draw button */
+      --draw-dark: #4176a2;
     }
     * { box-sizing: border-box; }
     body {
@@ -80,40 +82,27 @@
     .bg-4 { background-color: #C8E6C9; border-left: 10px solid #66BB6A; }
     .bg-5 { background-color: #F8BBD0; border-left: 10px solid #F06292; }
     .bg-6 { background-color: #E1BEE7; border-left: 10px solid #9575CD; }
-    .word-title { font-size: 1.6em; color: var(--accent); font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;}
+    .word-title { font-size: 1.6em; color: var(--accent); font-weight: bold; }
     .word-meta { font-size: .9em; color: #777; }
+    
     .button-group { display: flex; gap: 8px; }
-    .listen-button {
-      background-color: #5cb85c;
+    .action-button {
       color: white;
       padding: 6px 12px;
       border: none;
       border-radius: 20px;
       font-size: 0.8em;
       cursor: pointer;
-      box-shadow: 0 2px #449d44;
       font-family: "Fredoka One", cursive;
     }
+    .listen-button { background-color: #5cb85c; box-shadow: 0 2px #449d44; }
     .listen-button:active { transform: translateY(1px); box-shadow: 0 1px #449d44; }
-    .hint-button {
-      background-color: #f0ad4e;
-      color: white;
-      padding: 6px 12px;
-      border: none;
-      border-radius: 20px;
-      font-size: 0.8em;
-      cursor: pointer;
-      box-shadow: 0 2px #ec971f;
-      font-family: "Fredoka One", cursive;
-    }
+    .hint-button { background-color: #f0ad4e; box-shadow: 0 2px #ec971f; }
     .hint-button:active { transform: translateY(1px); box-shadow: 0 1px #ec971f; }
-    .hint-display {
-      font-size: 1em;
-      font-weight: normal;
-      margin-left: 10px;
-      color: #888;
-      letter-spacing: 2px;
-    }
+    .draw-button { background-color: var(--draw); box-shadow: 0 2px var(--draw-dark); }
+    .draw-button:active { transform: translateY(1px); box-shadow: 0 1px var(--draw-dark); }
+
+    .hint-display { font-size: 1em; font-weight: normal; margin-left: 10px; color: #888; letter-spacing: 2px; align-self: center; }
     .sentence { font-size: 1.15em; margin-bottom: 12px; line-height: 2.1; }
     .sentence-input {
       border: none;
@@ -129,16 +118,9 @@
     .correct { color: var(--ok); border-bottom-color: var(--ok) !important; font-weight: bold; }
     .incorrect { color: var(--no); border-bottom-color: var(--no) !important; }
     .verify-button {
-      background-color: #26a69a;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 50px;
-      font-size: 1em;
-      cursor: pointer;
-      box-shadow: 0 4px #00897b;
-      font-family: "Fredoka One", cursive;
-      margin-top: 10px;
+      background-color: #26a69a; color: white; padding: 10px 20px;
+      border: none; border-radius: 50px; font-size: 1em; cursor: pointer;
+      box-shadow: 0 4px #00897b; font-family: "Fredoka One", cursive;
     }
     .verify-button:active { transform: translateY(2px); box-shadow: 0 2px #00897b; }
     .helper { margin-top: 8px; font-size: .95em; color: #666; text-align: center; }
@@ -146,11 +128,11 @@
     .modal {
       display: none; position: fixed; z-index: 10; left: 0; top: 0;
       width: 100%; height: 100%; overflow: auto;
-      background-color: rgba(0,0,0,0.95); padding-top: 60px;
+      background-color: rgba(0,0,0,0.85); padding-top: 30px;
     }
     .modal-content {
-      background-color: #fefefe; margin: 5% auto; padding: 30px;
-      border: 5px solid var(--brand); width: 80%; max-width: 500px;
+      background-color: #fefefe; margin: 2% auto; padding: 20px;
+      border: 5px solid var(--brand); width: 90%; max-width: 600px;
       border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);
       animation: fadeIn 0.5s;
     }
@@ -162,6 +144,13 @@
       border: 2px solid #ccc; border-radius: 10px; font-family: "Fredoka One", cursive; margin-bottom: 10px;
     }
     .modal-input:focus { outline: none; border-color: var(--brand); }
+
+    #drawingCanvas {
+        border: 3px solid #ddd;
+        border-radius: 10px;
+        cursor: crosshair;
+        touch-action: none; /* Prevent scrolling on touch devices */
+    }
 
     .show-message { display: block !important; }
     .message-box {
@@ -176,7 +165,7 @@
 </head>
 <body>
   <div id="container">
-    <h1>🌟 Spelling Game 🌟</h1>
+    <h1>🌟 Spelling & Drawing Game 🌟</h1>
     <p>Enter up to <strong>10 words</strong> (one per line). For each word, <strong>10 sentences</strong> will be generated with a blank space for you to complete.</p>
     <textarea id="wordInput" rows="10" placeholder="Write your words here... for example:
 sun
@@ -198,6 +187,7 @@ house"></textarea>
     <div id="output"></div>
   </div>
 
+  <!-- Verification Modal -->
   <div id="verificationModal" class="modal">
     <div class="modal-content">
       <h2 id="modalTitle">Verification</h2>
@@ -208,7 +198,20 @@ house"></textarea>
       <button id="modalSkipBtn" class="secondary">Skip</button>
     </div>
   </div>
+  
+  <!-- Drawing Modal -->
+  <div id="drawModal" class="modal">
+      <div class="modal-content">
+          <h2 id="drawModalTitle">Draw the Word</h2>
+          <canvas id="drawingCanvas" width="550" height="350"></canvas>
+          <div class="controls" style="margin-top: 15px;">
+              <button id="drawClearBtn" class="secondary">Clear</button>
+              <button id="drawCloseBtn">Close</button>
+          </div>
+      </div>
+  </div>
 
+  <!-- Custom Message Box -->
   <div id="messageBox" class="message-box">
     <h3 id="messageTitle"></h3>
     <p id="messageText"></p>
@@ -231,6 +234,15 @@ house"></textarea>
     const messageTitle = document.getElementById("messageTitle");
     const messageText = document.getElementById("messageText");
     const messageOkBtn = document.getElementById("messageOkBtn");
+    
+    // Drawing Modal Elements
+    const drawModal = document.getElementById("drawModal");
+    const drawModalTitle = document.getElementById("drawModalTitle");
+    const drawingCanvas = document.getElementById("drawingCanvas");
+    const drawClearBtn = document.getElementById("drawClearBtn");
+    const drawCloseBtn = document.getElementById("drawCloseBtn");
+    const ctx = drawingCanvas.getContext("2d");
+    let isDrawing = false;
 
     let currentWordToVerify = '';
     const backgroundColors = ['bg-1', 'bg-2', 'bg-3', 'bg-4', 'bg-5', 'bg-6'];
@@ -256,51 +268,31 @@ house"></textarea>
     function checkWord(inputElement) {
       const userInput = inputElement.value.trim().toLowerCase();
       const correctWord = inputElement.dataset.correct.toLowerCase();
-
       inputElement.classList.remove("correct", "incorrect");
       if (!userInput) return;
-
-      if (userInput === correctWord) {
-        inputElement.classList.add("correct");
-      } else {
-        inputElement.classList.add("incorrect");
-      }
-
+      if (userInput === correctWord) inputElement.classList.add("correct");
+      else inputElement.classList.add("incorrect");
       const section = inputElement.closest('.word-section');
       const allInputs = section.querySelectorAll('.sentence-input');
       let completedCount = 0;
-      allInputs.forEach(input => {
-        if (input.classList.contains('correct')) { completedCount++; }
-      });
+      allInputs.forEach(input => { if (input.classList.contains('correct')) completedCount++; });
       const progressSpan = section.querySelector('.progress-count');
-      if (progressSpan) { progressSpan.textContent = `(${completedCount}/10)`; }
+      if (progressSpan) progressSpan.textContent = `(${completedCount}/10)`;
     }
 
     async function playSuccessJingle() {
-      const synth = new Tone.Synth({
-        oscillator: { type: "sawtooth" },
-        envelope: { attack: 0.05, decay: 0.5, sustain: 0.2, release: 0.8 },
-      }).toDestination();
-
+      const synth = new Tone.Synth({ oscillator: { type: "sawtooth" }, envelope: { attack: 0.05, decay: 0.5, sustain: 0.2, release: 0.8 } }).toDestination();
       const notes = ["C4", "G3", "C4", "C4", "B3", "A3", "G3", "F#3", "G3", "A3", "B3", "C4"];
-      const times = ["0", "0.5", "1", "1.5", "2.0", "2.5", "3.0", "3.5", "4.0", "4.5", "5.0", "5.5"];
-
-      const part = new Tone.Part((time, note) => {
-        synth.triggerAttackRelease(note, "0.4", time);
-      }, notes.map((note, index) => [times[index], note])).start(0);
-
-      if (Tone.context.state !== 'running') { await Tone.start(); }
+      const part = new Tone.Part((time, note) => synth.triggerAttackRelease(note, "0.4", time), notes.map((n, i) => [i * 0.5, n])).start(0);
+      if (Tone.context.state !== 'running') await Tone.start();
       Tone.Transport.start();
-      Tone.Transport.scheduleOnce(() => { Tone.Transport.stop(); }, "6");
+      Tone.Transport.scheduleOnce(() => Tone.Transport.stop(), "6");
     }
 
     function showVerificationModal(word) {
       const sentences = wordSentenceMap[word.toLowerCase()] || generateContextualSentences(word.toLowerCase());
-      const randomIndex = Math.floor(Math.random() * sentences.length);
-      const sentence = sentences[randomIndex];
-      const displaySentence = sentence.replace(new RegExp(escapeRegex(word), 'gi'), '....');
-
-      modalSentence.textContent = displaySentence;
+      const sentence = sentences[Math.floor(Math.random() * sentences.length)];
+      modalSentence.textContent = sentence.replace(new RegExp(escapeRegex(word), 'gi'), '....');
       modalInput.value = '';
       modalInput.dataset.correct = word;
       currentWordToVerify = word;
@@ -311,19 +303,18 @@ house"></textarea>
     function verifyWord() {
       const userInput = modalInput.value.trim().toLowerCase();
       const correctWord = modalInput.dataset.correct.toLowerCase();
-
       if (userInput === correctWord) {
         updateScore(1);
-        showMessage("Correct!", `Great! The word is "${correctWord}". You earned 1 point!`);
+        showMessage("Correct!", `Great! The word is "${correctWord}".`);
         const section = document.querySelector(`.word-section[data-word="${currentWordToVerify}"]`);
-        if (section) { section.querySelector('.word-title').style.color = 'var(--ok)'; }
+        if (section) section.querySelector('.word-title').style.color = 'var(--ok)';
         verifiedWordCount++;
         if (verifiedWordCount >= totalWords) {
           if (score === totalWords) {
-            showMessage("Perfect Score!", "Congratulations! You spelled all words correctly and earned a perfect score!");
+            showMessage("Perfect Score!", "Congratulations! You got a perfect score!");
             playSuccessJingle();
           } else {
-            showMessage("Game Over!", "You have completed all the words. Try again to get a perfect score!");
+            showMessage("Game Over!", "You have completed all the words.");
           }
         }
         hideModal();
@@ -334,150 +325,111 @@ house"></textarea>
 
     function hideModal() {
       verificationModal.style.display = 'none';
+      drawModal.style.display = 'none';
       currentWordToVerify = '';
     }
 
     modalVerifyBtn.addEventListener('click', verifyWord);
     modalInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') verifyWord(); });
-    modalSkipBtn.addEventListener('click', () => hideModal());
+    modalSkipBtn.addEventListener('click', hideModal);
 
-    // Prefer British English voice (en-GB). Fallback to lang only.
-    function chooseBritishVoice() {
-      const list = window.speechSynthesis.getVoices() || [];
-      return list.find(v => /en-GB/i.test(v.lang) && /female/i.test(v.name)) ||
-             list.find(v => /en-GB/i.test(v.lang)) ||
-             list.find(v => /UK|British/i.test(v.name)) ||
-             list.find(v => /^en[-_]/i.test(v.lang));
+    // Drawing Logic
+    function startDrawing(e) {
+        isDrawing = true;
+        draw(e);
     }
+    function stopDrawing() {
+        isDrawing = false;
+        ctx.beginPath();
+    }
+    function draw(e) {
+        if (!isDrawing) return;
+        e.preventDefault();
+        
+        let rect = drawingCanvas.getBoundingClientRect();
+        let x = (e.clientX || e.touches[0].clientX) - rect.left;
+        let y = (e.clientY || e.touches[0].clientY) - rect.top;
 
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#333';
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+    drawingCanvas.addEventListener('mousedown', startDrawing);
+    drawingCanvas.addEventListener('mouseup', stopDrawing);
+    drawingCanvas.addEventListener('mouseleave', stopDrawing);
+    drawingCanvas.addEventListener('mousemove', draw);
+    drawingCanvas.addEventListener('touchstart', startDrawing);
+    drawingCanvas.addEventListener('touchend', stopDrawing);
+    drawingCanvas.addEventListener('touchmove', draw);
+    
+    function showDrawModal(word) {
+        drawModalTitle.textContent = `Draw the word: "${word}"`;
+        ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+        drawModal.style.display = 'block';
+    }
+    drawClearBtn.addEventListener('click', () => ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height));
+    drawCloseBtn.addEventListener('click', hideModal);
+    
+    // Speech Logic (robust version)
+    function chooseBritishVoice() {
+        const list = window.speechSynthesis.getVoices() || [];
+        return list.find(v => /en-GB/i.test(v.lang) && /female/i.test(v.name)) ||
+               list.find(v => /en-GB/i.test(v.lang)) ||
+               list.find(v => /UK|British/i.test(v.name)) ||
+               list.find(v => /^en[-_]/i.test(v.lang));
+    }
     function speakWord(buttonElement) {
-      if (!('speechSynthesis' in window)) {
-        showMessage("Speech API Not Supported", "The Web Speech API is not supported in this browser. Try Chrome or Firefox.");
-        return;
-      }
-      const word = buttonElement.dataset.word;
-      const utterance = new SpeechSynthesisUtterance(word);
-      
-      const setVoiceAndSpeak = () => {
-        const voice = chooseBritishVoice();
-        if (voice) {
-          utterance.voice = voice;
-          utterance.lang = voice.lang; 
-        } else {
-          utterance.lang = 'en-GB';
-        }
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(utterance);
-      };
-
-      if ((window.speechSynthesis.getVoices() || []).length === 0) {
-        window.speechSynthesis.onvoiceschanged = setVoiceAndSpeak;
-      } else {
-        setVoiceAndSpeak();
-      }
+        if (!('speechSynthesis' in window)) return showMessage("Speech API Not Supported", "Try Chrome or Firefox.");
+        const word = buttonElement.dataset.word;
+        const utterance = new SpeechSynthesisUtterance(word);
+        const setVoiceAndSpeak = () => {
+            const voice = chooseBritishVoice();
+            if (voice) { utterance.voice = voice; utterance.lang = voice.lang; } 
+            else { utterance.lang = 'en-GB'; }
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+        };
+        if ((window.speechSynthesis.getVoices() || []).length === 0) window.speechSynthesis.onvoiceschanged = setVoiceAndSpeak;
+        else setVoiceAndSpeak();
     }
 
     function giveHint(buttonElement) {
-      const word = buttonElement.dataset.word;
-      const hintDisplay = buttonElement.nextElementSibling;
-      let hintIndex = parseInt(buttonElement.dataset.hintIndex, 10);
-      if (hintIndex < word.length) {
-        updateScore(-1);
-        showMessage("Hint Used!", "You lost 1 point for using a hint. Keep going!");
-        const hintedPart = word.substring(0, hintIndex + 1);
-        const remainingPart = "_".repeat(word.length - (hintIndex + 1));
-        hintDisplay.textContent = `${hintedPart}${remainingPart}`;
-        hintIndex++;
-        buttonElement.dataset.hintIndex = hintIndex;
-      }
-      if (hintIndex === word.length) {
-        buttonElement.disabled = true;
-        buttonElement.textContent = "Hint Given";
-        buttonElement.style.opacity = 0.5;
-      }
+        const word = buttonElement.dataset.word;
+        const hintDisplay = buttonElement.nextElementSibling;
+        let hintIndex = parseInt(buttonElement.dataset.hintIndex, 10);
+        if (hintIndex < word.length) {
+            updateScore(-1);
+            showMessage("Hint Used!", "You lost 1 point for using a hint.");
+            const hintedPart = word.substring(0, hintIndex + 1);
+            hintDisplay.textContent = `${hintedPart}${"_".repeat(word.length - (hintIndex + 1))}`;
+            buttonElement.dataset.hintIndex = ++hintIndex;
+        }
+        if (hintIndex === word.length) {
+            buttonElement.disabled = true;
+            buttonElement.textContent = "Hint Given";
+            buttonElement.style.opacity = 0.5;
+        }
     }
-
+    
     // ——————————————————————————————————————————————
     // TIER 1: BANCA FRASI SPECIFICHE (MASSIMA PERTINENZA)
     // ——————————————————————————————————————————————
     const wordSentenceMap = {
-      sun: [
-        "The .... is a giant star that gives us light and heat every day.",
-        "Without the ...., plants couldn't make their own food.",
-        "The .... rises in the east and sets in the west.",
-        "On a clear day, you can feel the warmth of the .... on your skin.",
-        "A sunflower turns its head to follow the .... across the sky.",
-      ],
-      moon: [
-        "The .... lights up the night sky and it changes shape.",
-        "Neil Armstrong was the first person to walk on the .....",
-        "A full .... is big and round and very bright.",
-        "The .... has craters on its surface that you can see with a telescope.",
-        "Wolves in stories sometimes howl at the full ....",
-      ],
-      dog: [
-        "A .... is often called 'man's best friend' because it is loyal.",
-        "You might take your pet .... for a walk in the park.",
-        "A .... wags its tail when it's happy to see you.",
-        "A puppy is a baby .... that is very playful.",
-        "A .... likes to fetch a ball or a stick.",
-      ],
-      cat: [
-          "A .... purrs when it is happy and content.",
-          "A kitten is a baby .... that loves to play with string.",
-          "A .... has sharp claws and soft fur.",
-          "Unlike a dog, a .... often likes to sleep in a warm spot.",
-          "A .... says 'meow' when it wants food.",
-      ],
-      sea: [
-          "The .... is a large body of salt water.",
-          "You can build sandcastles on the beach next to the ....",
-          "Boats and ships sail on the .... to travel to other places.",
-          "Fish, whales, and crabs live in the ....",
-          "The waves of the .... make a relaxing sound.",
-      ],
-      school: [
-          ".... is a place where children go to learn new things.",
-          "Your teacher helps you read and write at ....",
-          "You play with your friends in the playground at ....",
-          "A classroom is a room in a .... with desks and a board.",
-          "You carry your books in a bag to ....",
-      ],
-      book: [
-          "You read a .... to learn about new stories and ideas.",
-          "A library is a place full of many different .... to borrow.",
-          "Each .... has a cover, pages, and words inside.",
-          "You turn the page of a .... to continue the story.",
-          "A story.... might have pictures to go with the words.",
-      ],
-      car: [
-          "A .... is a vehicle with four wheels that you drive on the road.",
-          "You must wear a seatbelt when you are riding in a ....",
-          "A .... needs petrol or electricity to make it go.",
-          "Traffic lights tell a .... when to stop and when to go.",
-          "A garage is where you park a .... at night.",
-      ],
-      tree: [
-          "A .... has a trunk, branches, and green leaves.",
-          "Birds often build their nests high up in a ....",
-          "In autumn, the leaves of a .... might turn red, yellow, or brown.",
-          "A forest is a place with many, many .... growing together.",
-          "An apple .... grows apples that you can eat.",
-      ],
-      flowers: [
-          ".... are colourful plants that grow in a garden or a park.",
-          "Bees like to visit .... to collect nectar.",
-          "You can pick a bunch of .... to put in a vase.",
-          "Roses, daisies, and tulips are all types of ....",
-          "Many .... have a lovely, sweet smell.",
-      ],
-      house: [
-          "A .... is a building where a family lives.",
-          "Your .... has a roof to keep the rain out.",
-          "A .... has rooms like a kitchen, a bedroom, and a living room.",
-          "The front door of a .... has a number on it.",
-          "You sleep in your bed in your .... at night.",
-      ]
+        sun: ["The .... is a giant star that gives us light and heat.", "Without the ...., plants couldn't grow.", "The .... rises in the east.", "On a clear day, you can feel the warmth of the ....", "A sunflower turns to follow the ...."],
+        moon: ["The .... lights up the night sky.", "Neil Armstrong was the first person to walk on the .....", "A full .... is big and round.", "The .... has craters on its surface.", "Wolves in stories howl at the ...."],
+        dog: ["A .... is often called 'man's best friend'.", "You might take your pet .... for a walk.", "A .... wags its tail when it's happy.", "A puppy is a baby .....", "A .... likes to fetch a ball."],
+        cat: ["A .... purrs when it is happy.", "A kitten is a baby ....", "A .... has sharp claws and soft fur.", "A .... often likes to sleep in a warm spot.", "A .... says 'meow'."],
+        sea: ["The .... is a large body of salt water.", "You build sandcastles on the beach next to the ....", "Boats and ships sail on the ....", "Fish and whales live in the ....", "The waves of the .... make a relaxing sound."],
+        school: [".... is where children go to learn.", "Your teacher helps you read and write at ....", "You play with your friends in the playground at ....", "A classroom is a room in a ....", "You carry your books to ...."],
+        book: ["You read a .... for stories and ideas.", "A library is a place full of ....", "Each .... has a cover and pages.", "You turn the page of a .... to continue.", "A story.... might have pictures."],
+        car: ["A .... has four wheels and drives on the road.", "You must wear a seatbelt in a ....", "A .... needs petrol or electricity to go.", "Traffic lights tell a .... when to stop.", "A garage is where you park a ...."],
+        tree: ["A .... has a trunk, branches, and leaves.", "Birds build nests in a ....", "In autumn, the leaves of a .... change colour.", "A forest is a place with many ....", "An apple .... grows apples."],
+        flowers: [".... are colourful plants in a garden.", "Bees visit .... to collect nectar.", "You can put a bunch of .... in a vase.", "Roses and daisies are types of ....", "Many .... have a lovely smell."],
+        house: ["A .... is a building where a family lives.", "Your .... has a roof to keep the rain out.", "A .... has rooms like a kitchen and bedroom.", "The front door of a .... has a number.", "You sleep in your bed in your ...."]
     };
 
     // ——————————————————————————————————————————————
@@ -485,29 +437,11 @@ house"></textarea>
     // ——————————————————————————————————————————————
     function getArticle(word) { return /^[aeiou]/i.test(word) ? "an" : "a"; }
     function syllableCount(w) { return (w.match(/[aeiouy]+/g)?.length || 1); }
-    function syllableHint(w) {
-      const n = syllableCount(w);
-      return `${n} syllable${n>1?"s":""}`;
-    }
-    function ensureUnique(sentences) {
-      const seen = new Set();
-      const out = [];
-      for (const s of sentences) {
-        const norm = s.toLowerCase().replace(/\s+/g," ").replace(/[^\w. ]/g,"").trim();
-        if (norm && !seen.has(norm)) { seen.add(norm); out.push(s); }
-      }
-      return out;
-    }
-    function shuffleAndPick(arr, count) {
-      const a = [...arr];
-      for (let i=a.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
-      return a.slice(0, count);
-    }
+    function syllableHint(w) { const n = syllableCount(w); return `${n} syllable${n>1?"s":""}`; }
+    function ensureUnique(sentences) { const seen = new Set(), out = []; for (const s of sentences) { const norm = s.toLowerCase().replace(/\s+/g," ").replace(/[^\w. ]/g,"").trim(); if (norm && !seen.has(norm)) { seen.add(norm); out.push(s); } } return out; }
+    function shuffleAndPick(arr, count) { const a = [...arr]; for (let i=a.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a.slice(0, count); }
     function simpleRhyme(word) {
-      const bank = {
-        sun: "run", moon: "spoon", star: "car", dog: "log", cat: "hat", bird: "word",
-        red: "bed", blue: "shoe", apple: "dapple", bread: "head", tree: "see", car: "star"
-      };
+      const bank = { sun: "run", moon: "spoon", star: "car", dog: "log", cat: "hat", bird: "word", red: "bed", blue: "shoe", apple: "dapple", bread: "head", tree: "see", car: "star" };
       return bank[word.toLowerCase()] || null;
     }
     function morphology(word) {
@@ -519,230 +453,139 @@ house"></textarea>
       return info;
     }
     const SENSES = {
-      bat: [
-        { cat:"animal", clue:"An animal that flies at night is a ...." },
-        { cat:"object", clue:"To hit a baseball, you use a ...." }
-      ],
-      seal: [
-        { cat:"animal", clue:"An animal that barks and swims in the sea is a ...." },
-        { cat:"action", clue:"To close a letter, you .... the envelope." }
-      ],
-      bank: [
-        { cat:"place", clue:"A place that keeps money safe is a ...." },
-        { cat:"nature", clue:"The side of a river is called a river ...." }
-      ],
+      bat: [{ cat:"animal", clue:"An animal that flies at night is a ...." }, { cat:"object", clue:"To hit a baseball, you use a ...." }],
+      seal: [{ cat:"animal", clue:"An animal that barks and swims is a ...." }, { cat:"action", clue:"To close a letter, you .... the envelope." }],
+      bank: [{ cat:"place", clue:"A place that keeps money safe is a ...." }, { cat:"nature", clue:"The side of a river is called a river ...." }],
     };
 
     function generateContextualSentences(word) {
       const w = word.toLowerCase();
-      const info = {
-        word: w,
-        article: getArticle(w),
-        first: w[0]?.toUpperCase() || "",
-        syllables: syllableHint(w),
-        rhyme: simpleRhyme(w),
-        morph: morphology(w),
-        senses: SENSES[w] || null,
-        isPlural: morphology(w).isPlural,
-      };
-
+      const info = { word: w, article: getArticle(w), first: w[0]?.toUpperCase()||"", syllables: syllableHint(w), rhyme: simpleRhyme(w), morph: morphology(w), senses: SENSES[w] || null, isPlural: morphology(w).isPlural };
       const patterns = [
-        // Phonics / Structure
-        { condition: (i) => true, generator: (i) => `The word .... starts with the letter ${i.first}.` },
-        { condition: (i) => true, generator: (i) => `The word .... has ${i.syllables}.` },
-        { condition: (i) => i.rhyme, generator: (i) => `The word .... rhymes with "${i.rhyme}".` },
-        // Simple Definition / Category
-        { condition: (i) => !i.isPlural, generator: (i) => `${i.article.toUpperCase()} .... is a type of thing you can see.` },
-        { condition: (i) => i.isPlural, generator: (i) => `.... are things you can count.` },
-        // Senses (if available)
-        { condition: (i) => i.senses, generator: (i) => i.senses[0].clue },
-        { condition: (i) => i.senses && i.senses.length > 1, generator: (i) => i.senses[1].clue },
-        // Simple context
-        { condition: (i) => !i.isPlural, generator: (i) => `You can find ${i.article} .... in a story book.` },
-        { condition: (i) => i.isPlural, generator: (i) => `You can find .... in many places.` },
-        { condition: (i) => !i.isPlural, generator: (i) => `Think about what ${i.article} .... is used for.` },
-        // Action / Use
-        { condition: (i) => i.morph.isVerb, generator: (i) => `To .... is an action you can do.` },
-        // Contrast
-        { condition: (i) => i.word === "big", generator: (i) => `The opposite of small is ....` },
-        { condition: (i) => i.word === "small", generator: (i) => `The opposite of big is ....` },
-        { condition: (i) => i.word === "hot", generator: (i) => `The opposite of cold is ....` },
-        { condition: (i) => i.word === "cold", generator: (i) => `The opposite of hot is ....` },
-        // Fallbacks
-        { condition: (i) => true, generator: (i) => `Can you spell the word ....?` },
-        { condition: (i) => true, generator: (i) => `Try to write the word .... in the space.` },
+        { c: (i) => true, g: (i) => `The word .... starts with the letter ${i.first}.` },
+        { c: (i) => true, g: (i) => `The word .... has ${i.syllables}.` },
+        { c: (i) => i.rhyme, g: (i) => `The word .... rhymes with "${i.rhyme}".` },
+        { c: (i) => !i.isPlural, g: (i) => `${i.article.toUpperCase()} .... is a type of thing.` },
+        { c: (i) => i.isPlural, g: (i) => `.... are things you can count.` },
+        { c: (i) => i.senses, g: (i) => i.senses[0].clue },
+        { c: (i) => i.senses && i.senses.length > 1, g: (i) => i.senses[1].clue },
+        { c: (i) => !i.isPlural, g: (i) => `You can find ${i.article} .... in a story book.` },
+        { c: (i) => i.morph.isVerb, g: (i) => `To .... is an action.` },
+        { c: (i) => i.word === "big", g: (i) => `The opposite of small is ....` },
+        { c: (i) => i.word === "small", g: (i) => `The opposite of big is ....` },
+        { c: (i) => true, g: (i) => `Can you spell the word ....?` },
+        { c: (i) => true, g: (i) => `Write the word .... in the space.` },
       ];
-
-      const applicable = patterns.filter(p => p.condition(info));
-      const candidates = applicable.map(p => p.generator(info));
-      
-      const uniqueSentences = ensureUnique(candidates);
-      const shuffled = shuffleAndPick(uniqueSentences, 15); // get more than 10 to ensure variety
-      
-      // Sort by length to have simpler sentences first
+      const candidates = patterns.filter(p => p.c(info)).map(p => p.g(info));
+      const unique = ensureUnique(candidates);
+      const shuffled = shuffleAndPick(unique, 15);
       shuffled.sort((a,b) => a.length - b.length);
-
-      // Add a final, always-useful hint if space allows
-      if (shuffled.length < 10) {
-        shuffled.push(`Say the sounds of the .... out loud to help you spell it.`);
-      }
-
+      if (shuffled.length < 10) shuffled.push(`Say the sounds of .... out loud.`);
       return ensureUnique(shuffled).slice(0, 10);
     }
-    
+
     function buildSentenceNodes(sentence, lowerCaseWord) {
-      const sentenceP = document.createElement("p");
-      sentenceP.className = "sentence";
-      const escaped = escapeRegex(lowerCaseWord);
-      const regex = new RegExp(`\\b${escaped}\\b|\\.{3,}`, "gi");
-      let lastIndex = 0;
-      let anyMatch = false;
-      let match;
-
-      while ((match = regex.exec(sentence)) !== null) {
-        anyMatch = true;
-        sentenceP.appendChild(document.createTextNode(sentence.slice(lastIndex, match.index)));
-        const input = document.createElement("input");
-        input.type = "text";
-        input.className = "sentence-input";
-        input.dataset.correct = lowerCaseWord;
-        input.setAttribute("oninput", "checkWord(this)");
-        input.setAttribute("autocomplete", "off");
-        input.setAttribute("aria-label", `Fill in: ${lowerCaseWord}`);
-        const width = Math.max(90, lowerCaseWord.length * 18 + 20);
-        input.style.width = width + "px";
-        sentenceP.appendChild(input);
-        lastIndex = match.index + match[0].length;
-      }
-      sentenceP.appendChild(document.createTextNode(sentence.slice(lastIndex)));
-
-      if (!anyMatch) {
-        sentenceP.appendChild(document.createTextNode(" "));
-        const input = document.createElement("input");
-        input.type = "text";
-        input.className = "sentence-input";
-        input.dataset.correct = lowerCaseWord;
-        input.setAttribute("oninput", "checkWord(this)");
-        input.setAttribute("autocomplete", "off");
-        input.setAttribute("aria-label", `Fill in: ${lowerCaseWord}`);
-        const width = Math.max(90, lowerCaseWord.length * 18 + 20);
-        input.style.width = width + "px";
-        sentenceP.appendChild(input);
-      }
-      return sentenceP;
+        const sentenceP = document.createElement("p");
+        sentenceP.className = "sentence";
+        const regex = new RegExp(`\\b${escapeRegex(lowerCaseWord)}\\b|\\.{3,}`, "gi");
+        let lastIndex = 0; let anyMatch = false; let match;
+        while ((match = regex.exec(sentence)) !== null) {
+            anyMatch = true;
+            sentenceP.appendChild(document.createTextNode(sentence.slice(lastIndex, match.index)));
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "sentence-input";
+            input.dataset.correct = lowerCaseWord;
+            input.setAttribute("oninput", "checkWord(this)");
+            input.setAttribute("autocomplete", "off");
+            input.style.width = `${Math.max(90, lowerCaseWord.length * 18 + 20)}px`;
+            sentenceP.appendChild(input);
+            lastIndex = match.index + match[0].length;
+        }
+        sentenceP.appendChild(document.createTextNode(sentence.slice(lastIndex)));
+        if (!anyMatch) {
+            sentenceP.appendChild(document.createTextNode(" "));
+            const input = document.createElement("input");
+            input.type = "text"; input.className = "sentence-input"; input.dataset.correct = lowerCaseWord;
+            input.setAttribute("oninput", "checkWord(this)"); input.setAttribute("autocomplete", "off");
+            input.style.width = `${Math.max(90, lowerCaseWord.length * 18 + 20)}px`;
+            sentenceP.appendChild(input);
+        }
+        return sentenceP;
     }
 
     function renderWordSection(word, sentences, colorClass) {
-      const section = document.createElement("div");
-      section.className = "word-section";
-      section.dataset.word = word;
-      section.classList.add(colorClass);
-
-      const title = document.createElement("div");
-      title.className = "word-title";
-      const titleText = document.createElement("span");
-      titleText.textContent = `💡 Fill in the blanks!`;
-      title.appendChild(titleText);
-      
-      const buttonGroup = document.createElement("div");
-      buttonGroup.className = "button-group";
-      
-      const listenButton = document.createElement("button");
-      listenButton.textContent = "Listen";
-      listenButton.className = "listen-button";
-      listenButton.setAttribute("data-word", word);
-      listenButton.onclick = () => speakWord(listenButton);
-      buttonGroup.appendChild(listenButton);
-
-      const hintButton = document.createElement("button");
-      hintButton.textContent = "Hint";
-      hintButton.className = "hint-button";
-      hintButton.setAttribute("data-word", word);
-      hintButton.setAttribute("data-hint-index", "0");
-      hintButton.onclick = () => giveHint(hintButton);
-      buttonGroup.appendChild(hintButton);
-
-      const hintDisplay = document.createElement("span");
-      hintDisplay.className = "hint-display";
-      hintDisplay.textContent = "_".repeat(word.length);
-      buttonGroup.appendChild(hintDisplay);
-
-      const progressCount = document.createElement("span");
-      progressCount.className = "word-meta progress-count";
-      progressCount.textContent = `(0/10)`;
-      
-      const header = document.createElement('div');
-      header.style.display = 'flex';
-      header.style.justifyContent = 'space-between';
-      header.style.alignItems = 'center';
-      header.style.width = '100%';
-      header.appendChild(title);
-      header.appendChild(buttonGroup);
-      section.appendChild(header);
-
-      sentences.forEach((sentence) => {
-        const nodes = buildSentenceNodes(sentence, word.toLowerCase());
-        section.appendChild(nodes);
-      });
-      
-      const footer = document.createElement('div');
-      footer.style.display = 'flex';
-      footer.style.justifyContent = 'space-between';
-      footer.style.alignItems = 'center';
-      footer.style.marginTop = '15px';
-      
-      const verifyButton = document.createElement("button");
-      verifyButton.textContent = "Check Word";
-      verifyButton.className = "verify-button";
-      verifyButton.onclick = () => showVerificationModal(word);
-      footer.appendChild(verifyButton);
-      footer.appendChild(progressCount);
-      section.appendChild(footer);
-
-      return section;
+        const section = document.createElement("div");
+        section.className = "word-section " + colorClass;
+        section.dataset.word = word;
+        const header = document.createElement('div');
+        header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px;';
+        const title = document.createElement("div");
+        title.className = "word-title";
+        title.textContent = `💡 Fill in the blanks!`;
+        header.appendChild(title);
+        const buttonGroup = document.createElement("div");
+        buttonGroup.className = "button-group";
+        const listenButton = document.createElement("button");
+        listenButton.textContent = "Listen";
+        listenButton.className = "action-button listen-button";
+        listenButton.dataset.word = word;
+        listenButton.onclick = () => speakWord(listenButton);
+        buttonGroup.appendChild(listenButton);
+        const drawButton = document.createElement("button");
+        drawButton.textContent = "Draw!";
+        drawButton.className = "action-button draw-button";
+        drawButton.onclick = () => showDrawModal(word);
+        buttonGroup.appendChild(drawButton);
+        const hintButton = document.createElement("button");
+        hintButton.textContent = "Hint";
+        hintButton.className = "action-button hint-button";
+        hintButton.dataset.word = word;
+        hintButton.dataset.hintIndex = "0";
+        hintButton.onclick = () => giveHint(hintButton);
+        buttonGroup.appendChild(hintButton);
+        const hintDisplay = document.createElement("span");
+        hintDisplay.className = "hint-display";
+        hintDisplay.textContent = "_".repeat(word.length);
+        buttonGroup.appendChild(hintDisplay);
+        header.appendChild(buttonGroup);
+        section.appendChild(header);
+        sentences.forEach(sentence => section.appendChild(buildSentenceNodes(sentence, word.toLowerCase())));
+        const footer = document.createElement('div');
+        footer.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-top: 15px;';
+        const verifyButton = document.createElement("button");
+        verifyButton.textContent = "Check Word";
+        verifyButton.className = "verify-button";
+        verifyButton.onclick = () => showVerificationModal(word);
+        footer.appendChild(verifyButton);
+        const progressCount = document.createElement("span");
+        progressCount.className = "word-meta progress-count";
+        progressCount.textContent = `(0/10)`;
+        footer.appendChild(progressCount);
+        section.appendChild(footer);
+        return section;
     }
-
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-
+    
+    function shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
     function generateSentences() {
       const raw = document.getElementById("wordInput").value.trim();
       const outputDiv = document.getElementById("output");
-      const helper = document.getElementById("helper");
       outputDiv.innerHTML = "";
       updateScore(-score);
       verifiedWordCount = 0;
-
-      let words = raw.split(/\r?\n/).map((w) => w.trim()).filter(Boolean);
-      const unique = [];
-      const seen = new Set();
-      for (const w of words) {
-        const key = w.toLowerCase();
-        if (!seen.has(key)) { unique.push(w); seen.add(key); }
-      }
+      let words = raw.split(/\r?\n/).map(w => w.trim()).filter(Boolean);
+      const unique = []; const seen = new Set();
+      for (const w of words) { const key = w.toLowerCase(); if (!seen.has(key)) { unique.push(w); seen.add(key); } }
       words = unique.slice(0, MAX_WORDS);
       totalWords = words.length;
-
-      if (words.length === 0) {
-        helper.textContent = "Please enter at least one word (max 10).";
-        return;
-      }
-      helper.textContent = `Words used: ${words.length}/${MAX_WORDS}`;
-
+      if (words.length === 0) return document.getElementById("helper").textContent = "Please enter at least one word.";
+      document.getElementById("helper").textContent = `Words used: ${words.length}/${MAX_WORDS}`;
       const shuffledColors = shuffleArray([...backgroundColors]);
       words.forEach((word, index) => {
         const key = word.toLowerCase();
-        // Tiered approach: use specific map first, then fall back to generator
-        const sentencesRaw = wordSentenceMap[key] || generateContextualSentences(key);
-        const sentences = ensureUnique(sentencesRaw).slice(0, 10);
+        const sentences = wordSentenceMap[key] || generateContextualSentences(key);
         const colorClass = shuffledColors[index % shuffledColors.length];
-        const section = renderWordSection(word, sentences, colorClass);
-        outputDiv.appendChild(section);
+        outputDiv.appendChild(renderWordSection(word, sentences, colorClass));
       });
     }
 
@@ -752,13 +595,8 @@ house"></textarea>
       document.getElementById("output").innerHTML = "";
       document.getElementById("helper").textContent = "";
       updateScore(-score);
-      verifiedWordCount = 0;
-      totalWords = 0;
-      document.getElementById("wordInput").focus();
     });
-    document.getElementById("wordInput").addEventListener("keydown", (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") generateSentences();
-    });
+    document.getElementById("wordInput").addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") generateSentences(); });
   </script>
 </body>
 </html>

@@ -40,10 +40,6 @@
             font-family: "Fredoka One", cursive; font-size: 1em; outline: none; padding: 5px;
         }
         .word-input-field:focus { border-bottom-color: var(--brand); }
-        .listen-icon {
-            cursor: pointer; font-size: 1.2em; user-select: none; visibility: hidden;
-        }
-        .word-input-field:not(:placeholder-shown) + .listen-icon { visibility: visible; }
         
         button {
             background-color: var(--brand); color: white; padding: 12px 22px; border: none;
@@ -202,78 +198,6 @@
             }
         };
 
-        // ====== TTS robusto (caricamento voci + resume anti-scatti) ======
-        const synth = window.speechSynthesis;
-        let voices = [];
-        let speechKeepAliveInterval = null;
-
-        async function getVoicesAsync() {
-            voices = synth.getVoices();
-            if (voices && voices.length) return voices;
-            await new Promise(resolve => synth.addEventListener('voiceschanged', resolve, { once: true }));
-            voices = synth.getVoices();
-            return voices;
-        }
-
-        async function speakText(text) {
-            if (!text || !synth) return;
-            await getVoicesAsync();
-            if (synth.speaking) synth.cancel();
-            clearInterval(speechKeepAliveInterval);
-
-            const utter = new SpeechSynthesisUtterance(text);
-            const v =
-                voices.find(v => v.name === 'Google UK English Female') ||
-                voices.find(v => /en-GB/i.test(v.lang) && /Female/i.test(v.name)) ||
-                voices.find(v => /en-GB/i.test(v.lang)) ||
-                voices.find(v => /^en[-_]/i.test(v.lang));
-            if (v) { utter.voice = v; utter.lang = v.lang; } else { utter.lang = 'en-GB'; }
-            utter.pitch = 1; utter.rate = 1;
-
-            utter.onstart = () => {
-                speechKeepAliveInterval = setInterval(() => {
-                    if (synth.speaking) synth.resume();
-                    else clearInterval(speechKeepAliveInterval);
-                }, 1000);
-            };
-            utter.onend = () => clearInterval(speechKeepAliveInterval);
-            utter.onerror = () => clearInterval(speechKeepAliveInterval);
-
-            synth.speak(utter);
-        }
-
-        // ====== Input parole: 10 righe numerate ======
-        function createWordInputs() {
-            wordInputContainer.innerHTML = '';
-            for (let i = 1; i <= MAX_WORDS; i++) {
-                const entryDiv = document.createElement('div');
-                entryDiv.className = 'word-entry';
-
-                const numberSpan = document.createElement('span');
-                numberSpan.className = 'entry-number';
-                numberSpan.textContent = `${i}.`;
-                entryDiv.appendChild(numberSpan);
-
-                const inputField = document.createElement('input');
-                inputField.type = 'text';
-                inputField.className = 'word-input-field';
-                inputField.placeholder = 'Type the word...';
-                inputField.autocomplete = 'off';
-                entryDiv.appendChild(inputField);
-
-                const listenIcon = document.createElement('span');
-                listenIcon.textContent = '🔊';
-                listenIcon.className = 'listen-icon';
-                listenIcon.onclick = () => {
-                    const w = inputField.value.trim();
-                    if (w) speakText(w);
-                };
-                entryDiv.appendChild(listenIcon);
-
-                wordInputContainer.appendChild(entryDiv);
-            }
-        }
-        
         // Funzione per mescolare l'array
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -287,9 +211,7 @@
             riddleBox.innerHTML = `<div class="loading-spinner"></div>`;
             const systemPrompt = `You are a friendly and helpful assistant for a children's spelling and riddle game. Your task is to provide simple, clear, and age-appropriate hints for a given word. The hints should be suitable for a 7-year-old and should help them guess the word. Avoid complex or technical terms. Provide 3-4 hints as a bulleted list. The hints should be descriptive and use associations the child might know. IMPORTANT: Do NOT include the word itself in the hints or the introductory phrase.`;
             const userQuery = `Provide hints for the word "${word}".`;
-            // Clicca su questo link per ottenere una chiave API da Google AI Studio:
-            // https://aistudio.google.com/app/apikey
-            const apiKey = "AIzaSyAgJQxCqhqptws_ll9kd4nKH2cZwpRF_Ok"; // Incolla qui la tua chiave API
+            const apiKey = ""; 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
             const payload = {
@@ -363,12 +285,6 @@
             guessContainer.appendChild(checkButton);
             
             riddleBox.appendChild(guessContainer);
-
-            const listenAllButton = document.createElement('button');
-            listenAllButton.textContent = '🔊 Listen to hints';
-            listenAllButton.style.marginTop = '10px';
-            listenAllButton.onclick = () => speakText(hintsText.replace(/^-/gm, ''));
-            riddleBox.appendChild(listenAllButton);
         }
 
         function checkGuess(guessInput, correctWord, checkButton) {
@@ -438,6 +354,28 @@
 
         // Avvio
         createWordInputs();
+
+        function createWordInputs() {
+            wordInputContainer.innerHTML = '';
+            for (let i = 1; i <= MAX_WORDS; i++) {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'word-entry';
+
+                const numberSpan = document.createElement('span');
+                numberSpan.className = 'entry-number';
+                numberSpan.textContent = `${i}.`;
+                entryDiv.appendChild(numberSpan);
+
+                const inputField = document.createElement('input');
+                inputField.type = 'text';
+                inputField.className = 'word-input-field';
+                inputField.placeholder = 'Type the word...';
+                inputField.autocomplete = 'off';
+                entryDiv.appendChild(inputField);
+
+                wordInputContainer.appendChild(entryDiv);
+            }
+        }
     </script>
 </body>
 </html>

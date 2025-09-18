@@ -279,7 +279,9 @@
             riddleBox.innerHTML = `<div class="loading-spinner"></div>`;
             const systemPrompt = `You are a friendly and helpful assistant for a children's spelling and riddle game. Your task is to provide simple, clear, and age-appropriate hints for a given word. The hints should be suitable for a 7-year-old and should help them guess the word. Avoid complex or technical terms. Provide 3-4 hints as a bulleted list. The hints should be descriptive and use associations the child might know. IMPORTANT: Do NOT include the word itself in the hints or the introductory phrase.`;
             const userQuery = `Provide hints for the word "${word}".`;
-            const apiKey = "";
+            // Clicca su questo link per ottenere una chiave API da Google AI Studio:
+            // https://aistudio.google.com/app/apikey
+            const apiKey = ""; // Incolla qui la tua chiavAIzaSyAgJQxCqhqptws_ll9kd4nKH2cZwpRF_Oke API
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
             const payload = {

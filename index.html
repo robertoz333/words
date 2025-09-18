@@ -19,7 +19,6 @@
     p { font-size: 1.15em; color: #555; line-height: 1.5; }
     .controls { margin: 14px 0 8px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
     
-    /* MODIFIED: New styles for word input area */
     #word-input-container {
       width: 100%;
       min-height: 150px;
@@ -57,6 +56,15 @@
       color: var(--brand);
       font-size: 1.2em;
     }
+    /* MODIFIED: Styling for the new listen icon inside the tag */
+    .word-tag .listen-icon {
+        margin-left: 8px;
+        cursor: pointer;
+        font-size: 1.1em;
+        line-height: 1;
+        user-select: none;
+    }
+
     #word-input-box {
       border: none;
       background: transparent;
@@ -113,7 +121,6 @@
     <h1>🌟 Spelling & Riddle Game 🌟</h1>
     <p>First, solve the riddle to guess the word, then fill in the blanks!</p>
 
-    <!-- MODIFIED: Replaced textarea with this new structure -->
     <div id="word-input-container">
       <div id="word-tags"></div>
       <input type="text" id="word-input-box" placeholder="Type a word and press Enter...">
@@ -135,7 +142,6 @@
   <script>
     const MAX_WORDS = 10, scoreDisplay = document.getElementById("scoreDisplay"), verificationModal = document.getElementById("verificationModal"), modalSentence = document.getElementById("modalSentence"), modalInput = document.getElementById("modalInput"), modalVerifyBtn = document.getElementById("modalVerifyBtn"), modalSkipBtn = document.getElementById("modalSkipBtn"), messageBox = document.getElementById("messageBox"), messageTitle = document.getElementById("messageTitle"), messageText = document.getElementById("messageText"), messageOkBtn = document.getElementById("messageOkBtn"), drawModal = document.getElementById("drawModal"), mimeModal = document.getElementById("mimeModal"), drawModalTitle = document.getElementById("drawModalTitle"), drawingCanvas = document.getElementById("drawingCanvas"), drawClearBtn = document.getElementById("drawClearBtn"), drawCloseBtn = document.getElementById("drawCloseBtn"), ctx = drawingCanvas.getContext("2d"), mimeModalTitle = document.getElementById("mimeModalTitle"), mimeSuggestion = document.getElementById("mimeSuggestion"), mimeTimerDisplay = document.getElementById("mimeTimer"), mimeCloseBtn = document.getElementById("mimeCloseBtn");
     
-    // MODIFIED: Variables for the new word input system
     const wordInputContainer = document.getElementById('word-input-container');
     const wordTagsContainer = document.getElementById('word-tags');
     const wordInputBox = document.getElementById('word-input-box');
@@ -149,7 +155,7 @@
     function updateScore(delta) { score += delta; scoreDisplay.textContent = `Score: ${score}`; }
     function escapeRegex(s) { return s.replace(/[-\/^$*+?.()|[\]{}]/g, "\$&"); }
 
-    // MODIFIED: New functions to handle the tag-based word input
+    // MODIFIED: renderWordTags now includes the listen icon
     function renderWordTags() {
       wordTagsContainer.innerHTML = '';
       words.forEach(word => {
@@ -160,11 +166,22 @@
         textEl.textContent = word;
         tagEl.appendChild(textEl);
         
+        // Add listen icon
+        const listenIcon = document.createElement('span');
+        listenIcon.textContent = '🔊';
+        listenIcon.className = 'listen-icon';
+        listenIcon.dataset.word = word;
+        listenIcon.onclick = (e) => {
+            e.stopPropagation();
+            speakWord(listenIcon);
+        };
+        tagEl.appendChild(listenIcon);
+
         const removeEl = document.createElement('span');
         removeEl.className = 'remove-tag';
         removeEl.textContent = '×';
         removeEl.onclick = (e) => {
-          e.stopPropagation(); // Prevent container click event
+          e.stopPropagation(); 
           words = words.filter(w => w !== word);
           renderWordTags();
           updateInputState();
@@ -353,12 +370,13 @@
         });
         return p;
     }
+    // MODIFIED: renderWordSection no longer creates a listen button
     function renderWordSection(word, sentences, colorClass) {
         const section = document.createElement("div"); section.className = "word-section " + colorClass; section.dataset.word = word;
         const header = document.createElement('div'); header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px;';
         const title = document.createElement("div"); title.className = "word-title"; title.textContent = `🤔 Solve the Riddle!`; header.appendChild(title);
         const topButtonGroup = document.createElement("div"); topButtonGroup.className = "button-group";
-        const listenBtn=document.createElement("button"); listenBtn.textContent="Listen"; listenBtn.className="action-button listen-button"; listenBtn.dataset.word=word; listenBtn.onclick=()=>speakWord(listenBtn); topButtonGroup.appendChild(listenBtn);
+        
         const hintBtn=document.createElement("button"); hintBtn.textContent="Hint"; hintBtn.className="action-button hint-button"; hintBtn.dataset.word=word; hintBtn.dataset.hintIndex="0"; hintBtn.onclick=()=>giveHint(hintBtn); topButtonGroup.appendChild(hintBtn);
         const hintDisplay = document.createElement("span"); hintDisplay.className = "hint-display"; hintDisplay.textContent = "_".repeat(word.length); topButtonGroup.appendChild(hintDisplay);
         header.appendChild(topButtonGroup); section.appendChild(header);
@@ -373,7 +391,6 @@
         section.appendChild(footer); return section;
     }
     
-    // MODIFIED: generateSentences now uses the 'words' array
     function generateSentences() {
       const outputDiv = document.getElementById("output");
       outputDiv.innerHTML = "";
@@ -395,7 +412,6 @@
 
     document.getElementById("btnGenerate").addEventListener("click", generateSentences);
 
-    // MODIFIED: Clear button now clears the new input system
     document.getElementById("btnClear").addEventListener("click", () => {
       words = [];
       renderWordTags();
@@ -406,4 +422,3 @@
   </script>
 </body>
 </html>
-

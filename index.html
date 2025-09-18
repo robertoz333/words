@@ -19,66 +19,55 @@
     p { font-size: 1.15em; color: #555; line-height: 1.5; }
     .controls { margin: 14px 0 8px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
     
+    /* MODIFIED: New styles for the pre-filled list */
     #word-input-container {
       width: 100%;
-      min-height: 150px;
       padding: 10px;
       border-radius: 15px;
       border: 3px dashed #add8e6;
-      font-size: 1.05em;
       margin-bottom: 8px;
-      font-family: "Fredoka One", cursive;
       background-color: #f0f8ff;
-      cursor: text;
       display: flex;
-      flex-wrap: wrap;
-      align-content: flex-start;
+      flex-direction: column;
       gap: 8px;
     }
-    #word-input-container:focus-within {
-      outline: none;
-      border-color: var(--brand);
-    }
-    .word-tag {
-      background-color: #e0f7fa;
-      padding: 8px 12px;
-      border-radius: 20px;
+    .word-entry {
       display: flex;
       align-items: center;
-      gap: 6px; /* MODIFIED: Added gap for spacing */
-      font-size: 0.9em;
-      line-height: 1;
-      animation: fadeIn 0.3s;
+      gap: 10px;
+      padding: 5px;
+      border-bottom: 2px solid transparent;
     }
-    /* MODIFIED: Styling for the new number */
-    .word-number {
-        font-weight: bold;
-        color: var(--brand-dark);
-    }
-    .word-tag .remove-tag {
-      cursor: pointer;
+    .entry-number {
       font-weight: bold;
-      color: var(--brand);
-      font-size: 1.2em;
+      color: var(--brand-dark);
+      font-size: 1.1em;
+      min-width: 25px;
+      text-align: right;
     }
-    .word-tag .listen-icon {
-        cursor: pointer;
-        font-size: 1.1em;
-        line-height: 1;
-        user-select: none;
-    }
-
-    #word-input-box {
+    .word-input-field {
+      flex-grow: 1;
       border: none;
-      background: transparent;
+      border-bottom: 2px solid #ccc;
+      background-color: transparent;
       font-family: "Fredoka One", cursive;
       font-size: 1em;
       outline: none;
-      flex-grow: 1;
-      padding: 8px 0;
-      min-width: 200px;
+      padding: 5px;
     }
-
+    .word-input-field:focus {
+      border-bottom-color: var(--brand);
+    }
+    .listen-icon {
+        cursor: pointer;
+        font-size: 1.2em;
+        user-select: none;
+        visibility: hidden; /* Hidden by default */
+    }
+    .word-input-field:not(:placeholder-shown) + .listen-icon {
+        visibility: visible; /* Shown when there is text */
+    }
+    
     button { background-color: var(--brand); color: white; padding: 12px 22px; border: none; border-radius: 50px; font-size: 1.2em; cursor: pointer; box-shadow: 0 4px var(--brand-dark); font-family: "Fredoka One", cursive; }
     button:active { transform: translateY(2px); box-shadow: 0 2px var(--brand-dark); }
     button.secondary { background: #eee; color: #333; box-shadow: 0 4px #ccc; }
@@ -124,10 +113,8 @@
     <h1>🌟 Spelling & Riddle Game 🌟</h1>
     <p>First, solve the riddle to guess the word, then fill in the blanks!</p>
 
-    <div id="word-input-container">
-      <div id="word-tags"></div>
-      <input type="text" id="word-input-box" placeholder="1. Type a word and press Enter...">
-    </div>
+    <!-- MODIFIED: Container will be populated by JavaScript -->
+    <div id="word-input-container"></div>
 
     <div class="controls">
       <button id="btnGenerate">Generate Riddles!</button>
@@ -146,9 +133,6 @@
     const MAX_WORDS = 10, scoreDisplay = document.getElementById("scoreDisplay"), verificationModal = document.getElementById("verificationModal"), modalSentence = document.getElementById("modalSentence"), modalInput = document.getElementById("modalInput"), modalVerifyBtn = document.getElementById("modalVerifyBtn"), modalSkipBtn = document.getElementById("modalSkipBtn"), messageBox = document.getElementById("messageBox"), messageTitle = document.getElementById("messageTitle"), messageText = document.getElementById("messageText"), messageOkBtn = document.getElementById("messageOkBtn"), drawModal = document.getElementById("drawModal"), mimeModal = document.getElementById("mimeModal"), drawModalTitle = document.getElementById("drawModalTitle"), drawingCanvas = document.getElementById("drawingCanvas"), drawClearBtn = document.getElementById("drawClearBtn"), drawCloseBtn = document.getElementById("drawCloseBtn"), ctx = drawingCanvas.getContext("2d"), mimeModalTitle = document.getElementById("mimeModalTitle"), mimeSuggestion = document.getElementById("mimeSuggestion"), mimeTimerDisplay = document.getElementById("mimeTimer"), mimeCloseBtn = document.getElementById("mimeCloseBtn");
     
     const wordInputContainer = document.getElementById('word-input-container');
-    const wordTagsContainer = document.getElementById('word-tags');
-    const wordInputBox = document.getElementById('word-input-box');
-    let words = [];
     
     let score = 0, isDrawing = false, currentWordToVerify = '', verifiedWordCount = 0, totalWords = 0, mimeTimer;
     const backgroundColors = ['bg-1', 'bg-2', 'bg-3', 'bg-4', 'bg-5', 'bg-6'];
@@ -158,82 +142,41 @@
     function updateScore(delta) { score += delta; scoreDisplay.textContent = `Score: ${score}`; }
     function escapeRegex(s) { return s.replace(/[-\/^$*+?.()|[\]{}]/g, "\$&"); }
 
-    // MODIFIED: renderWordTags now includes the number
-    function renderWordTags() {
-      wordTagsContainer.innerHTML = '';
-      words.forEach((word, index) => {
-        const tagEl = document.createElement('span');
-        tagEl.className = 'word-tag';
-        
-        // Add number
-        const numberEl = document.createElement('span');
-        numberEl.className = 'word-number';
-        numberEl.textContent = `${index + 1}.`;
-        tagEl.appendChild(numberEl);
+    // MODIFIED: Function to create the 10 pre-filled input fields
+    function createWordInputs() {
+        wordInputContainer.innerHTML = '';
+        for (let i = 1; i <= MAX_WORDS; i++) {
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'word-entry';
 
-        const textEl = document.createElement('span');
-        textEl.textContent = word;
-        tagEl.appendChild(textEl);
-        
-        const listenIcon = document.createElement('span');
-        listenIcon.textContent = '🔊';
-        listenIcon.className = 'listen-icon';
-        listenIcon.dataset.word = word;
-        listenIcon.onclick = (e) => {
-            e.stopPropagation();
-            speakWord(listenIcon);
-        };
-        tagEl.appendChild(listenIcon);
+            const numberSpan = document.createElement('span');
+            numberSpan.className = 'entry-number';
+            numberSpan.textContent = `${i}.`;
+            entryDiv.appendChild(numberSpan);
 
-        const removeEl = document.createElement('span');
-        removeEl.className = 'remove-tag';
-        removeEl.textContent = '×';
-        removeEl.onclick = (e) => {
-          e.stopPropagation(); 
-          words = words.filter(w => w !== word);
-          renderWordTags();
-        };
-        tagEl.appendChild(removeEl);
-        wordTagsContainer.appendChild(tagEl);
-      });
-      updateInputState();
-    }
+            const inputField = document.createElement('input');
+            inputField.type = 'text';
+            inputField.className = 'word-input-field';
+            inputField.placeholder = 'Digita la parola...';
+            inputField.autocomplete = 'off';
+            entryDiv.appendChild(inputField);
 
-    // MODIFIED: updateInputState now updates the placeholder with the next number
-    function updateInputState() {
-      const nextNumber = words.length + 1;
-      if (words.length >= MAX_WORDS) {
-        wordInputBox.placeholder = 'Maximum 10 words reached.';
-        wordInputBox.disabled = true;
-      } else {
-        wordInputBox.placeholder = `${nextNumber}. Type a word and press Enter...`;
-        wordInputBox.disabled = false;
-      }
-    }
-    
-    wordInputBox.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        const word = wordInputBox.value.trim().toLowerCase();
-        if (word && words.length < MAX_WORDS && !words.includes(word)) {
-          words.push(word);
-          renderWordTags();
-          wordInputBox.value = '';
-        } else if (word && words.includes(word)) {
-          showMessage("Already Added", `The word "${word}" is already in the list.`);
-          wordInputBox.value = '';
+            const listenIcon = document.createElement('span');
+            listenIcon.textContent = '🔊';
+            listenIcon.className = 'listen-icon';
+            listenIcon.onclick = (e) => {
+                const word = inputField.value.trim();
+                if (word) {
+                    const tempButton = { dataset: { word: word } };
+                    speakWord(tempButton);
+                }
+            };
+            entryDiv.appendChild(listenIcon);
+
+            wordInputContainer.appendChild(entryDiv);
         }
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-        generateSentences();
-      }
-    });
+    }
 
-    wordInputContainer.addEventListener('click', () => {
-      if (!wordInputBox.disabled) {
-        wordInputBox.focus();
-      }
-    });
 
     function checkWord(inputElement) {
       const userInput = inputElement.value.trim().toLowerCase(), correctWord = inputElement.dataset.correct.toLowerCase();
@@ -399,20 +342,31 @@
         section.appendChild(footer); return section;
     }
     
+    // MODIFIED: generateSentences now collects words from the input fields
     function generateSentences() {
       const outputDiv = document.getElementById("output");
       outputDiv.innerHTML = "";
       updateScore(-score);
       verifiedWordCount = 0;
-      totalWords = words.length;
 
-      if (words.length === 0) {
+      const words = [];
+      const inputFields = document.querySelectorAll('.word-input-field');
+      inputFields.forEach(input => {
+          const word = input.value.trim().toLowerCase();
+          if (word) {
+              words.push(word);
+          }
+      });
+      const uniqueWords = [...new Set(words)]; // Ensure unique words
+      totalWords = uniqueWords.length;
+
+      if (totalWords === 0) {
         return document.getElementById("helper").textContent = "Please add at least one word.";
       }
-      document.getElementById("helper").textContent = `Words used: ${words.length}/${MAX_WORDS}`;
+      document.getElementById("helper").textContent = `Words used: ${totalWords}`;
       
       const shuffledColors = [...backgroundColors].sort(()=>0.5-Math.random());
-      words.forEach((word, index) => {
+      uniqueWords.forEach((word, index) => {
         const sentences = generateContextualSentences(word);
         outputDiv.appendChild(renderWordSection(word, sentences, shuffledColors[index % shuffledColors.length]));
       });
@@ -420,13 +374,17 @@
 
     document.getElementById("btnGenerate").addEventListener("click", generateSentences);
 
+    // MODIFIED: Clear button now clears all input fields
     document.getElementById("btnClear").addEventListener("click", () => {
-      words = [];
-      renderWordTags();
+      const inputFields = document.querySelectorAll('.word-input-field');
+      inputFields.forEach(input => input.value = '');
       document.getElementById("output").innerHTML = "";
       document.getElementById("helper").textContent = "";
       updateScore(-score);
     });
+
+    // Call the function to create the inputs when the page loads
+    createWordInputs();
   </script>
 </body>
 </html>

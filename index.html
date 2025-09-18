@@ -45,20 +45,23 @@
       border-radius: 20px;
       display: flex;
       align-items: center;
+      gap: 6px; /* MODIFIED: Added gap for spacing */
       font-size: 0.9em;
       line-height: 1;
       animation: fadeIn 0.3s;
     }
+    /* MODIFIED: Styling for the new number */
+    .word-number {
+        font-weight: bold;
+        color: var(--brand-dark);
+    }
     .word-tag .remove-tag {
-      margin-left: 8px;
       cursor: pointer;
       font-weight: bold;
       color: var(--brand);
       font-size: 1.2em;
     }
-    /* MODIFIED: Styling for the new listen icon inside the tag */
     .word-tag .listen-icon {
-        margin-left: 8px;
         cursor: pointer;
         font-size: 1.1em;
         line-height: 1;
@@ -123,7 +126,7 @@
 
     <div id="word-input-container">
       <div id="word-tags"></div>
-      <input type="text" id="word-input-box" placeholder="Type a word and press Enter...">
+      <input type="text" id="word-input-box" placeholder="1. Type a word and press Enter...">
     </div>
 
     <div class="controls">
@@ -155,18 +158,23 @@
     function updateScore(delta) { score += delta; scoreDisplay.textContent = `Score: ${score}`; }
     function escapeRegex(s) { return s.replace(/[-\/^$*+?.()|[\]{}]/g, "\$&"); }
 
-    // MODIFIED: renderWordTags now includes the listen icon
+    // MODIFIED: renderWordTags now includes the number
     function renderWordTags() {
       wordTagsContainer.innerHTML = '';
-      words.forEach(word => {
+      words.forEach((word, index) => {
         const tagEl = document.createElement('span');
         tagEl.className = 'word-tag';
         
+        // Add number
+        const numberEl = document.createElement('span');
+        numberEl.className = 'word-number';
+        numberEl.textContent = `${index + 1}.`;
+        tagEl.appendChild(numberEl);
+
         const textEl = document.createElement('span');
         textEl.textContent = word;
         tagEl.appendChild(textEl);
         
-        // Add listen icon
         const listenIcon = document.createElement('span');
         listenIcon.textContent = '🔊';
         listenIcon.className = 'listen-icon';
@@ -184,7 +192,6 @@
           e.stopPropagation(); 
           words = words.filter(w => w !== word);
           renderWordTags();
-          updateInputState();
         };
         tagEl.appendChild(removeEl);
         wordTagsContainer.appendChild(tagEl);
@@ -192,12 +199,14 @@
       updateInputState();
     }
 
+    // MODIFIED: updateInputState now updates the placeholder with the next number
     function updateInputState() {
+      const nextNumber = words.length + 1;
       if (words.length >= MAX_WORDS) {
         wordInputBox.placeholder = 'Maximum 10 words reached.';
         wordInputBox.disabled = true;
       } else {
-        wordInputBox.placeholder = 'Type a word and press Enter...';
+        wordInputBox.placeholder = `${nextNumber}. Type a word and press Enter...`;
         wordInputBox.disabled = false;
       }
     }
@@ -370,7 +379,6 @@
         });
         return p;
     }
-    // MODIFIED: renderWordSection no longer creates a listen button
     function renderWordSection(word, sentences, colorClass) {
         const section = document.createElement("div"); section.className = "word-section " + colorClass; section.dataset.word = word;
         const header = document.createElement('div'); header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px;';

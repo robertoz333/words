@@ -108,7 +108,11 @@
 
         #helper { margin-top: 8px; font-size: .95em; color: #666; text-align: center; }
         #scoreDisplay { font-size: 1.1em; font-weight: bold; color: var(--brand-dark); margin-top: 10px; }
-        #totalScoreDisplay { font-size: 1.1em; font-weight: bold; color: #333; margin-top: 5px; }
+        #correctScoreDisplay, #wrongScoreDisplay {
+            font-size: 1.1em; font-weight: bold; margin-top: 5px;
+        }
+        #correctScoreDisplay { color: var(--ok); }
+        #wrongScoreDisplay { color: var(--no); }
 
         .modal {
             display: none;
@@ -152,7 +156,8 @@
 
         <div id="helper" class="helper"></div>
         <div id="scoreDisplay">Session Score: 0</div>
-        <div id="totalScoreDisplay">Total Score: 0</div>
+        <div id="correctScoreDisplay">Correct Answers: 0</div>
+        <div id="wrongScoreDisplay">Wrong Answers: 0</div>
         
         <div id="output">
             <div id="riddle-box">
@@ -172,7 +177,8 @@
     <script>
         const MAX_WORDS = 10;
         const scoreDisplay = document.getElementById("scoreDisplay");
-        const totalScoreDisplay = document.getElementById("totalScoreDisplay");
+        const correctScoreDisplay = document.getElementById("correctScoreDisplay");
+        const wrongScoreDisplay = document.getElementById("wrongScoreDisplay");
         const wordInputContainer = document.getElementById('word-input-container');
         const outputDiv = document.getElementById("output");
         const riddleBox = document.getElementById("riddle-box");
@@ -180,7 +186,8 @@
         const btnRandom = document.getElementById("btnRandom");
         
         let sessionScore = 0;
-        let totalScore = 0;
+        let correctScore = 0;
+        let wrongScore = 0;
         let wordsToGuess = [];
         let currentWordIndex = 0;
 
@@ -319,7 +326,7 @@
                 guessInput.classList.remove('incorrect');
                 guessInput.classList.add('correct');
                 sessionScore++;
-                totalScore++;
+                correctScore++;
                 updateScores();
                 showModal("Correct! Great job!");
 
@@ -340,8 +347,8 @@
             } else {
                 guessInput.classList.remove('correct');
                 guessInput.classList.add('incorrect');
-                sessionScore -= 1;
-                totalScore -= 1;
+                sessionScore--;
+                wrongScore++;
                 updateScores();
                 showModal("Oops! That's not right. Try again!");
             }
@@ -349,7 +356,8 @@
 
         function updateScores() {
             scoreDisplay.textContent = `Session Score: ${sessionScore}`;
-            totalScoreDisplay.textContent = `Total Score: ${totalScore}`;
+            correctScoreDisplay.textContent = `Correct Answers: ${correctScore}`;
+            wrongScoreDisplay.textContent = `Wrong Answers: ${wrongScore}`;
         }
 
         // Genera TUTTI gli indovinelli
@@ -370,7 +378,9 @@
             }
             helper.textContent = `Words to guess: ${wordsToGuess.length}`;
             currentWordIndex = 0;
-            sessionScore = 0; // azzera solo il punteggio di sessione
+            sessionScore = 0;
+            correctScore = 0;
+            wrongScore = 0;
             updateScores();
             loadNextRiddle();
         }
@@ -406,6 +416,8 @@
             riddleBox.innerHTML = `<div class="riddle-title">🤔 Let's Play! 🤔</div><p>Add some words above and click "Generate Riddles!".</p>`;
             document.getElementById("helper").textContent = "";
             sessionScore = 0;
+            correctScore = 0;
+            wrongScore = 0;
             currentWordIndex = 0;
             wordsToGuess = [];
             updateScores();

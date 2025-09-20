@@ -146,6 +146,7 @@
 
         <div class="controls">
             <button id="btnGenerate">Generate Riddles!</button>
+            <button id="btnRandom">Generate 10 Random Words</button>
             <button class="secondary" id="btnClear">Clear</button>
         </div>
 
@@ -176,11 +177,20 @@
         const outputDiv = document.getElementById("output");
         const riddleBox = document.getElementById("riddle-box");
         const helper = document.getElementById("helper");
+        const btnRandom = document.getElementById("btnRandom");
         
         let sessionScore = 0;
         let totalScore = 0;
         let wordsToGuess = [];
         let currentWordIndex = 0;
+
+        // Lista di parole inglesi per il generatore random
+        const wordBank = [
+            "cat","dog","apple","banana","house","tree","car","book","river","sun",
+            "moon","star","fish","bird","flower","train","phone","chair","cloud","cake",
+            "ball","shoes","computer","mouse","desk","pen","school","street","window","door",
+            "water","fire","earth","wind","love","happy","smile","friend","family","music"
+        ];
 
         // Modale per avvisi
         const modal = document.getElementById("modal");
@@ -208,6 +218,19 @@
                 const j = Math.floor(Math.random() * (i + 1));
                 [array[i], array[j]] = [array[j], array[i]];
             }
+        }
+
+        // Genera 10 parole random diverse
+        function generateRandomWords() {
+            const inputs = document.querySelectorAll(".word-input-field");
+            let chosen = [];
+            while (chosen.length < MAX_WORDS) {
+                let rndWord = wordBank[Math.floor(Math.random() * wordBank.length)];
+                if (!chosen.includes(rndWord)) {
+                    chosen.push(rndWord);
+                }
+            }
+            inputs.forEach((inp, i) => { inp.value = chosen[i]; });
         }
 
         // ====== Logica di generazione degli indizi tramite LLM ======
@@ -352,20 +375,7 @@
             loadNextRiddle();
         }
 
-        document.getElementById("btnGenerate").addEventListener("click", generateRiddles);
-        document.getElementById("btnClear").addEventListener("click", () => {
-            document.querySelectorAll('.word-input-field').forEach(inp => inp.value = '');
-            riddleBox.innerHTML = `<div class="riddle-title">🤔 Let's Play! 🤔</div><p>Add some words above and click "Generate Riddles!".</p>`;
-            document.getElementById("helper").textContent = "";
-            sessionScore = 0;
-            currentWordIndex = 0;
-            wordsToGuess = [];
-            updateScores();
-        });
-
-        // Avvio
-        createWordInputs();
-
+        // Crea i campi input (layout originale numerato)
         function createWordInputs() {
             wordInputContainer.innerHTML = '';
             for (let i = 1; i <= MAX_WORDS; i++) {
@@ -387,6 +397,22 @@
                 wordInputContainer.appendChild(entryDiv);
             }
         }
+
+        // Event listeners
+        document.getElementById("btnGenerate").addEventListener("click", generateRiddles);
+        btnRandom.addEventListener("click", generateRandomWords);
+        document.getElementById("btnClear").addEventListener("click", () => {
+            document.querySelectorAll('.word-input-field').forEach(inp => inp.value = '');
+            riddleBox.innerHTML = `<div class="riddle-title">🤔 Let's Play! 🤔</div><p>Add some words above and click "Generate Riddles!".</p>`;
+            document.getElementById("helper").textContent = "";
+            sessionScore = 0;
+            currentWordIndex = 0;
+            wordsToGuess = [];
+            updateScores();
+        });
+
+        // Inizializzazione
+        createWordInputs();
     </script>
 </body>
 </html>

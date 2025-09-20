@@ -108,6 +108,7 @@
 
         #helper { margin-top: 8px; font-size: .95em; color: #666; text-align: center; }
         #scoreDisplay { font-size: 1.1em; font-weight: bold; color: var(--brand-dark); margin-top: 10px; }
+        #totalScoreDisplay { font-size: 1.1em; font-weight: bold; color: #333; margin-top: 5px; }
 
         .modal {
             display: none;
@@ -149,7 +150,8 @@
         </div>
 
         <div id="helper" class="helper"></div>
-        <div id="scoreDisplay">Score: 0</div>
+        <div id="scoreDisplay">Session Score: 0</div>
+        <div id="totalScoreDisplay">Total Score: 0</div>
         
         <div id="output">
             <div id="riddle-box">
@@ -169,12 +171,14 @@
     <script>
         const MAX_WORDS = 10;
         const scoreDisplay = document.getElementById("scoreDisplay");
+        const totalScoreDisplay = document.getElementById("totalScoreDisplay");
         const wordInputContainer = document.getElementById('word-input-container');
         const outputDiv = document.getElementById("output");
         const riddleBox = document.getElementById("riddle-box");
         const helper = document.getElementById("helper");
         
-        let score = 0;
+        let sessionScore = 0;
+        let totalScore = 0;
         let wordsToGuess = [];
         let currentWordIndex = 0;
 
@@ -209,7 +213,6 @@
         // ====== Logica di generazione degli indizi tramite LLM ======
         async function fetchHints(word) {
             riddleBox.innerHTML = `<div class="loading-spinner"></div>`;
-            // Istruzioni semplificate per ottenere indizi adatti a un bambino di 7 anni.
             const systemPrompt = `You are a very simple riddle generator for a spelling game. Your goal is to create short, easy hints for a word, like clues for a treasure hunt. The hints must be easy for a 7-year-old to understand. Use common things and actions a child knows. Provide exactly three hints. Do NOT include the word in the hints. The hints should be a short, simple list.`;
             const userQuery = `Provide hints for the word "${word}".`;
             const apiKey = "AIzaSyAgJQxCqhqptws_ll9kd4nKH2cZwpRF_Ok"; 
@@ -292,11 +295,11 @@
             if (guessInput.value.toLowerCase().trim() === correctWord.toLowerCase().trim()) {
                 guessInput.classList.remove('incorrect');
                 guessInput.classList.add('correct');
-                score++;
-                scoreDisplay.textContent = `Score: ${score}`;
+                sessionScore++;
+                totalScore++;
+                updateScores();
                 showModal("Correct! Great job!");
 
-                // Nascondi il pulsante "Check" e crea il pulsante "Next Word"
                 checkButton.style.display = 'none';
 
                 const nextButton = document.createElement('button');
@@ -314,8 +317,16 @@
             } else {
                 guessInput.classList.remove('correct');
                 guessInput.classList.add('incorrect');
+                sessionScore -= 1;
+                totalScore -= 1;
+                updateScores();
                 showModal("Oops! That's not right. Try again!");
             }
+        }
+
+        function updateScores() {
+            scoreDisplay.textContent = `Session Score: ${sessionScore}`;
+            totalScoreDisplay.textContent = `Total Score: ${totalScore}`;
         }
 
         // Genera TUTTI gli indovinelli
@@ -328,7 +339,6 @@
             const uniqueWords = [...new Set(wordsToGuess)];
             wordsToGuess = uniqueWords;
 
-            // Mescola l'array di parole
             shuffleArray(wordsToGuess);
 
             if (wordsToGuess.length === 0) {
@@ -337,8 +347,8 @@
             }
             helper.textContent = `Words to guess: ${wordsToGuess.length}`;
             currentWordIndex = 0;
-            score = 0;
-            scoreDisplay.textContent = `Score: 0`;
+            sessionScore = 0; // azzera solo il punteggio di sessione
+            updateScores();
             loadNextRiddle();
         }
 
@@ -347,10 +357,10 @@
             document.querySelectorAll('.word-input-field').forEach(inp => inp.value = '');
             riddleBox.innerHTML = `<div class="riddle-title">🤔 Let's Play! 🤔</div><p>Add some words above and click "Generate Riddles!".</p>`;
             document.getElementById("helper").textContent = "";
-            score = 0;
+            sessionScore = 0;
             currentWordIndex = 0;
             wordsToGuess = [];
-            scoreDisplay.textContent = "Score: 0";
+            updateScores();
         });
 
         // Avvio

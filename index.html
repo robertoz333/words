@@ -6,6 +6,10 @@
     <title>Spelling & Riddle Game</title>
     <style>
         @import url("https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap");
+
+        /* Ensures hidden elements are not rendered */
+        [hidden] { display: none !important; }
+
         :root {
             --bg: #f0f8ff; --text: #444; --brand: #ff69b4; --brand-dark: #d1478e;
             --title: #ff6347; --title-shadow: #ffb6c1; --accent: #ff4500;
@@ -27,7 +31,7 @@
         h1 { color: var(--title); font-size: 3.2em; text-shadow: 2px 2px 0px var(--title-shadow); margin-bottom: 14px; }
         p { font-size: 1.05em; color: #555; line-height: 1.5; }
         .controls { margin: 14px 0 8px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-        
+
         #word-input-container {
             width: 100%; padding: 10px; border-radius: 15px;
             border: 3px dashed #add8e6; margin-bottom: 8px; background-color: #f0f8ff;
@@ -40,7 +44,18 @@
             font-family: "Fredoka One", cursive; font-size: 1em; outline: none; padding: 5px;
         }
         .word-input-field:focus { border-bottom-color: var(--brand); }
-        
+
+        .speak-button {
+            padding: 6px 10px;
+            font-size: 1em;
+            border-radius: 10px;
+            background: #fff;
+            color: var(--brand);
+            border: 2px solid var(--brand);
+            cursor: pointer;
+        }
+        .speak-button:active { transform: translateY(1px); }
+
         button {
             background-color: var(--brand); color: white; padding: 12px 22px; border: none;
             border-radius: 50px; font-size: 1.1em; cursor: pointer; box-shadow: 0 4px var(--brand-dark);
@@ -52,13 +67,17 @@
             background-color: var(--next-btn-bg);
             box-shadow: 0 4px var(--next-btn-shadow);
         }
-
+        button.end-game-btn {
+            background-color: var(--no);
+            box-shadow: 0 4px #a51130;
+        }
         #output { margin-top: 22px; text-align: left; }
         #riddle-box {
             padding: 20px; border-radius: 15px; margin-top: 20px;
             background-color: #f7faff; border-left: 10px solid var(--brand);
-            min-height: 150px; /* Assicura uno spazio anche quando vuoto */
+            min-height: 150px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center;
         }
         .riddle-title {
             font-size: 1.6em; color: var(--accent); font-weight: bold; margin-bottom: 14px; text-align: center;
@@ -87,6 +106,25 @@
             color: #555;
             line-height: 1.5;
         }
+        .sentences-box {
+            margin-top: 20px;
+            padding: 15px;
+            border: 2px dashed #9370db;
+            border-radius: 10px;
+            background-color: #e6e6fa;
+            text-align: left;
+        }
+        .sentences-box h3 {
+            margin-top: 0;
+            color: #4b0082;
+            font-size: 1.3em;
+            text-shadow: none;
+        }
+        .sentences-box p {
+            margin: 0 0 10px;
+            font-size: 1em;
+            line-height: 1.4;
+        }
         .guess-input-container {
             display: flex;
             align-items: center;
@@ -105,7 +143,6 @@
         }
         .guess-input.correct { border-color: var(--ok); color: var(--ok); }
         .guess-input.incorrect { border-color: var(--no); color: var(--no); }
-
         #helper { margin-top: 8px; font-size: .95em; color: #666; text-align: center; }
         #scoreDisplay { font-size: 1.1em; font-weight: bold; color: var(--brand-dark); margin-top: 10px; }
         #correctScoreDisplay, #wrongScoreDisplay {
@@ -113,7 +150,6 @@
         }
         #correctScoreDisplay { color: var(--ok); }
         #wrongScoreDisplay { color: var(--no); }
-
         .modal {
             display: none;
             position: fixed;
@@ -145,20 +181,19 @@
     <div id="container">
         <h1>🌟 Spelling & Riddle Game 🌟</h1>
         <p>Enter up to 10 words, then solve the riddles!</p>
-
         <div id="word-input-container"></div>
-
         <div class="controls">
             <button id="btnGenerate">Generate Riddles!</button>
             <button id="btnRandom">Generate 10 Random Words</button>
+            <button id="btnSpeakAll" class="secondary">🔊 Speak All</button>
             <button class="secondary" id="btnClear">Clear</button>
+            <button id="btnEndGame" class="end-game-btn" hidden>End Game</button>
         </div>
-
         <div id="helper" class="helper"></div>
         <div id="scoreDisplay">Session Score: 0</div>
         <div id="correctScoreDisplay">Correct Answers: 0</div>
         <div id="wrongScoreDisplay">Wrong Answers: 0</div>
-        
+
         <div id="output">
             <div id="riddle-box">
                 <div class="riddle-title">🤔 Let's Play! 🤔</div>
@@ -166,32 +201,79 @@
             </div>
         </div>
     </div>
-    
+
     <div id="modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <p id="modal-message"></p>
         </div>
     </div>
-
     <script>
         const MAX_WORDS = 10;
         const scoreDisplay = document.getElementById("scoreDisplay");
         const correctScoreDisplay = document.getElementById("correctScoreDisplay");
         const wrongScoreDisplay = document.getElementById("wrongScoreDisplay");
         const wordInputContainer = document.getElementById('word-input-container');
-        const outputDiv = document.getElementById("output");
         const riddleBox = document.getElementById("riddle-box");
         const helper = document.getElementById("helper");
         const btnRandom = document.getElementById("btnRandom");
-        
+        const btnSpeakAll = document.getElementById("btnSpeakAll");
+        const btnGenerate = document.getElementById("btnGenerate");
+        const btnClear = document.getElementById("btnClear");
+        const btnEndGame = document.getElementById("btnEndGame");
+
         let sessionScore = 0;
         let correctScore = 0;
         let wrongScore = 0;
         let wordsToGuess = [];
         let currentWordIndex = 0;
 
-        // Lista di parole inglesi per il generatore random
+        // ====== TTS (Web Speech API) ======
+        const synth = window.speechSynthesis;
+        let voices = [];
+
+        function loadVoices() {
+            voices = synth.getVoices() || [];
+        }
+        loadVoices();
+        if ('onvoiceschanged' in synth) {
+            synth.onvoiceschanged = loadVoices;
+        }
+
+        function pickVoice() {
+            // Prioritize English voices, then Italian as a fallback
+            const preferred = ['en-US', 'en-GB', 'it-IT'];
+            for (const tag of preferred) {
+                const v = voices.find(v => v.lang === tag);
+                if (v) return v;
+            }
+            // Fallback to any voice in the preferred language prefix
+            for (const prefix of ['en','it']) {
+                const v = voices.find(v => v.lang && v.lang.startsWith(prefix));
+                if (v) return v;
+            }
+            return voices[0] || null;
+        }
+
+        function speakText(text, opts = {}) {
+            const t = (text || '').trim();
+            if (!t) return;
+            const utter = new SpeechSynthesisUtterance(t);
+            const v = pickVoice();
+            if (v) {
+                utter.voice = v;
+                utter.lang = v.lang;
+            } else {
+                utter.lang = 'en-US';
+            }
+            utter.rate = opts.rate ?? 0.95;
+            utter.pitch = opts.pitch ?? 1.0;
+            utter.volume = opts.volume ?? 1.0;
+            synth.cancel();
+            synth.speak(utter);
+        }
+
+        // ====== Word bank for random words ======
         const wordBank = [
             "cat","dog","apple","banana","house","tree","car","book","river","sun",
             "moon","star","fish","bird","flower","train","phone","chair","cloud","cake",
@@ -199,27 +281,18 @@
             "water","fire","earth","wind","love","happy","smile","friend","family","music"
         ];
 
-        // Modale per avvisi
+        // ====== Modal box ======
         const modal = document.getElementById("modal");
         const modalMessage = document.getElementById("modal-message");
         const closeButton = document.querySelector(".close-button");
-
         function showModal(message) {
             modalMessage.textContent = message;
             modal.style.display = "flex";
         }
+        closeButton.onclick = () => { modal.style.display = "none"; };
+        window.onclick = (event) => { if (event.target === modal) modal.style.display = "none"; };
 
-        closeButton.onclick = () => {
-            modal.style.display = "none";
-        };
-
-        window.onclick = (event) => {
-            if (event.target === modal) {
-                modal.style.display = "none";
-            }
-        };
-
-        // Funzione per mescolare l'array
+        // ====== Utils ======
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -227,7 +300,6 @@
             }
         }
 
-        // Genera 10 parole random diverse
         function generateRandomWords() {
             const inputs = document.querySelectorAll(".word-input-field");
             let chosen = [];
@@ -240,30 +312,24 @@
             inputs.forEach((inp, i) => { inp.value = chosen[i]; });
         }
 
-        // ====== Logica di generazione degli indizi tramite LLM ======
-        async function fetchHints(word) {
+        // ====== LLM hints ======
+        async function fetchRiddleAndSentences(word) {
             riddleBox.innerHTML = `<div class="loading-spinner"></div>`;
-            const systemPrompt = `You are a very simple riddle generator for a spelling game. Your goal is to create short, easy hints for a word, like clues for a treasure hunt. The hints must be easy for a 7-year-old to understand. Use common things and actions a child knows. Provide exactly three hints. Do NOT include the word in the hints. The hints should be a short, simple list.`;
-            const userQuery = `Provide hints for the word "${word}".`;
-            const apiKey = "AIzaSyAgJQxCqhqptws_ll9kd4nKH2cZwpRF_Ok"; 
+            const systemPrompt = `You are a content generator for a children's word game. Your task is to create a simple riddle and simple sentences for a given word. The riddle must be short and easy, without the target word. The sentences must be two or three, very simple, and use the word in a context a child can understand. The content must be in English. Format the response exactly like this:\nRiddle: [riddle text]\nSentences: [first sentence text]. [second sentence text]. [third sentence text].\n`;
+            const userQuery = `Provide a riddle and sentences for the word "${word}".`;
+            const apiKey = "AIzaSyAgJQxCqhqptws_ll9kd4nKH2cZwpRF_Ok"; // API key will be provided by the Canvas environment.
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-
             const payload = {
                 contents: [{ parts: [{ text: userQuery }] }],
                 systemInstruction: { parts: [{ text: systemPrompt }] },
             };
-
             try {
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-
-                if (!response.ok) {
-                    throw new Error(`API call failed with status: ${response.status}`);
-                }
-
+                if (!response.ok) throw new Error(`API call failed with status: ${response.status}`);
                 const result = await response.json();
                 const candidate = result.candidates?.[0];
                 if (candidate && candidate.content?.parts?.[0]?.text) {
@@ -273,36 +339,63 @@
                 }
             } catch (error) {
                 console.error("Error fetching hints:", error);
-                return "I'm sorry, I couldn't generate hints for this word right now. Please try another one.";
+                return `Riddle: I'm sorry, I couldn't generate a riddle right now. Please try another word.\nSentences: I'm sorry, I couldn't generate sentences.`;
             }
         }
 
-        // ====== Gestione del gioco e dell'interfaccia utente ======
+        // ====== Game logic ======
         async function loadNextRiddle() {
             if (currentWordIndex >= wordsToGuess.length) {
-                riddleBox.innerHTML = `<div class="riddle-title">Game Over!</div><p>You have solved all the riddles!</p><p>Click "Clear" to play again.</p>`;
+                riddleBox.innerHTML = `<div class="riddle-title">🎉 Game Over! 🎉</div><p>You have solved all the riddles!</p><p>Click "Clear" to play again.</p>`;
+                btnGenerate.hidden = false;
+                btnRandom.hidden = false;
+                btnSpeakAll.hidden = false;
+                btnClear.hidden = false;
+                btnEndGame.hidden = true;
                 return;
             }
-
             const currentWord = wordsToGuess[currentWordIndex];
-            const hintsText = await fetchHints(currentWord);
+            const contentText = await fetchRiddleAndSentences(currentWord);
+
+            const parts = contentText.split('\n');
+            let riddle = 'No riddle available.';
+            let sentences = 'No sentences available.';
+            
+            for (const part of parts) {
+                if (part.startsWith('Riddle:')) {
+                    riddle = part.substring('Riddle:'.length).trim();
+                } else if (part.startsWith('Sentences:')) {
+                    sentences = part.substring('Sentences:'.length).trim();
+                }
+            }
 
             riddleBox.innerHTML = '';
+            
             const title = document.createElement('div');
             title.className = 'riddle-title';
             title.textContent = '🤔 Can you guess the word? 🤔';
             riddleBox.appendChild(title);
 
-            const hintsList = document.createElement('ul');
-            hintsList.className = 'clues-list';
-            hintsText.split('\n').forEach(hint => {
-                if (hint.trim().length > 0) {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = hint.replace(/^- /, '').trim();
-                    hintsList.appendChild(listItem);
-                }
-            });
-            riddleBox.appendChild(hintsList);
+            const riddleText = document.createElement('p');
+            riddleText.textContent = riddle;
+            riddleBox.appendChild(riddleText);
+
+            const sentencesBox = document.createElement('div');
+            sentencesBox.className = 'sentences-box';
+            const sentencesTitle = document.createElement('h3');
+            sentencesTitle.textContent = 'Let\'s use the word in sentences:';
+            sentencesBox.appendChild(sentencesTitle);
+            const sentencesParagraph = document.createElement('p');
+            sentencesParagraph.textContent = sentences;
+            sentencesBox.appendChild(sentencesParagraph);
+            riddleBox.appendChild(sentencesBox);
+
+            const readAllBtn = document.createElement('button');
+            readAllBtn.textContent = '🔊 Read all';
+            readAllBtn.className = 'secondary';
+            readAllBtn.style.marginTop = '15px';
+            readAllBtn.onclick = () => speakText(`${riddle}. ${sentences}`);
+            riddleBox.appendChild(readAllBtn);
 
             const guessContainer = document.createElement('div');
             guessContainer.className = 'guess-input-container';
@@ -317,7 +410,7 @@
             checkButton.textContent = 'Check';
             checkButton.onclick = () => checkGuess(guessInput, currentWord, checkButton);
             guessContainer.appendChild(checkButton);
-            
+
             riddleBox.appendChild(guessContainer);
         }
 
@@ -329,7 +422,6 @@
                 correctScore++;
                 updateScores();
                 showModal("Correct! Great job!");
-
                 checkButton.style.display = 'none';
 
                 const nextButton = document.createElement('button');
@@ -340,10 +432,9 @@
                     currentWordIndex++;
                     loadNextRiddle();
                 };
-                
+
                 const guessContainer = document.querySelector('.guess-input-container');
                 guessContainer.appendChild(nextButton);
-
             } else {
                 guessInput.classList.remove('correct');
                 guessInput.classList.add('incorrect');
@@ -360,23 +451,31 @@
             wrongScoreDisplay.textContent = `Wrong Answers: ${wrongScore}`;
         }
 
-        // Genera TUTTI gli indovinelli
         function generateRiddles() {
             wordsToGuess = [];
             document.querySelectorAll('.word-input-field').forEach(inp => {
                 const w = inp.value.trim().toLowerCase();
                 if (w) wordsToGuess.push(w);
             });
+
             const uniqueWords = [...new Set(wordsToGuess)];
             wordsToGuess = uniqueWords;
-
             shuffleArray(wordsToGuess);
 
             if (wordsToGuess.length === 0) {
                 helper.textContent = "Please add at least one word.";
                 return;
             }
+
             helper.textContent = `Words to guess: ${wordsToGuess.length}`;
+            wordInputContainer.hidden = true;
+            
+            btnGenerate.hidden = true;
+            btnRandom.hidden = true;
+            btnSpeakAll.hidden = true;
+            btnClear.hidden = true;
+            btnEndGame.hidden = false;
+
             currentWordIndex = 0;
             sessionScore = 0;
             correctScore = 0;
@@ -385,7 +484,6 @@
             loadNextRiddle();
         }
 
-        // Crea i campi input (layout originale numerato)
         function createWordInputs() {
             wordInputContainer.innerHTML = '';
             for (let i = 1; i <= MAX_WORDS; i++) {
@@ -404,26 +502,60 @@
                 inputField.autocomplete = 'off';
                 entryDiv.appendChild(inputField);
 
+                const speakBtn = document.createElement('button');
+                speakBtn.type = 'button';
+                speakBtn.className = 'speak-button';
+                speakBtn.title = 'Speak';
+                speakBtn.setAttribute('aria-label', `Speak word ${i}`);
+                speakBtn.textContent = '🔊';
+                speakBtn.addEventListener('click', () => {
+                    const text = inputField.value.trim();
+                    if (text) speakText(text);
+                });
+                entryDiv.appendChild(speakBtn);
+
                 wordInputContainer.appendChild(entryDiv);
             }
         }
-
-        // Event listeners
-        document.getElementById("btnGenerate").addEventListener("click", generateRiddles);
-        btnRandom.addEventListener("click", generateRandomWords);
-        document.getElementById("btnClear").addEventListener("click", () => {
+        
+        function resetGame() {
             document.querySelectorAll('.word-input-field').forEach(inp => inp.value = '');
             riddleBox.innerHTML = `<div class="riddle-title">🤔 Let's Play! 🤔</div><p>Add some words above and click "Generate Riddles!".</p>`;
-            document.getElementById("helper").textContent = "";
+            helper.textContent = "";
             sessionScore = 0;
             correctScore = 0;
             wrongScore = 0;
             currentWordIndex = 0;
             wordsToGuess = [];
             updateScores();
+            wordInputContainer.hidden = false;
+            
+            btnGenerate.hidden = false;
+            btnRandom.hidden = false;
+            btnSpeakAll.hidden = false;
+            btnClear.hidden = false;
+            btnEndGame.hidden = true;
+        }
+
+        // Event listeners
+        btnGenerate.addEventListener("click", generateRiddles);
+        btnRandom.addEventListener("click", generateRandomWords);
+        btnClear.addEventListener("click", resetGame);
+        btnEndGame.addEventListener("click", resetGame);
+
+        btnSpeakAll.addEventListener("click", async () => {
+            const inputs = document.querySelectorAll(".word-input-field");
+            const delay = (ms) => new Promise(res => setTimeout(res, ms));
+            for (const inp of inputs) {
+                const t = inp.value.trim();
+                if (t) {
+                    speakText(t);
+                    await delay(800);
+                }
+            }
         });
 
-        // Inizializzazione
+        // Initialization
         createWordInputs();
     </script>
 </body>

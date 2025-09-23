@@ -60,6 +60,12 @@
         button.secondary { background: #eee; color: #333; box-shadow: 0 4px #ccc; }
         button.next-button { background-color: var(--next-btn-bg); box-shadow: 0 4px var(--next-btn-shadow); }
         button.end-game-btn { background-color: var(--no); box-shadow: 0 4px #a51130; }
+        button.gemini-btn {
+            background-color: #4CAF50;
+            box-shadow: 0 4px #388E3C;
+        }
+        button.gemini-btn:active { transform: translateY(2px); box-shadow: 0 2px #388E3C; }
+
 
         #output { margin-top: 22px; text-align: left; }
         #riddle-box {
@@ -87,6 +93,7 @@
         }
         .guess-input.correct { border-color: var(--ok); color: var(--ok); }
         .guess-input.incorrect { border-color: var(--no); color: var(--no); }
+        #loading-message { font-size: 1.2em; font-weight: bold; color: #007bff; margin-top: 20px; }
 
         #helper { margin-top: 8px; font-size: .95em; color: #666; text-align: center; }
         #scoreDisplay, #correctScoreDisplay, #wrongScoreDisplay { font-size: 1.1em; font-weight: bold; margin-top: 5px; }
@@ -112,7 +119,7 @@
         <p>Enter up to 10 words, then solve the riddles!</p>
         <div id="word-input-container"></div>
         <div class="controls">
-            <button id="btnGenerate">Generate Riddles!</button>
+            <button id="btnGemini" class="gemini-btn">✨ Generate Riddles with AI ✨</button>
             <button id="btnRandom">Generate 10 Random Words</button>
             <button id="btnSpeakAll" class="secondary">🔊 Read All</button>
             <button class="secondary" id="btnClear">Clear</button>
@@ -128,6 +135,7 @@
                 <div class="riddle-title">🤔 Let's Play! 🤔</div>
                 <p>Add some words above and click "Generate Riddles!".</p>
             </div>
+            <div id="loading-message" hidden>Generating riddles... please wait a moment!</div>
         </div>
     </div>
 
@@ -144,22 +152,24 @@
         const wrongScoreDisplay = document.getElementById("wrongScoreDisplay");
         const wordInputContainer = document.getElementById('word-input-container');
         const riddleBox = document.getElementById("riddle-box");
+        const loadingMessage = document.getElementById("loading-message");
         const helper = document.getElementById("helper");
         const btnRandom = document.getElementById("btnRandom");
         const btnSpeakAll = document.getElementById("btnSpeakAll");
-        const btnGenerate = document.getElementById("btnGenerate");
         const btnClear = document.getElementById("btnClear");
         const btnEndGame = document.getElementById("btnEndGame");
+        const btnGemini = document.getElementById("btnGemini");
 
         let sessionScore = 0;
         let correctScore = 0;
         let wrongScore = 0;
         let wordsToGuess = [];
         let currentWordIndex = 0;
+        let riddleAndSentenceBank = {};
 
         // ====== Local Riddle and Sentence Bank ======
-        // No API needed! Add your own words, riddles, and sentences here.
-        const riddleAndSentenceBank = {
+        // This bank will be a fallback if Gemini isn't used.
+        const localRiddleAndSentenceBank = {
             "cat": {
                 riddle: "I say 'meow' and I like to chase mice. What am I?",
                 sentences: "The black cat sat on the mat. My cat loves to play with yarn."
@@ -210,7 +220,7 @@
             }
         };
 
-        const wordBank = Object.keys(riddleAndSentenceBank); // Use keys from our bank for random words
+        const wordBank = Object.keys(localRiddleAndSentenceBank);
 
         // ====== TTS (Web Speech API) ======
         const synth = window.speechSynthesis;
@@ -266,24 +276,12 @@
             shuffleArray(wordBank);
             inputs.forEach((inp, i) => { inp.value = wordBank[i] || ""; });
         }
-
-        // ====== Local Hint Generation ======
-        function getLocalRiddleAndSentences(word) {
-            if (riddleAndSentenceBank[word]) {
-                const data = riddleAndSentenceBank[word];
-                return `Riddle: ${data.riddle}\nSentences: ${data.sentences}`;
-            } else {
-                // Fallback for words not in our bank
-                const errorMessage = `I don't have a riddle for "${word}". Try one from the 'Random Words' list!`;
-                return `Riddle: ${errorMessage}\nSentences: ${errorMessage}`;
-            }
-        }
         
         // ====== Game logic ======
         function loadNextRiddle() {
             if (currentWordIndex >= wordsToGuess.length) {
                 riddleBox.innerHTML = `<div class="riddle-title">🎉 Game Over! 🎉</div><p>You have solved all the riddles!</p><p>Click "Clear" to play again.</p>`;
-                btnGenerate.hidden = false;
+                btnGemini.hidden = false;
                 btnRandom.hidden = false;
                 btnSpeakAll.hidden = false;
                 btnClear.hidden = false;
@@ -291,21 +289,13 @@
                 return;
             }
             const currentWord = wordsToGuess[currentWordIndex];
-            const contentText = getLocalRiddleAndSentences(currentWord);
-
-            const parts = contentText.split('\n');
-            let riddle = 'No riddle available.';
-            let sentences = 'No sentences available.';
-            
-            for (const part of parts) {
-                if (part.startsWith('Riddle:')) riddle = part.substring('Riddle:'.length).trim();
-                else if (part.startsWith('Sentences:')) sentences = part.substring('Sentences:'.length).trim();
-            }
+            const contentData = riddleAndSentenceBank[currentWord];
 
             riddleBox.innerHTML = ''; 
 
-            if (sentences.startsWith("I don't have a riddle for")) {
-                riddleBox.innerHTML = `<div class="error-message">${sentences}</div>`;
+            if (!contentData || !contentData.riddle) {
+                const errorMessage = `We don't have a riddle for "${currentWord}". Try choosing one from the "Random Words" list!`;
+                riddleBox.innerHTML = `<div class="error-message">${errorMessage}</div>`;
                 const nextButton = document.createElement('button');
                 nextButton.textContent = 'Next Word';
                 nextButton.classList.add('next-button');
@@ -317,6 +307,8 @@
                 riddleBox.appendChild(nextButton);
                 return;
             }
+
+            const { riddle, sentences } = contentData;
 
             // Step 1: Show sentences
             const sentencesBox = document.createElement('div');
@@ -347,7 +339,7 @@
                 `);
 
                 const readRiddleBtn = document.createElement('button');
-                readRiddleBtn.textContent = '🔊 Read Riddle';
+                readRiddleBtn.textContent = "🔊 Read the Riddle";
                 readRiddleBtn.className = 'secondary';
                 readRiddleBtn.style.marginTop = '10px';
                 readRiddleBtn.onclick = () => speakText(riddle);
@@ -404,7 +396,7 @@
             wrongScoreDisplay.textContent = `Wrong Answers: ${wrongScore}`;
         }
 
-        function generateRiddles() {
+        function startGame() {
             wordsToGuess = [];
             document.querySelectorAll('.word-input-field').forEach(inp => {
                 const w = inp.value.trim().toLowerCase();
@@ -421,7 +413,7 @@
 
             helper.textContent = `Words to guess: ${wordsToGuess.length}`;
             wordInputContainer.hidden = true;
-            btnGenerate.hidden = true;
+            btnGemini.hidden = true;
             btnRandom.hidden = true;
             btnSpeakAll.hidden = true;
             btnClear.hidden = true;
@@ -435,14 +427,97 @@
             loadNextRiddle();
         }
 
+        // ====== Gemini API Logic ======
+        async function generateWithGemini() {
+            const words = [];
+            document.querySelectorAll('.word-input-field').forEach(inp => {
+                const w = inp.value.trim().toLowerCase();
+                if (w) words.push(w);
+            });
+
+            if (words.length === 0) {
+                showModal("Please enter at least one word to generate riddles.");
+                return;
+            }
+            
+            loadingMessage.hidden = false;
+            riddleBox.hidden = true;
+            btnGemini.disabled = true;
+            
+            const userQuery = `For each of the following words, generate a simple riddle and two example sentences, suitable for a children's spelling game. Respond in JSON format. Words: ${words.join(', ')}.`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "ARRAY",
+                        items: {
+                            type: "OBJECT",
+                            properties: {
+                                "word": { "type": "STRING" },
+                                "riddle": { "type": "STRING" },
+                                "sentences": { "type": "STRING" }
+                            },
+                            "propertyOrdering": ["word", "riddle", "sentences"]
+                        }
+                    }
+                },
+            };
+
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (!jsonText) {
+                    throw new Error("Invalid API response.");
+                }
+
+                const generatedRiddles = JSON.parse(jsonText);
+                
+                // Convert array to a dictionary for easy lookup
+                riddleAndSentenceBank = {};
+                generatedRiddles.forEach(item => {
+                    riddleAndSentenceBank[item.word.toLowerCase()] = {
+                        riddle: item.riddle,
+                        sentences: item.sentences
+                    };
+                });
+                
+                showModal("Riddles successfully generated by AI!");
+                startGame();
+
+            } catch (error) {
+                console.error("Error generating riddles:", error);
+                showModal(`An error occurred during generation. Please try again or use the "Generate Riddles" fallback option.`);
+            } finally {
+                loadingMessage.hidden = true;
+                riddleBox.hidden = false;
+                btnGemini.disabled = false;
+            }
+        }
+        
         function createWordInputs() {
             for (let i = 1; i <= MAX_WORDS; i++) {
                 const entryDiv = document.createElement('div');
                 entryDiv.className = 'word-entry';
                 entryDiv.innerHTML = `
                     <span class="entry-number">${i}.</span>
-                    <input type="text" class="word-input-field" placeholder="Type the word..." autocomplete="off">
-                    <button type="button" class="speak-button" title="Speak" aria-label="Speak word ${i}">🔊</button>
+                    <input type="text" class="word-input-field" placeholder="Type a word..." autocomplete="off">
+                    <button type="button" class="speak-button" title="Pronounce" aria-label="Pronounce word ${i}">🔊</button>
                 `;
                 wordInputContainer.appendChild(entryDiv);
 
@@ -455,22 +530,23 @@
         
         function resetGame() {
             document.querySelectorAll('.word-input-field').forEach(inp => inp.value = '');
-            riddleBox.innerHTML = `<div class="riddle-title">🤔 Let's Play! 🤔</div><p>Add some words above and click "Generate Riddles!".</p>`;
+            riddleBox.innerHTML = `<div class="riddle-title">🤔 Let's Play! 🤔</div><p>Add some words and click "Generate Riddles with AI ✨".</p>`;
             helper.textContent = "";
             sessionScore = 0;
             correctScore = 0;
             wrongScore = 0;
             updateScores();
             wordInputContainer.hidden = false;
-            btnGenerate.hidden = false;
+            btnGemini.hidden = false;
             btnRandom.hidden = false;
             btnSpeakAll.hidden = false;
             btnClear.hidden = false;
             btnEndGame.hidden = true;
+            riddleAndSentenceBank = {}; // Clear the bank for a fresh start
         }
 
         // Event listeners
-        btnGenerate.addEventListener("click", generateRiddles);
+        btnGemini.addEventListener("click", generateWithGemini);
         btnRandom.addEventListener("click", generateRandomWords);
         btnClear.addEventListener("click", resetGame);
         btnEndGame.addEventListener("click", resetGame);
@@ -492,3 +568,4 @@
     </script>
 </body>
 </html>
+

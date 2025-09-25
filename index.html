@@ -417,43 +417,313 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        prompt: `Create 3 simple hints for the word "${word}" for a 7-year-old child. Replace "${word}" with "..." in each hint. Keep hints under 10 words. Separate with semicolons. Example for "cat": The ... says meow; A ... has four legs; Dogs chase ...`
+                        prompt: `You are helping a 7-year-old child guess the word "${word}".
+
+Create 5-6 SPECIFIC clues that describe what "${word}" actually IS or DOES:
+
+IMPORTANT RULES:
+- Describe the actual characteristics, function, or nature of "${word}"
+- Use concrete, visual descriptions a child can imagine
+- Connect to the child's real experiences but BE SPECIFIC about "${word}"
+- NO letter hints, NO spelling, NO "it starts with..." or "it ends with..."
+- NO generic hints like "you see this at school" 
+- Each clue must help understand what "${word}" means
+
+Structure your clues like this:
+1. What category/type of thing it is
+2. What it looks like or what it does
+3. When or where you specifically use/see it
+4. A specific characteristic unique to it
+5. How it relates to other things the child knows
+6. The most obvious, specific clue that almost gives it away
+
+For example, if the word was "elephant":
+- It's a very big grey animal
+- It has a long nose called a trunk
+- You see them at the zoo or circus
+- It has huge ears and thick legs
+- It's bigger than a car but smaller than a house
+- It sprays water with its trunk to wash
+
+Now create 5-6 SPECIFIC clues for "${word}" that describe what it actually is.
+Return ONLY the clues, one per line, no numbering.`
                     })
                 });
 
                 if (response.ok) {
                     const data = await response.json();
-                    let text = data.text || data.response || data.content || data.result || '';
+                    let text = data.text || data.response || data.content || data.result || data.data || '';
+                    
+                    console.log('API Response:', text);
                     
                     if (text) {
-                        const hints = text.split(';').map(h => h.trim()).filter(h => h.includes('...'));
-                        if (hints.length > 0) {
-                            hintsDiv.innerHTML = hints.slice(0, 3).map(hint => 
-                                `<div class="hint">💡 ${hint}</div>`
+                        // Parse clues
+                        let clues = [];
+                        
+                        // Try different separators
+                        if (text.includes('\n')) {
+                            clues = text.split('\n')
+                                .map(c => c.trim())
+                                .filter(c => c.length > 0 && c.length < 150);
+                        } else if (text.includes('. ')) {
+                            clues = text.split('. ')
+                                .map(c => c.trim())
+                                .filter(c => c.length > 0);
+                        } else if (text.match(/\d+\./)) {
+                            clues = text.split(/\d+\./)
+                                .map(c => c.trim())
+                                .filter(c => c.length > 0);
+                        }
+
+                        // Clean up clues
+                        clues = clues.map(clue => {
+                            return clue
+                                .replace(/^\d+[\.\)]\s*/, '')
+                                .replace(/^[-•*]\s*/, '')
+                                .replace(/\*\*/g, '')
+                                .trim();
+                        }).filter(c => c.length > 5 && !c.toLowerCase().includes(word.toLowerCase()));
+
+                        if (clues.length > 0) {
+                            const emojis = ['🔍', '👀', '✨', '💡', '🎯', '⭐'];
+                            hintsDiv.innerHTML = clues.slice(0, 6).map((clue, index) => 
+                                `<div class="hint">${emojis[index] || '💡'} ${clue}</div>`
                             ).join('');
                         } else {
-                            throw new Error('No valid hints');
+                            throw new Error('No valid clues generated');
                         }
                     } else {
-                        throw new Error('Empty response');
+                        throw new Error('Empty response from API');
                     }
                 } else {
-                    throw new Error('API error');
+                    throw new Error(`API error: ${response.status}`);
                 }
             } catch (error) {
-                console.error('Error:', error);
-                // Fallback hints
-                const hints = [
-                    `The word starts with '${word[0].toUpperCase()}' and has ${word.length} letters`,
-                    `The word contains ${word.split('').filter(c => 'aeiou'.includes(c)).length} vowels`,
-                    `The word ends with '${word.slice(-1)}'`
-                ];
-                hintsDiv.innerHTML = hints.map(hint => 
-                    `<div class="hint">📌 ${hint}</div>`
-                ).join('');
+                console.error('Error generating hints:', error);
+                
+                // Specific fallback hints
+                const hints = generateSpecificFallback(word);
+                hintsDiv.innerHTML = hints.map((hint, index) => {
+                    const emojis = ['🔍', '👀', '✨', '💡', '🎯'];
+                    return `<div class="hint">${emojis[index] || '⭐'} ${hint}</div>`;
+                }).join('');
             } finally {
                 loadingDiv.style.display = 'none';
             }
+        }
+
+        function generateSpecificFallback(word) {
+            const wordLower = word.toLowerCase();
+            
+            // Specific hints for common words - WITHOUT revealing the word!
+            const specificHints = {
+                // Animals
+                'cat': [
+                    'A small furry pet animal',
+                    'It purrs when happy and meows when hungry',
+                    'It has whiskers and a long tail',
+                    'It loves to chase mice and birds',
+                    'It climbs trees and sleeps a lot',
+                    'A pet that says "meow"'
+                ],
+                'dog': [
+                    'A pet animal that barks',
+                    'It wags its tail when happy',
+                    'People walk it on a leash',
+                    'It can fetch balls and sticks',
+                    'It protects houses from strangers',
+                    'Man\'s best friend that says "woof"'
+                ],
+                'elephant': [
+                    'The biggest animal that lives on land',
+                    'It has a long trunk for a nose',
+                    'Its ears are huge like big fans',
+                    'It loves to spray water on itself',
+                    'It has ivory tusks and grey skin',
+                    'A huge grey animal with a trunk'
+                ],
+                'bird': [
+                    'An animal that flies in the sky',
+                    'It has wings and feathers',
+                    'It builds nests in trees',
+                    'It lays eggs and sings songs',
+                    'It has a beak instead of a mouth',
+                    'A flying animal that tweets'
+                ],
+                
+                // Food
+                'pizza': [
+                    'A round, flat food from Italy',
+                    'It has cheese and tomato on top',
+                    'You can add pepperoni or vegetables',
+                    'It comes in triangular slices',
+                    'Delivered hot in a square box',
+                    'Round food with melted cheese on top'
+                ],
+                'apple': [
+                    'A round fruit that grows on trees',
+                    'It can be red, green, or yellow',
+                    'It\'s crunchy when you bite it',
+                    'It has seeds in the middle',
+                    'You can make juice or pie with it',
+                    'A crunchy fruit that keeps doctors away'
+                ],
+                'bread': [
+                    'A food made from flour and water',
+                    'You slice it to make sandwiches',
+                    'It comes from the bakery or oven',
+                    'Toast is made by cooking this',
+                    'It can be white, brown, or whole wheat',
+                    'Sliced food you use for sandwiches'
+                ],
+                
+                // Actions
+                'run': [
+                    'Moving your legs very fast',
+                    'Going faster than walking',
+                    'What you do in races',
+                    'Your feet leave the ground when doing this',
+                    'You breathe hard after doing this',
+                    'The fast way to move using legs'
+                ],
+                'jump': [
+                    'Pushing yourself up with your legs',
+                    'Both feet leave the ground',
+                    'What you do on a trampoline',
+                    'How you get over puddles',
+                    'Going up and down quickly',
+                    'Hopping up into the air'
+                ],
+                'swim': [
+                    'Moving through water',
+                    'Using arms and legs in a pool',
+                    'What fish do all the time',
+                    'You need to hold your breath underwater',
+                    'Moving in water without sinking',
+                    'How you move in a swimming pool'
+                ],
+                
+                // Colors
+                'red': [
+                    'The color of ripe strawberries',
+                    'The color of blood and roses',
+                    'Stop signs are this color',
+                    'Fire trucks are painted this',
+                    'The first color of the rainbow',
+                    'The color of tomatoes and cherries'
+                ],
+                'blue': [
+                    'The color of the sky on sunny days',
+                    'The color of deep ocean water',
+                    'Blueberries are this color',
+                    'Many school uniforms are this',
+                    'The color of Facebook\'s logo',
+                    'The sky and sea are this color'
+                ],
+                
+                // School items
+                'book': [
+                    'Pages with words bound together',
+                    'You read stories from this',
+                    'It has a cover and many pages',
+                    'Found on shelves in libraries',
+                    'Teachers read these to the class',
+                    'Something you read with pages inside'
+                ],
+                'pencil': [
+                    'A wooden stick for writing',
+                    'It has graphite in the middle',
+                    'You sharpen it when it gets dull',
+                    'It has an eraser on top',
+                    'You write and draw with this',
+                    'A yellow stick you write with'
+                ],
+                
+                // Nature
+                'tree': [
+                    'A tall plant with a trunk',
+                    'It has branches and leaves',
+                    'Birds build nests in these',
+                    'It gives us wood and oxygen',
+                    'Apples and oranges grow on these',
+                    'A big plant with leaves and branches'
+                ],
+                'sun': [
+                    'The bright yellow star in our sky',
+                    'It gives us light and warmth',
+                    'It rises in the morning',
+                    'You need sunglasses to look near it',
+                    'Plants need this to grow',
+                    'The big bright circle in the daytime sky'
+                ],
+                'sky': [
+                    'The space above us when we look up',
+                    'It\'s blue during the day',
+                    'Clouds float in this',
+                    'Birds and airplanes fly through it',
+                    'It turns orange and pink at sunset',
+                    'Where you see stars at night'
+                ],
+                'moon': [
+                    'The big white circle in the night',
+                    'It changes shape during the month',
+                    'Sometimes it\'s full, sometimes a crescent',
+                    'It lights up the night',
+                    'Astronauts have walked on it',
+                    'The bright thing you see at night with stars'
+                ],
+                
+                // Emotions
+                'happy': [
+                    'The feeling when you smile',
+                    'How you feel at your birthday',
+                    'The opposite of sad',
+                    'When something good happens',
+                    'The feeling of joy and fun',
+                    'How you feel when laughing'
+                ],
+                'sad': [
+                    'The feeling when you cry',
+                    'How you feel when hurt',
+                    'The opposite of happy',
+                    'When you miss someone',
+                    'Feeling down or upset',
+                    'The feeling that makes tears come'
+                ],
+                
+                // Transport
+                'car': [
+                    'A vehicle with four wheels',
+                    'It runs on roads and streets',
+                    'Your family drives this to places',
+                    'It has seats, steering wheel, and doors',
+                    'You put petrol in it to make it go',
+                    'A machine that takes you places on roads'
+                ],
+                'train': [
+                    'Long vehicle that runs on tracks',
+                    'It has many carriages connected together',
+                    'It stops at stations to pick up people',
+                    'It makes a "choo-choo" sound',
+                    'It travels on rails made of metal',
+                    'Transport that goes on railway tracks'
+                ]
+            };
+            
+            // Return specific hints if available
+            if (specificHints[wordLower]) {
+                return specificHints[wordLower];
+            }
+            
+            // Generic descriptive fallback WITHOUT revealing the word
+            return [
+                'It\'s something important to know about',
+                'You learn about this in school',
+                'Many people talk about this',
+                'It\'s part of everyday life',
+                'You might see or use this often',
+                'Think carefully about what this could be'
+            ];
         }
 
         function checkAnswer() {

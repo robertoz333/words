@@ -96,8 +96,8 @@
         // La chiave API è gestita automaticamente dall'ambiente, lasciala vuota.
         const apiKey = ""; 
         
-        // >>>>> PUNTO IMPORTANTE: INSERISCI QUI L'URL DEL TUO ENDPOINT WORDPRESS <<<<<
-        const apiUrl = `https://www.robertozanoni.it/wp-json/gemini/v1/generate_hints`;
+        // >>>>> PUNTO IMPORTANTE: QUESTO URL PUNTA A UN NUOVO ENDPOINT DI TEST. VERIFICA LA CONFIGURAZIONE IN WORDPRESS. <<<<<
+        const apiUrl = `https://www.robertozanoni.it/wp-json/gemini/v1/test`;
 
         const generateBtn = document.getElementById('generateBtn');
         const generate10Btn = document.getElementById('generate10Btn');
@@ -214,6 +214,8 @@
 
                         renderGame();
                         break; // Successo! Usciamo dal loop di riprovo.
+                    } else if (response.status === 404) {
+                        throw new Error(`Errore 404: L'URL dell'API non è stato trovato. Verifica l'URL: ${apiUrl}`);
                     } else {
                         throw new Error(`Errore di rete: ${response.status} ${response.statusText}`);
                     }
@@ -326,8 +328,10 @@
 
                         renderGame();
                         break; // Successo! Usciamo dal loop di riprovo.
+                    } else if (response.status === 404) {
+                        throw new Error(`Errore 404: L'URL dell'API non è stato trovato. Verifica l'URL: ${apiUrl}`);
                     } else {
-                         throw new Error(`Errore di rete: ${response.status} ${response.statusText}`);
+                        throw new Error(`Errore di rete: ${response.status} ${response.statusText}`);
                     }
                 } catch (error) {
                     console.error("Errore nella generazione degli indizi:", error); // Debugging: logga l'errore completo

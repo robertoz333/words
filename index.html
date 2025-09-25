@@ -3,583 +3,415 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gioco di Spelling e Indovinelli</title>
+    <title>Gioco di Parole con Gemini AI</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url("https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap");
-
-        /* Assicura che gli elementi nascosti non vengano visualizzati */
-        [hidden] { display: none !important; }
-
-        :root {
-            --bg: #f0f8ff; --text: #444; --brand: #ff69b4; --brand-dark: #d1478e;
-            --title: #ff6347; --title-shadow: #ffb6c1; --accent: #ff4500;
-            --ok: #2e8b57; --no: #dc143c; --next-btn-bg: #4caf50; --next-btn-shadow: #388e3c;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
         }
-        * { box-sizing: border-box; }
-        body, html {
-            margin: 0; padding: 0;
-            font-family: "Fredoka One", cursive, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            text-align: center;
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 8px;
         }
-        #container {
-            max-width: 900px; margin: 0 auto; background-color: #ffffff;
-            padding: 30px; border-radius: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border: 5px solid #fff;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-        h1 { color: var(--title); font-size: 3.2em; text-shadow: 2px 2px 0px var(--title-shadow); margin-bottom: 14px; }
-        p { font-size: 1.05em; color: #555; line-height: 1.5; }
-        .controls { margin: 14px 0 8px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-
-        #word-input-container {
-            width: 100%; padding: 10px; border-radius: 15px;
-            border: 3px dashed #add8e6; margin-bottom: 8px; background-color: #f0f8ff;
-            display: flex; flex-direction: column; gap: 8px;
-        }
-        .word-entry { display: flex; align-items: center; gap: 10px; padding: 5px; }
-        .entry-number { font-weight: bold; color: var(--brand-dark); font-size: 1.1em; min-width: 25px; text-align: right; }
-        .word-input-field {
-            flex-grow: 1; border: none; border-bottom: 2px solid #ccc; background-color: transparent;
-            font-family: "Fredoka One", cursive; font-size: 1em; outline: none; padding: 5px;
-        }
-        .word-input-field:focus { border-bottom-color: var(--brand); }
-
-        .speak-button {
-            padding: 6px 10px; font-size: 1em; border-radius: 10px; background: #fff;
-            color: var(--brand); border: 2px solid var(--brand); cursor: pointer;
-        }
-        .speak-button:active { transform: translateY(1px); }
-
-        button {
-            background-color: var(--brand); color: white; padding: 12px 22px; border: none;
-            border-radius: 50px; font-size: 1.1em; cursor: pointer; box-shadow: 0 4px var(--brand-dark);
-            font-family: "Fredoka One", cursive;
-        }
-        button:active { transform: translateY(2px); box-shadow: 0 2px var(--brand-dark); }
-        button.secondary { background: #eee; color: #333; box-shadow: 0 4px #ccc; }
-        button.next-button { background-color: var(--next-btn-bg); box-shadow: 0 4px var(--next-btn-shadow); }
-        button.end-game-btn { background-color: var(--no); box-shadow: 0 4px #a51130; }
-        button.gemini-btn {
-            background-color: #4CAF50;
-            box-shadow: 0 4px #388E3C;
-        }
-        button.gemini-btn:active { transform: translateY(2px); box-shadow: 0 2px #388E3C; }
-
-        #output { margin-top: 22px; text-align: left; }
-        #riddle-box {
-            padding: 20px; border-radius: 15px; margin-top: 20px; background-color: #f7faff;
-            border-left: 10px solid var(--brand); min-height: 150px; display: flex;
-            flex-direction: column; align-items: center; justify-content: center; text-align: center;
-        }
-        .riddle-title { font-size: 1.6em; color: var(--accent); font-weight: bold; margin-bottom: 14px; text-align: center; }
-        
-        .error-message {
-            color: var(--no); font-weight: bold; background-color: #fff0f0; padding: 15px;
-            border-radius: 10px; border: 2px solid var(--no);
-        }
-        .sentences-box {
-            margin-top: 20px; padding: 15px; border: 2px dashed #9370db; border-radius: 10px;
-            background-color: #e6e6fa; text-align: left; width: 100%;
-        }
-        .sentences-box h3 { margin-top: 0; color: #4b0082; font-size: 1.3em; text-shadow: none; }
-        .sentences-box p { margin: 0 0 10px; font-size: 1em; line-height: 1.4; }
-
-        .guess-input-container { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px; }
-        .guess-input {
-            padding: 8px 12px; font-size: 1em; font-family: "Fredoka One", cursive;
-            border: 2px solid #ccc; border-radius: 10px; outline: none; text-align: center;
-        }
-        .guess-input.correct { border-color: var(--ok); color: var(--ok); }
-        .guess-input.incorrect { border-color: var(--no); color: var(--no); }
-        #loading-message { font-size: 1.2em; font-weight: bold; color: #007bff; margin-top: 20px; }
-
-        #helper { font-size: .95em; color: #666; text-align: center; }
-        #scoreDisplay, #correctScoreDisplay, #wrongScoreDisplay { font-size: 1.1em; font-weight: bold; margin-top: 5px; }
-        #scoreDisplay { color: var(--brand-dark); margin-top: 10px; }
-        #correctScoreDisplay { color: var(--ok); }
-        #wrongScoreDisplay { color: var(--no); }
-        
-        .modal {
-            display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%;
-            overflow: auto; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center;
-        }
-        .modal-content {
-            background-color: #fefefe; padding: 20px; border-radius: 15px;
-            width: 80%; max-width: 400px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); text-align: center;
-        }
-        .close-button { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-        .close-button:hover, .close-button:focus { color: #000; text-decoration: none; }
     </style>
 </head>
-<body>
-    <div id="container">
-        <h1>🌟 Gioco di Spelling e Indovinelli 🌟</h1>
-        <p>Inserisci fino a 10 parole, poi risolvi gli indovinelli!</p>
-        <div id="word-input-container"></div>
-        <div class="controls">
-            <button id="btnGemini" class="gemini-btn">✨ Genera Indovinelli con l'AI ✨</button>
-            <button id="btnRandom">Genera 10 Parole Casuali</button>
-            <button id="btnSpeakAll" class="secondary">🔊 Leggi Tutto</button>
-            <button class="secondary" id="btnClear">Cancella</button>
-            <button id="btnEndGame" class="end-game-btn" hidden>Termina Partita</button>
+<body class="bg-blue-200 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-[40px] shadow-2xl p-8 max-w-4xl w-full border-4 border-blue-400">
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold text-blue-800 mb-2 drop-shadow-lg">Gioco di Parole! ✨</h1>
+            <p class="text-lg text-gray-600">Prova a indovinare le parole con gli indizi dell'AI.</p>
         </div>
-        <div id="helper" class="helper"></div>
-        <div id="scoreDisplay">Punteggio Sessione: 0</div>
-        <div id="correctScoreDisplay">Risposte Corrette: 0</div>
-        <div id="wrongScoreDisplay">Risposte Errate: 0</div>
 
-        <div id="output">
-            <div id="riddle-box">
-                <div class="riddle-title">🤔 Iniziamo a Giocare! 🤔</div>
-                <p>Aggiungi alcune parole e clicca su "Genera Indovinelli".</p>
+        <!-- API Key and Controls Section -->
+        <div class="flex flex-col items-center space-y-4 mb-8">
+            <div class="w-full">
+                <label for="numWords" class="block text-sm font-medium text-gray-700 mb-2">Quante parole vuoi indovinare?</label>
+                <input type="number" id="numWords" value="10" min="1" max="10" class="w-full p-3 border-2 border-pink-400 rounded-2xl text-center shadow-md focus:ring-purple-500 focus:border-purple-500">
             </div>
-            <div id="loading-message" hidden>Generazione in corso... attendi un momento!</div>
+            <button id="generateBtn" class="w-full px-6 py-3 bg-purple-500 text-white font-bold rounded-2xl shadow-lg hover:bg-purple-600 transition duration-300 transform hover:scale-105">
+                Genera Parole e Indizi!
+            </button>
+            <button id="generate10Btn" class="w-full px-6 py-3 bg-green-500 text-white font-bold rounded-2xl shadow-lg hover:bg-green-600 transition duration-300 transform hover:scale-105">
+                Genera 10 Parole
+            </button>
+        </div>
+        
+        <div class="flex flex-col items-center space-y-4 mb-8">
+            <div class="w-full">
+                <h2 class="text-2xl font-bold text-gray-800 text-center mb-4">Oppure Inserisci le tue 10 parole <span class="text-sm text-gray-500">(Solo parole singole in inglese)</span></h2>
+                <div id="manualInputContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                </div>
+            </div>
+            <button id="startManualBtn" class="w-full px-6 py-3 bg-red-400 text-white font-bold rounded-2xl shadow-lg hover:bg-red-500 transition duration-300 transform hover:scale-105">
+                Inizia il Gioco con le mie Parole!
+            </button>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="hidden text-center text-gray-500 text-lg mb-8">
+            <span class="loading"></span>
+            Sto generando le parole...
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="hidden bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded-xl relative mb-8">
+            <strong class="font-bold">Oh no! Errore:</strong>
+            <span id="errorText" class="block sm:inline"></span>
+        </div>
+
+        <!-- Game Area -->
+        <div id="gameArea" class="hidden">
+            <div id="wordCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                <!-- Le schede delle parole saranno inserite dinamicamente qui -->
+            </div>
+            <div class="mt-8 text-center">
+                <p class="text-3xl font-bold text-blue-700">Punteggio: <span id="score">0</span></p>
+                <p class="text-xl text-gray-500">Parole indovinate: <span id="correctCount">0</span> di <span id="totalWords">0</span></p>
+            </div>
         </div>
     </div>
 
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <p id="modal-message"></p>
+    <!-- Modal for alerts -->
+    <div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl p-6 shadow-xl max-w-sm w-full text-center border-4 border-blue-400">
+            <p id="modalMessage" class="text-gray-700 mb-4 font-semibold"></p>
+            <button onclick="document.getElementById('modalOverlay').classList.add('hidden')" class="px-4 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-colors">OK</button>
         </div>
     </div>
+
     <script>
-        function initializeGame() {
-            const MAX_WORDS = 10;
-            const scoreDisplay = document.getElementById("scoreDisplay");
-            const correctScoreDisplay = document.getElementById("correctScoreDisplay");
-            const wrongScoreDisplay = document.getElementById("wrongScoreDisplay");
-            const wordInputContainer = document.getElementById('word-input-container');
-            const riddleBox = document.getElementById("riddle-box");
-            const loadingMessage = document.getElementById("loading-message");
-            const helper = document.getElementById("helper");
-            const btnRandom = document.getElementById("btnRandom");
-            const btnSpeakAll = document.getElementById("btnSpeakAll");
-            const btnClear = document.getElementById("btnClear");
-            const btnEndGame = document.getElementById("btnEndGame");
-            const btnGemini = document.getElementById("btnGemini");
+        // La chiave API è gestita automaticamente dall'ambiente, lasciala vuota.
+        const apiKey = ""; 
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
-            let sessionScore = 0;
-            let correctScore = 0;
-            let wrongScore = 0;
-            let wordsToGuess = [];
-            let currentWordIndex = 0;
-            let riddleAndSentenceBank = {};
+        const generateBtn = document.getElementById('generateBtn');
+        const generate10Btn = document.getElementById('generate10Btn');
+        const startManualBtn = document.getElementById('startManualBtn');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const gameArea = document.getElementById('gameArea');
+        const wordCardsContainer = document.getElementById('wordCardsContainer');
+        const manualInputContainer = document.getElementById('manualInputContainer');
+        const scoreElement = document.getElementById('score');
+        const correctCountElement = document.getElementById('correctCount');
+        const totalWordsElement = document.getElementById('totalWords');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalMessage = document.getElementById('modalMessage');
 
-            // ====== Local Riddle and Sentence Bank ======
-            // This bank will be a fallback if Gemini isn't used.
-            const localRiddleAndSentenceBank = {
-                "cat": {
-                    riddle: "I say 'meow' and I like to chase mice. What am I?",
-                    sentences: "The black cat sat on the mat. My cat loves to play with yarn."
-                },
-                "dog": {
-                    riddle: "I say 'woof', I wag my tail, and I am known as man's best friend. What am I?",
-                    sentences: "The dog is running in the park. Can you please feed the dog?"
-                },
-                "sun": {
-                    riddle: "I am very bright and I warm the Earth. I disappear at night. What am I?",
-                    sentences: "The sun is shining today. Plants need the sun to grow."
-                },
-                "apple": {
-                    riddle: "I can be red or green, and I grow on a tree. A doctor a day keeps me away, they say. What am I?",
-                    sentences: "I like to eat a red apple. We can make apple pie for dessert."
-                },
-                "book": {
-                    riddle: "I have many pages but I'm not a calendar. I tell stories but I cannot speak. What am I?",
-                    sentences: "Please read this book to me. The library is full of books."
-                },
-                "car": {
-                    riddle: "I have four wheels and an engine. I take people from place to place. What am I?",
-                    sentences: "Our car is blue. We are going on a trip by car."
-                },
-                "house": {
-                    riddle: "I have walls, a roof, and a door, but I am not a box. People live inside me. What am I?",
-                    sentences: "My house has a big garden. Welcome to our house!"
-                },
-                "tree": {
-                    riddle: "I have a trunk and many leaves, but I am not an elephant. Birds often build nests in me. What am I?",
-                    sentences: "That is a very tall tree. The leaves on the tree are green."
-                },
-                "moon": {
-                    riddle: "I shine in the night sky but I am not a star. Sometimes I am full and round, sometimes I am a sliver. What am I?",
-                    sentences: "The moon looks beautiful tonight. The astronauts traveled to the moon."
-                },
-                "water": {
-                    riddle: "You can drink me, swim in me, and wash with me. I have no color and no taste. What am I?",
-                    sentences: "Please drink a glass of water. The fish swims in the water."
-                },
-                "fish": {
-                    riddle: "I live in water and have gills to breathe. I use my fins to swim. What am I?",
-                    sentences: "A colorful fish is swimming in the tank. We saw a big fish in the river."
-                },
-                "flower": {
-                    riddle: "I have petals and a stem. I can be many different colors and I often smell nice. What am I?",
-                    sentences: "She picked a beautiful flower from the garden. Bees like to visit the flower."
-                }
-            };
+        let wordsData = [];
+        let score = 0;
+        let correctCount = 0;
 
-            const wordBank = Object.keys(localRiddleAndSentenceBank);
+        // Funzione per mostrare un messaggio personalizzato
+        function showAlert(message) {
+            modalMessage.textContent = message;
+            modalOverlay.classList.remove('hidden');
+        }
 
-            // ====== TTS (Web Speech API) ======
-            const synth = window.speechSynthesis;
-            let voices = [];
-
-            function loadVoices() { voices = synth.getVoices() || []; }
-            loadVoices();
-            if ('onvoiceschanged' in synth) { synth.onvoiceschanged = loadVoices; }
-
-            function pickVoice() {
-                const preferred = ['en-US', 'en-GB'];
-                for (const tag of preferred) {
-                    const v = voices.find(v => v.lang === tag);
-                    if (v) return v;
-                }
-                return voices.find(v => v.lang && v.lang.startsWith('en')) || voices[0] || null;
+        // Crea i 10 campi di input manuali
+        function createManualInputs() {
+            for (let i = 0; i < 10; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = `manual-word-${i}`;
+                input.placeholder = `Parola #${i + 1}`;
+                input.className = 'w-full p-3 border-2 border-pink-400 rounded-xl text-center shadow-sm focus:ring-purple-500 focus:border-purple-500';
+                manualInputContainer.appendChild(input);
             }
+        }
+        createManualInputs();
 
-            function speakText(text, opts = {}) {
-                const t = (text || '').trim();
-                if (!t) return;
-                const utter = new SpeechSynthesisUtterance(t);
-                const v = pickVoice();
-                if (v) { utter.voice = v; utter.lang = v.lang; } else { utter.lang = 'en-US'; }
-                utter.rate = opts.rate ?? 0.95;
-                utter.pitch = opts.pitch ?? 1.0;
-                utter.volume = opts.volume ?? 1.0;
-                synth.cancel();
-                synth.speak(utter);
-            }
-
-            // ====== Modal box ======
-            const modal = document.getElementById("modal");
-            const modalMessage = document.getElementById("modal-message");
-            const closeButton = document.querySelector(".close-button");
-            function showModal(message) {
-                modalMessage.textContent = message;
-                modal.style.display = "flex";
-            }
-            closeButton.onclick = () => { modal.style.display = "none"; };
-            window.addEventListener('click', (event) => { if (event.target === modal) modal.style.display = "none"; });
-
-            // ====== Utils ======
-            function shuffleArray(array) {
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]];
-                }
-            }
-
-            function generateRandomWords() {
-                const inputs = document.querySelectorAll(".word-input-field");
-                shuffleArray(wordBank);
-                inputs.forEach((inp, i) => { inp.value = wordBank[i] || ""; });
-            }
+        function clearMessages() {
+            loadingIndicator.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            gameArea.classList.add('hidden');
+        }
+        
+        // --- Logica principale per l'API di Gemini ---
+        async function generateWords(numWords) {
+            clearMessages();
+            generateBtn.disabled = true;
+            generate10Btn.disabled = true;
+            startManualBtn.disabled = true;
+            loadingIndicator.classList.remove('hidden');
             
-            // ====== Game logic ======
-            function loadNextRiddle() {
-                if (currentWordIndex >= wordsToGuess.length) {
-                    riddleBox.innerHTML = `<div class="riddle-title">🎉 Partita Terminata! 🎉</div><p>Hai risolto tutti gli indovinelli!</p><p>Clicca "Cancella" per giocare di nuovo.</p>`;
-                    btnGemini.hidden = false;
-                    btnRandom.hidden = false;
-                    btnSpeakAll.hidden = false;
-                    btnClear.hidden = false;
-                    btnEndGame.hidden = true;
-                    return;
-                }
-                const currentWord = wordsToGuess[currentWordIndex];
-                const contentData = riddleAndSentenceBank[currentWord];
-
-                riddleBox.innerHTML = ''; 
-
-                if (!contentData || !contentData.riddle) {
-                    const errorMessage = `Non abbiamo un indovinello per "${currentWord}". Prova a sceglierne uno dalla lista "Parole Casuali"!`;
-                    riddleBox.innerHTML = `<div class="error-message">${errorMessage}</div>`;
-                    const nextButton = document.createElement('button');
-                    nextButton.textContent = 'Prossima Parola';
-                    nextButton.classList.add('next-button');
-                    nextButton.style.marginTop = '15px';
-                    nextButton.onclick = () => {
-                        currentWordIndex++;
-                        loadNextRiddle();
-                    };
-                    riddleBox.appendChild(nextButton);
-                    return;
-                }
-
-                const { riddle, sentences } = contentData;
-
-                // Step 1: Show sentences
-                const sentencesBox = document.createElement('div');
-                sentencesBox.className = 'sentences-box';
-                sentencesBox.innerHTML = `<h3>Usiamo la parola in frasi:</h3><p>${sentences}</p>`;
-                riddleBox.appendChild(sentencesBox);
-
-                const readSentencesBtn = document.createElement('button');
-                readSentencesBtn.textContent = '🔊 Leggi le Frasi';
-                readSentencesBtn.className = 'secondary';
-                readSentencesBtn.style.marginTop = '15px';
-                readSentencesBtn.onclick = () => speakText(sentences);
-                riddleBox.appendChild(readSentencesBtn);
-
-                const continueButton = document.createElement('button');
-                continueButton.textContent = "Continua con l'Indovinello";
-                continueButton.style.marginTop = '15px';
-                riddleBox.appendChild(continueButton);
-
-                // Step 2: On click, reveal the riddle
-                continueButton.onclick = () => {
-                    continueButton.hidden = true;
-                    readSentencesBtn.hidden = true;
-
-                    riddleBox.insertAdjacentHTML('beforeend', `
-                        <div class="riddle-title">🤔 Riesci a indovinare la parola? 🤔</div>
-                        <p>${riddle}</p>
-                    `);
-
-                    const readRiddleBtn = document.createElement('button');
-                    readRiddleBtn.textContent = "🔊 Leggi l'Indovinello";
-                    readRiddleBtn.className = 'secondary';
-                    readRiddleBtn.style.marginTop = '10px';
-                    readRiddleBtn.onclick = () => speakText(riddle);
-                    riddleBox.appendChild(readRiddleBtn);
-
-                    const guessContainer = document.createElement('div');
-                    guessContainer.className = 'guess-input-container';
-                    const guessInput = document.createElement('input');
-                    guessInput.type = 'text';
-                    guessInput.className = 'guess-input';
-                    guessInput.placeholder = 'La tua risposta...';
-                    guessInput.autocomplete = 'off';
-                    guessContainer.appendChild(guessInput);
-
-                    const checkButton = document.createElement('button');
-                    checkButton.textContent = 'Verifica';
-                    checkButton.onclick = () => checkGuess(guessInput, currentWord, checkButton);
-                    guessContainer.appendChild(checkButton);
-                    
-                    riddleBox.appendChild(guessContainer);
-                    guessInput.focus();
-                };
+            if (numWords < 1 || numWords > 10) {
+                showAlert("Per favore, inserisci un numero di parole tra 1 e 10.");
+                return;
             }
 
-            function checkGuess(guessInput, correctWord, checkButton) {
-                if (guessInput.value.toLowerCase().trim() === correctWord.toLowerCase().trim()) {
-                    guessInput.className = 'guess-input correct';
-                    sessionScore++; correctScore++;
-                    updateScores();
-                    showModal("Corretto! Ottimo lavoro!");
-                    checkButton.style.display = 'none';
-                    guessInput.disabled = true;
-
-                    const nextButton = document.createElement('button');
-                    nextButton.textContent = 'Prossima Parola';
-                    nextButton.className = 'next-button';
-                    nextButton.style.marginLeft = '10px';
-                    nextButton.onclick = () => {
-                        currentWordIndex++;
-                        loadNextRiddle();
-                    };
-                    checkButton.parentElement.appendChild(nextButton);
-                } else {
-                    guessInput.className = 'guess-input incorrect';
-                    sessionScore--; wrongScore++;
-                    updateScores();
-                    showModal("Ops! Non è giusto. Riprova!");
-                }
-            }
-
-            function updateScores() {
-                scoreDisplay.textContent = `Punteggio Sessione: ${sessionScore}`;
-                correctScoreDisplay.textContent = `Risposte Corrette: ${correctScore}`;
-                wrongScoreDisplay.textContent = `Risposte Errate: ${wrongScore}`;
-            }
-
-            function startGame() {
-                wordsToGuess = [];
-                document.querySelectorAll('.word-input-field').forEach(inp => {
-                    const w = inp.value.trim().toLowerCase();
-                    if (w) words.push(w);
-                });
-
-                wordsToGuess = [...new Set(wordsToGuess)];
-                shuffleArray(wordsToGuess);
-
-                if (wordsToGuess.length === 0) {
-                    helper.textContent = "Per favore, aggiungi almeno una parola.";
-                    return;
-                }
-
-                helper.textContent = `Parole da indovinare: ${wordsToGuess.length}`;
-                wordInputContainer.hidden = true;
-                btnGemini.hidden = true;
-                btnRandom.hidden = true;
-                btnSpeakAll.hidden = true;
-                btnClear.hidden = true;
-                btnEndGame.hidden = false;
-
-                currentWordIndex = 0;
-                sessionScore = 0;
-                correctScore = 0;
-                wrongScore = 0;
-                updateScores();
-                loadNextRiddle();
-            }
-
-            // ====== Gemini API Logic ======
-            async function generateWithGemini() {
-                const words = [];
-                document.querySelectorAll('.word-input-field').forEach(inp => {
-                    const w = inp.value.trim().toLowerCase();
-                    if (w) words.push(w);
-                });
-
-                if (words.length === 0) {
-                    showModal("Per favore, inserisci almeno una parola per generare gli indovinelli.");
-                    return;
-                }
-                
-                loadingMessage.hidden = false;
-                riddleBox.hidden = true;
-                btnGemini.disabled = true;
-                
-                const userQuery = `For each of the following words, generate a simple riddle and two example sentences, suitable for a children's spelling game. Respond in JSON format. Words: ${words.join(', ')}.`;
-
-                const payload = {
-                    contents: [{ parts: [{ text: userQuery }] }],
-                    generationConfig: {
-                        responseMimeType: "application/json",
-                        responseSchema: {
-                            type: "ARRAY",
-                            items: {
-                                type: "OBJECT",
-                                properties: {
-                                    "word": { "type": "STRING" },
-                                    "riddle": { "type": "STRING" },
-                                    "sentences": { "type": "STRING" }
-                                },
-                                "propertyOrdering": ["word", "riddle", "sentences"]
+            const prompt = `Generate a JSON array of ${numWords} objects. Each object must have a "word" property (a simple English word) and a "hints" property (an array of 3-5 short phrases describing the word, in English, without mentioning the word itself).`;
+            
+            // Definiamo lo schema JSON che vogliamo ricevere per una risposta affidabile.
+            const payload = {
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "ARRAY",
+                        items: {
+                            type: "OBJECT",
+                            properties: {
+                                "word": { "type": "STRING" },
+                                "hints": {
+                                    "type": "ARRAY",
+                                    "items": { "type": "STRING" }
+                                }
                             }
                         }
-                    },
-                };
+                    }
+                }
+            };
+            
+            let response;
+            const MAX_RETRIES = 3;
+            let delay = 1000;
 
-                const apiKey = "";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-
+            for (let i = 0; i < MAX_RETRIES; i++) {
                 try {
-                    const response = await fetch(apiUrl, {
+                    console.log("Attempting to fetch with URL:", apiUrl);
+                    response = await fetch(apiUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
 
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log("API Raw Response:", result); // Debugging: logga la risposta completa
+                        wordsData = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                        
+                        if (!wordsData || wordsData.length === 0) {
+                            throw new Error("Risposta JSON non valida o vuota.");
+                        }
+                        
+                        try {
+                           wordsData = JSON.parse(wordsData);
+                           console.log("Parsed wordsData:", wordsData); // Debugging: logga i dati parsati
+                        } catch (e) {
+                           throw new Error("Impossibile analizzare la risposta JSON: " + e.message);
+                        }
+
+                        renderGame();
+                        break; // Successo! Usciamo dal loop di riprovo.
+                    } else {
+                        throw new Error(`Errore di rete: ${response.status} ${response.statusText}`);
                     }
-
-                    const result = await response.json();
-                    const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                    
-                    if (!jsonText) {
-                        throw new Error("Invalid API response.");
-                    }
-
-                    const generatedRiddles = JSON.parse(jsonText);
-                    
-                    // Convert array to a dictionary for easy lookup
-                    riddleAndSentenceBank = {};
-                    generatedRiddles.forEach(item => {
-                        riddleAndSentenceBank[item.word.toLowerCase()] = {
-                            riddle: item.riddle,
-                            sentences: item.sentences
-                        };
-                    });
-                    
-                    showModal("Indovinelli generati con successo dall'AI!");
-                    startGame();
-
                 } catch (error) {
-                    console.error("Error generating riddles:", error);
-                    showModal(`Si è verificato un errore durante la generazione. Riprova o usa l'opzione "Genera 10 Parole Casuali"`);
-                } finally {
-                    loadingMessage.hidden = true;
-                    riddleBox.hidden = false;
-                    btnGemini.disabled = false;
-                }
-            }
-            
-            function createWordInputs() {
-                for (let i = 1; i <= MAX_WORDS; i++) {
-                    const entryDiv = document.createElement('div');
-                    entryDiv.className = 'word-entry';
-                    entryDiv.innerHTML = `
-                        <span class="entry-number">${i}.</span>
-                        <input type="text" class="word-input-field" placeholder="Scrivi una parola..." autocomplete="off">
-                        <button type="button" class="speak-button" title="Pronuncia" aria-label="Pronuncia la parola ${i}">🔊</button>
-                    `;
-                    wordInputContainer.appendChild(entryDiv);
-
-                    entryDiv.querySelector('.speak-button').addEventListener('click', () => {
-                        const text = entryDiv.querySelector('.word-input-field').value.trim();
-                        if (text) speakText(text);
-                    });
-                }
-            }
-            
-            function resetGame() {
-                document.querySelectorAll('.word-input-field').forEach(inp => inp.value = '');
-                riddleBox.innerHTML = `<div class="riddle-title">🤔 Iniziamo a Giocare! 🤔</div><p>Aggiungi alcune parole e clicca su "Genera Indovinelli con l'AI ✨".</p>`;
-                helper.textContent = "";
-                sessionScore = 0;
-                correctScore = 0;
-                wrongScore = 0;
-                updateScores();
-                wordInputContainer.hidden = false;
-                btnGemini.hidden = false;
-                btnRandom.hidden = false;
-                btnSpeakAll.hidden = false;
-                btnClear.hidden = false;
-                btnEndGame.hidden = true;
-                riddleAndSentenceBank = {}; // Clear the bank for a fresh start
-            }
-
-            // Event listeners
-            btnGemini.addEventListener("click", generateWithGemini);
-            btnRandom.addEventListener("click", generateRandomWords);
-            btnClear.addEventListener("click", resetGame);
-            btnEndGame.addEventListener("click", resetGame);
-
-            btnSpeakAll.addEventListener("click", async () => {
-                const inputs = document.querySelectorAll(".word-input-field");
-                const delay = (ms) => new Promise(res => setTimeout(res, ms));
-                for (const inp of inputs) {
-                    const t = inp.value.trim();
-                    if (t) {
-                        speakText(t);
-                        await delay(800);
+                    console.error("Errore nella generazione delle parole:", error); // Debugging: logga l'errore completo
+                    if (i === MAX_RETRIES - 1) { // Ultimo tentativo
+                        errorText.textContent = `Impossibile generare parole. Per favore, riprova più tardi. Dettagli: ${error.message}`;
+                        errorMessage.classList.remove('hidden');
                     }
+                } finally {
+                    generateBtn.disabled = false;
+                    generate10Btn.disabled = false;
+                    startManualBtn.disabled = false;
+                    loadingIndicator.classList.add('hidden');
                 }
-            });
+            }
+        }
+        
+        // --- Logica di gioco per l'input manuale ---
+        async function startManualGame() {
+            wordsData = [];
+            const manualWords = [];
+            let hasInvalidWord = false;
 
-            // Inizializzazione con MutationObserver
-            const observer = new MutationObserver((mutationsList, observer) => {
-                for (const mutation of mutationsList) {
-                    if (mutation.type === 'childList' && document.getElementById('word-input-container')) {
-                        console.log("Contenitore trovato, avvio l'app.");
-                        createWordInputs();
-                        observer.disconnect(); // Disconnetti l'observer una volta che ha fatto il suo lavoro
+            for (let i = 0; i < 10; i++) {
+                const input = document.getElementById(`manual-word-${i}`);
+                const word = input.value.trim();
+                
+                if (word !== '') {
+                    // Semplice validazione: controlla se è una singola parola con sole lettere
+                    if (!/^[a-zA-Z]+$/.test(word)) {
+                        showAlert(`"${word}" non è una parola valida. Per favore, inserisci parole singole composte solo da lettere.`)
+                        hasInvalidWord = true;
                         break;
                     }
+                    manualWords.push(word.toLowerCase());
                 }
-            });
+            }
 
-            // Inizia a osservare il body per l'aggiunta di nodi figli
-            observer.observe(document.body, { childList: true, subtree: true });
+            if (hasInvalidWord) {
+                return;
+            }
+
+            if (manualWords.length === 0) {
+                showAlert("Per favore, inserisci almeno una parola.");
+                return;
+            }
+            
+            clearMessages();
+            generateBtn.disabled = true;
+            generate10Btn.disabled = true;
+            startManualBtn.disabled = true;
+            loadingIndicator.classList.remove('hidden');
+
+            const prompt = `For the following words, generate a JSON array of objects. Each object should have a 'word' property and a 'hints' property, which is an array of 3-5 hints in English for that word. The words are: ${manualWords.join(', ')}`;
+
+            // Definiamo lo schema JSON anche per la modalità manuale
+            const payload = {
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "ARRAY",
+                        items: {
+                            type: "OBJECT",
+                            properties: {
+                                "word": { "type": "STRING" },
+                                "hints": {
+                                    "type": "ARRAY",
+                                    "items": { "type": "STRING" }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            
+            let response;
+            const MAX_RETRIES = 3;
+            let delay = 1000;
+
+            for (let i = 0; i < MAX_RETRIES; i++) {
+                try {
+                    console.log("Attempting to fetch with URL:", apiUrl);
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log("API Raw Response:", result); // Debugging: logga la risposta completa
+                        wordsData = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                        
+                        if (!wordsData || wordsData.length === 0) {
+                            throw new Error("Risposta JSON non valida o vuota.");
+                        }
+
+                        try {
+                            wordsData = JSON.parse(wordsData);
+                            console.log("Parsed wordsData:", wordsData); // Debugging: logga i dati parsati
+                        } catch (e) {
+                            throw new Error("Impossibile analizzare la risposta JSON: " + e.message);
+                        }
+
+                        renderGame();
+                        break; // Successo! Usciamo dal loop di riprovo.
+                    } else {
+                         throw new Error(`Errore di rete: ${response.status} ${response.statusText}`);
+                    }
+                } catch (error) {
+                    console.error("Errore nella generazione degli indizi:", error); // Debugging: logga l'errore completo
+                    if (i === MAX_RETRIES - 1) { // Ultimo tentativo
+                        errorText.textContent = `Non è stato possibile generare indizi per le parole fornite. Per favore, prova con parole diverse.`;
+                        errorMessage.classList.remove('hidden');
+                    }
+                } finally {
+                    generateBtn.disabled = false;
+                    generate10Btn.disabled = false;
+                    startManualBtn.disabled = false;
+                    loadingIndicator.classList.add('hidden');
+                }
+            }
         }
 
-        initializeGame();
+        function renderGame() {
+            wordCardsContainer.innerHTML = '';
+            score = 0;
+            correctCount = 0;
+            totalWordsElement.textContent = wordsData.length;
+            updateScore();
+            gameArea.classList.remove('hidden');
+
+            wordsData.forEach((data, index) => {
+                const card = document.createElement('div');
+                card.className = "bg-yellow-100 rounded-3xl p-6 shadow-xl border-2 border-yellow-400 transition-all duration-300 transform hover:scale-105";
+                
+                // Aggiungiamo un controllo per assicurarci che data.hints sia un array prima di chiamare .map()
+                const hintsList = (data.hints || []).map(hint => `<li class="text-gray-700">${hint}</li>`).join('');
+
+                card.innerHTML = `
+                    <div class="text-2xl font-bold mb-4 text-center text-blue-600">Parola #${index + 1}</div>
+                    <ul class="list-disc list-inside space-y-2 mb-6 text-gray-800">${hintsList}</ul>
+                    <div class="flex flex-col space-y-4">
+                        <input type="text" id="input-${index}" placeholder="Indovina la parola..." class="p-3 border-2 border-pink-400 rounded-xl text-center focus:ring-purple-500 focus:border-purple-500">
+                        <button onclick="checkAnswer(this, ${index})" class="check-btn w-full px-4 py-2 bg-pink-500 text-white font-semibold rounded-xl shadow-md hover:bg-pink-600 transition-colors transform hover:scale-105">Controlla</button>
+                    </div>
+                    <div id="feedback-${index}" class="mt-4 text-center font-bold"></div>
+                `;
+                wordCardsContainer.appendChild(card);
+            });
+        }
+
+        function checkAnswer(buttonElement, index) {
+            const input = document.getElementById(`input-${index}`);
+            const feedback = document.getElementById(`feedback-${index}`);
+            
+            // Aggiungiamo un controllo per data.word, che potrebbe essere mancante
+            const userAnswer = input.value.trim().toLowerCase();
+            const correctAnswer = (wordsData[index]?.word || "").toLowerCase();
+            
+            if (userAnswer === correctAnswer) {
+                feedback.textContent = "Corretto! 🎉";
+                feedback.className = "mt-4 text-center font-bold text-green-600";
+                correctCount++;
+                score++;
+            } else {
+                feedback.textContent = `Sbagliato. La risposta era: ${correctAnswer}`;
+                feedback.className = "mt-4 text-center font-bold text-red-600";
+                score--;
+            }
+
+            buttonElement.disabled = true;
+            input.disabled = true;
+            updateScore();
+        }
+
+        function updateScore() {
+            scoreElement.textContent = score;
+            correctCountElement.textContent = correctCount;
+        }
+
+        // Event Listeners
+        generateBtn.addEventListener('click', () => {
+            const numWords = document.getElementById('numWords').value;
+            generateWords(numWords);
+        });
+
+        generate10Btn.addEventListener('click', () => {
+            document.getElementById('numWords').value = 10;
+            generateWords(10);
+        });
+
+        startManualBtn.addEventListener('click', startManualGame);
     </script>
 </body>
 </html>
+

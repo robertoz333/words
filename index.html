@@ -1,422 +1,464 @@
+
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gioco di Parole con Gemini AI</title>
-    <!-- Tailwind CSS -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Words - A Fun Guessing Game</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .loading::after {
-            content: '';
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #6366f1;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 8px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        /* Basic styles for the app container to ensure it looks good in Elementor */
+        #words-app-container {
+            font-family: 'Nunito', sans-serif;
+            background-color: #60a5fa; /* bg-blue-400 */
         }
     </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/"
+  }
+}
+</script>
 </head>
-<body class="bg-blue-200 flex items-center justify-center min-h-screen p-4">
-    <div class="bg-white rounded-[40px] shadow-2xl p-8 max-w-4xl w-full border-4 border-blue-400">
-        <div class="text-center mb-8">
-            <h1 class="text-5xl font-bold text-blue-800 mb-2 drop-shadow-lg">Gioco di Parole! ✨</h1>
-            <p class="text-lg text-gray-600">Prova a indovinare le parole con gli indizi dell'AI.</p>
-        </div>
+<body id="words-app-container">
+    <div id="root"></div>
 
-        <!-- API Key and Controls Section -->
-        <div class="flex flex-col items-center space-y-4 mb-8">
-            <div class="w-full">
-                <label for="numWords" class="block text-sm font-medium text-gray-700 mb-2">Quante parole vuoi indovinare?</label>
-                <input type="number" id="numWords" value="10" min="1" max="10" class="w-full p-3 border-2 border-pink-400 rounded-2xl text-center shadow-md focus:ring-purple-500 focus:border-purple-500">
-            </div>
-            <button id="generateBtn" class="w-full px-6 py-3 bg-purple-500 text-white font-bold rounded-2xl shadow-lg hover:bg-purple-600 transition duration-300 transform hover:scale-105">
-                Genera Parole e Indizi!
-            </button>
-            <button id="generate10Btn" class="w-full px-6 py-3 bg-green-500 text-white font-bold rounded-2xl shadow-lg hover:bg-green-600 transition duration-300 transform hover:scale-105">
-                Genera 10 Parole
-            </button>
-        </div>
+    <script type="module">
+        // Import React and ReactDOM from the CDN via the importmap
+        import React, { useState, useCallback, useMemo, useRef } from 'react';
+        import ReactDOM from 'react-dom/client';
+
+        // --- All your components and logic are now inside this single script ---
+
+        // --- From components/icons.tsx ---
+        const SparkleIcon = (props) => (
+          React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", ...props },
+            React.createElement('path', { d: "M12 2 L14.5 9.5 L22 12 L14.5 14.5 L12 22 L9.5 14.5 L2 12 L9.5 9.5 Z" })
+          )
+        );
+        const IdeaIcon = (props) => (
+          React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", ...props },
+            React.createElement('path', { d: "M9 18h6" }),
+            React.createElement('path', { d: "M10 22h4" }),
+            React.createElement('path', { d: "M12 2a4.47 4.47 0 0 0-3 7.53c-.34.34-.64.73-.89 1.16-.29.49-.45.92-.45 1.31 0 .97.78 1.75 1.75 1.75h4.19c.97 0 1.75-.78 1.75-1.75 0-.39-.16-.82-.45-1.31-.25-.43-.55-.82-.89-1.16A4.47 4.47 0 0 0 12 2z" })
+          )
+        );
+        const CheckIcon = (props) => (
+            React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "3", strokeLinecap: "round", strokeLinejoin: "round", ...props },
+                React.createElement('path', { d: "M20 6 9 17l-5-5" })
+            )
+        );
+        const XIcon = (props) => (
+            React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "3", strokeLinecap: "round", strokeLinejoin: "round", ...props },
+                React.createElement('path', { d: "M18 6 6 18" }),
+                React.createElement('path', { d: "m6 6 12 12" })
+            )
+        );
+        const TrophyIcon = (props) => (
+            React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "currentColor", ...props },
+                React.createElement('path', { d: "M19.5 2h-15A2.5 2.5 0 0 0 2 4.5v3.16c0 .4.23.77.58.95L4 9.5v5.5a3 3 0 0 0 3 3h2.5a.5.5 0 0 1 0 1H9a1.5 1.5 0 0 0 0 3h6a1.5 1.5 0 0 0 0-3h-.5a.5.5 0 0 1 0-1H17a3 3 0 0 0 3-3V9.5l1.42-.89c.35-.18.58-.55.58-.95V4.5A2.5 2.5 0 0 0 19.5 2zM4 4.5A.5.5 0 0 1 4.5 4h15a.5.5 0 0 1 .5.5v2.34l-1.53.96a.5.5 0 0 1-.61-.08L16 6.5l-1.5 1.88a.5.5 0 0 1-.64.12L12 7.5l-1.86 1a.5.5 0 0 1-.64-.12L8 6.5l-1.86 1.22a.5.5 0 0 1-.61.08L4 6.84V4.5zm14 10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9.5h12v5z" })
+            )
+        );
+        const MagicWandIcon = (props) => (
+            React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", ...props },
+                React.createElement('path', { d: "M15 4V2" }), React.createElement('path', { d: "M15 10V8" }), React.createElement('path', { d: "M12.5 6.5L14 5" }), React.createElement('path', { d: "M12.5 13.5L14 12" }), React.createElement('path', { d: "M18 6.5L16.5 5" }), React.createElement('path', { d: "m3 21 9-9" }), React.createElement('path', { d: "M12.5 17.5L14 19" }), React.createElement('path', { d: "M18 11.5L16.5 13" }), React.createElement('path', { d: "M20 4.5L18.5 6" }), React.createElement('path', { d: "M15 15.05A7 7 0 0 1 9 20c-1.66 0-3.14-.59-4.32-1.57" })
+            )
+        );
+        const TrashIcon = (props) => (
+            React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", ...props },
+                React.createElement('path', { d: "M3 6h18" }), React.createElement('path', { d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" }), React.createElement('path', { d: "M10 11v6" }), React.createElement('path', { d: "M14 11v6" })
+            )
+        );
+        const RefreshIcon = (props) => (
+            React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", ...props },
+                React.createElement('path', { d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" }),
+                React.createElement('path', { d: "M21 3v5h-5" }),
+                React.createElement('path', { d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" }),
+                React.createElement('path', { d: "M3 21v-5h5" })
+            )
+        );
+        const SpeakerIcon = (props) => (
+            React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", ...props },
+                React.createElement('polygon', { points: "11 5 6 9 2 9 2 15 6 15 11 19 11 5" }),
+                React.createElement('path', { d: "M15.54 8.46a5 5 0 0 1 0 7.07" }),
+                React.createElement('path', { d: "M19.07 4.93a10 10 0 0 1 0 14.14" })
+            )
+        );
         
-        <div class="flex flex-col items-center space-y-4 mb-8">
-            <div class="w-full">
-                <h2 class="text-2xl font-bold text-gray-800 text-center mb-4">Oppure Inserisci le tue 10 parole <span class="text-sm text-gray-500">(Solo parole singole in inglese)</span></h2>
-                <div id="manualInputContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                </div>
-            </div>
-            <button id="startManualBtn" class="w-full px-6 py-3 bg-red-400 text-white font-bold rounded-2xl shadow-lg hover:bg-red-500 transition duration-300 transform hover:scale-105">
-                Inizia il Gioco con le mie Parole!
-            </button>
-        </div>
+        // --- From types.ts (as a reference) ---
+        // GameState Enum
+        const GameState = {
+          SETUP: 'SETUP',
+          PLAYING: 'PLAYING',
+          FINISHED: 'FINISHED',
+        };
 
-        <!-- Loading Indicator -->
-        <div id="loadingIndicator" class="hidden text-center text-gray-500 text-lg mb-8">
-            <span class="loading"></span>
-            Sto generando le parole...
-        </div>
+        // --- From services/geminiService.ts ---
+        const PROXY_ENDPOINT = 'https://www.robertozanoni.it/wp-json/gemini/v1/generate';
 
-        <!-- Error Message -->
-        <div id="errorMessage" class="hidden bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded-xl relative mb-8">
-            <strong class="font-bold">Oh no! Errore:</strong>
-            <span id="errorText" class="block sm:inline"></span>
-        </div>
-
-        <!-- Game Area -->
-        <div id="gameArea" class="hidden">
-            <div id="wordCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                <!-- Le schede delle parole saranno inserite dinamicamente qui -->
-            </div>
-            <div class="mt-8 text-center">
-                <p class="text-3xl font-bold text-blue-700">Punteggio: <span id="score">0</span></p>
-                <p class="text-xl text-gray-500">Parole indovinate: <span id="correctCount">0</span> di <span id="totalWords">0</span></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal for alerts -->
-    <div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-2xl p-6 shadow-xl max-w-sm w-full text-center border-4 border-blue-400">
-            <p id="modalMessage" class="text-gray-700 mb-4 font-semibold"></p>
-            <button onclick="document.getElementById('modalOverlay').classList.add('hidden')" class="px-4 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-colors">OK</button>
-        </div>
-    </div>
-
-    <script>
-        // La chiave API è gestita automaticamente dall'ambiente, lasciala vuota.
-        const apiKey = ""; 
-        
-        // >>>>> PUNTO IMPORTANTE: Questo URL è stato aggiornato con quello che hai fornito. <<<<<
-        const apiUrl = `https://www.robertozanoni.it/wp-json/gemini/v1/generate`;
-
-        const generateBtn = document.getElementById('generateBtn');
-        const generate10Btn = document.getElementById('generate10Btn');
-        const startManualBtn = document.getElementById('startManualBtn');
-        const loadingIndicator = document.getElementById('loadingIndicator');
-        const errorMessage = document.getElementById('errorMessage');
-        const errorText = document.getElementById('errorText');
-        const gameArea = document.getElementById('gameArea');
-        const wordCardsContainer = document.getElementById('wordCardsContainer');
-        const manualInputContainer = document.getElementById('manualInputContainer');
-        const scoreElement = document.getElementById('score');
-        const correctCountElement = document.getElementById('correctCount');
-        const totalWordsElement = document.getElementById('totalWords');
-        const modalOverlay = document.getElementById('modalOverlay');
-        const modalMessage = document.getElementById('modalMessage');
-
-        let wordsData = [];
-        let score = 0;
-        let correctCount = 0;
-
-        // Funzione per mostrare un messaggio personalizzato
-        function showAlert(message) {
-            modalMessage.textContent = message;
-            modalOverlay.classList.remove('hidden');
-        }
-
-        // Crea i 10 campi di input manuali
-        function createManualInputs() {
-            for (let i = 0; i < 10; i++) {
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.id = `manual-word-${i}`;
-                input.placeholder = `Parola #${i + 1}`;
-                input.className = 'w-full p-3 border-2 border-pink-400 rounded-xl text-center shadow-sm focus:ring-purple-500 focus:border-purple-500';
-                manualInputContainer.appendChild(input);
-            }
-        }
-        createManualInputs();
-
-        function clearMessages() {
-            loadingIndicator.classList.add('hidden');
-            errorMessage.classList.add('hidden');
-            gameArea.classList.add('hidden');
-        }
-        
-        // --- Logica principale per l'API di Gemini ---
-        async function generateWords(numWords) {
-            clearMessages();
-            generateBtn.disabled = true;
-            generate10Btn.disabled = true;
-            startManualBtn.disabled = true;
-            loadingIndicator.classList.remove('hidden');
-            
-            if (numWords < 1 || numWords > 10) {
-                showAlert("Per favor, inserisci un numero di parole tra 1 e 10.");
-                return;
-            }
-
-            const prompt = `Generate a JSON array of ${numWords} objects. Each object must have a "word" property (a simple English word) and a "hints" property (an array of 3-5 short phrases describing the word, in English, without mentioning the word itself).`;
-            
-            // Definiamo lo schema JSON che vogliamo ricevere per una risposta affidabile.
-            const payload = {
-                contents: [{
-                    parts: [{
-                        text: prompt
-                    }]
-                }],
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "ARRAY",
-                        items: {
-                            type: "OBJECT",
-                            properties: {
-                                "word": { "type": "STRING" },
-                                "hints": {
-                                    "type": "ARRAY",
-                                    "items": { "type": "STRING" }
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-            
-            let response;
-            const MAX_RETRIES = 3;
-            let delay = 1000;
-
-            for (let i = 0; i < MAX_RETRIES; i++) {
-                try {
-                    console.log("Attempting to fetch with URL:", apiUrl);
-                    response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        console.log("API Raw Response:", result); // Debugging: logga la risposta completa
-                        wordsData = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                        
-                        if (!wordsData || wordsData.length === 0) {
-                            throw new Error("Risposta JSON non valida o vuota.");
-                        }
-                        
-                        try {
-                           wordsData = JSON.parse(wordsData);
-                           console.log("Parsed wordsData:", wordsData); // Debugging: logga i dati parsati
-                        } catch (e) {
-                           throw new Error("Impossibile analizzare la risposta JSON: " + e.message);
-                        }
-
-                        renderGame();
-                        break; // Successo! Usciamo dal loop di riprovo.
-                    } else if (response.status === 404) {
-                        throw new Error(`Errore 404: L'URL dell'API non è stato trovato. Verifica l'URL: ${apiUrl}`);
-                    } else {
-                        throw new Error(`Errore di rete: ${response.status} ${response.statusText}`);
-                    }
-                } catch (error) {
-                    console.error("Errore nella generazione delle parole:", error); // Debugging: logga l'errore completo
-                    if (i === MAX_RETRIES - 1) { // Ultimo tentativo
-                        errorText.textContent = `Impossibile generare parole. Per favor, riprova più tardi. Dettagli: ${error.message}`;
-                        errorMessage.classList.remove('hidden');
-                    }
-                } finally {
-                    generateBtn.disabled = false;
-                    generate10Btn.disabled = false;
-                    startManualBtn.disabled = false;
-                    loadingIndicator.classList.add('hidden');
-                }
-            }
-        }
-        
-        // --- Logica di gioco per l'input manuale ---
-        async function startManualGame() {
-            wordsData = [];
-            const manualWords = [];
-            let hasInvalidWord = false;
-
-            for (let i = 0; i < 10; i++) {
-                const input = document.getElementById(`manual-word-${i}`);
-                const word = input.value.trim();
-                
-                if (word !== '') {
-                    // Semplice validazione: controlla se è una singola parola con sole lettere
-                    if (!/^[a-zA-Z]+$/.test(word)) {
-                        showAlert(`"${word}" non è una parola valida. Per favore, inserisci parole singole composte solo da lettere.`)
-                        hasInvalidWord = true;
-                        break;
-                    }
-                    manualWords.push(word.toLowerCase());
-                }
-            }
-
-            if (hasInvalidWord) {
-                return;
-            }
-
-            if (manualWords.length === 0) {
-                showAlert("Per favore, inserisci almeno una parola.");
-                return;
-            }
-            
-            clearMessages();
-            generateBtn.disabled = true;
-            generate10Btn.disabled = true;
-            startManualBtn.disabled = true;
-            loadingIndicator.classList.remove('hidden');
-
-            const prompt = `For the following words, generate a JSON array of objects. Each object should have a 'word' property and a 'hints' property, which is an array of 3-5 hints in English for that word. The words are: ${manualWords.join(', ')}`;
-
-            // Definiamo lo schema JSON anche per la modalità manuale
-            const payload = {
-                contents: [{
-                    parts: [{
-                        text: prompt
-                    }]
-                }],
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "ARRAY",
-                        items: {
-                            type: "OBJECT",
-                            properties: {
-                                "word": { "type": "STRING" },
-                                "hints": {
-                                    "type": "ARRAY",
-                                    "items": { "type": "STRING" }
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-            
-            let response;
-            const MAX_RETRIES = 3;
-            let delay = 1000;
-
-            for (let i = 0; i < MAX_RETRIES; i++) {
-                try {
-                    console.log("Attempting to fetch with URL:", apiUrl);
-                    response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        console.log("API Raw Response:", result); // Debugging: logga la risposta completa
-                        wordsData = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                        
-                        if (!wordsData || wordsData.length === 0) {
-                            throw new Error("Risposta JSON non valida o vuota.");
-                        }
-
-                        try {
-                            wordsData = JSON.parse(wordsData);
-                            console.log("Parsed wordsData:", wordsData); // Debugging: logga i dati parsati
-                        } catch (e) {
-                            throw new Error("Impossibile analizzare la risposta JSON: " + e.message);
-                        }
-
-                        renderGame();
-                        break; // Successo! Usciamo dal loop di riprovo.
-                    } else if (response.status === 404) {
-                        throw new Error(`Errore 404: L'URL dell'API non è stato trovato. Verifica l'URL: ${apiUrl}`);
-                    } else {
-                        throw new Error(`Errore di rete: ${response.status} ${response.statusText}`);
-                    }
-                } catch (error) {
-                    console.error("Errore nella generazione degli indizi:", error); // Debugging: logga l'errore completo
-                    if (i === MAX_RETRIES - 1) { // Ultimo tentativo
-                        errorText.textContent = `Non è stato possibile generare indizi per le parole fornite. Per favore, prova con parole diverse.`;
-                        errorMessage.classList.remove('hidden');
-                    }
-                } finally {
-                    generateBtn.disabled = false;
-                    generate10Btn.disabled = false;
-                    startManualBtn.disabled = false;
-                    loadingIndicator.classList.add('hidden');
-                }
-            }
-        }
-
-        function renderGame() {
-            wordCardsContainer.innerHTML = '';
-            score = 0;
-            correctCount = 0;
-            totalWordsElement.textContent = wordsData.length;
-            updateScore();
-            gameArea.classList.remove('hidden');
-
-            wordsData.forEach((data, index) => {
-                const card = document.createElement('div');
-                card.className = "bg-yellow-100 rounded-3xl p-6 shadow-xl border-2 border-yellow-400 transition-all duration-300 transform hover:scale-105";
-                
-                // Aggiungiamo un controllo per assicurarci che data.hints sia un array prima di chiamare .map()
-                const hintsList = (data.hints || []).map(hint => `<li class="text-gray-700">${hint}</li>`).join('');
-
-                card.innerHTML = `
-                    <div class="text-2xl font-bold mb-4 text-center text-blue-600">Parola #${index + 1}</div>
-                    <ul class="list-disc list-inside space-y-2 mb-6 text-gray-800">${hintsList}</ul>
-                    <div class="flex flex-col space-y-4">
-                        <input type="text" id="input-${index}" placeholder="Indovina la parola..." class="p-3 border-2 border-pink-400 rounded-xl text-center focus:ring-purple-500 focus:border-purple-500">
-                        <button onclick="checkAnswer(this, ${index})" class="check-btn w-full px-4 py-2 bg-pink-500 text-white font-semibold rounded-xl shadow-md hover:bg-pink-600 transition-colors transform hover:scale-105">Controlla</button>
-                    </div>
-                    <div id="feedback-${index}" class="mt-4 text-center font-bold"></div>
-                `;
-                wordCardsContainer.appendChild(card);
+        const generateRandomWords = async () => {
+            const prompt = `Generate a list of 10 simple and common English words (nouns, verbs, or adjectives) that a 7-year-old child living in England would know. The words should be lowercase. Ensure the output is a JSON object with a single key "words" containing an array of 10 strings.`;
+            const response = await fetch(PROXY_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'generateRandomWords', prompt: prompt }),
             });
-        }
-
-        function checkAnswer(buttonElement, index) {
-            const input = document.getElementById(`input-${index}`);
-            const feedback = document.getElementById(`feedback-${index}`);
-            
-            // Aggiungiamo un controllo per data.word, che potrebbe essere mancante
-            const userAnswer = input.value.trim().toLowerCase();
-            const correctAnswer = (wordsData[index]?.word || "").toLowerCase();
-            
-            if (userAnswer === correctAnswer) {
-                feedback.textContent = "Corretto! 🎉";
-                feedback.className = "mt-4 text-center font-bold text-green-600";
-                correctCount++;
-                score++;
-            } else {
-                feedback.textContent = `Sbagliato. La risposta era: ${correctAnswer}`;
-                feedback.className = "mt-4 text-center font-bold text-red-600";
-                score--;
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error("Proxy server error:", errorText);
+                throw new Error(`The word generator is napping! (Server Error: ${response.status})`);
             }
+            const data = await response.json();
+            if (!data.words || data.words.length === 0) {
+                throw new Error("The AI didn't return any words. Please try again!");
+            }
+            return data.words.slice(0, 10);
+        };
 
-            buttonElement.disabled = true;
-            input.disabled = true;
-            updateScore();
+        const generateHints = async (words) => {
+          const prompt = `For each word in this list [${words.join(', ')}], generate three types of hints for a 7-year-old child in England: 'simple', 'descriptive', and 'associative'.
+          Instructions:
+          1. The hints must be very easy for a 7-year-old to understand.
+          2. The hints MUST NOT contain the word itself.
+          3. Phrase each hint as a fill-in-the-blank sentence where the word is replaced by '...'.
+          4. Ensure the output is a JSON array of objects, where each object has a "word" key (the original word) and a "hints" key (an object with "simple", "descriptive", and "associative" hints).`;
+          
+          const response = await fetch(PROXY_ENDPOINT, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'generateHints', words: words, prompt: prompt }),
+          });
+          if (!response.ok) {
+              const errorText = await response.text();
+              console.error("Proxy server error:", errorText);
+              throw new Error(`The hint machine is sleepy! (Server Error: ${response.status})`);
+          }
+          const hintsData = await response.json();
+          const orderedHints = words.map(word => {
+              const foundHint = hintsData.find(h => h.word.toLowerCase() === word.toLowerCase());
+              if (!foundHint) {
+                  return {
+                      word: word,
+                      hints: {
+                          simple: "Oh no! I couldn't think of a hint for this word.",
+                          descriptive: "Maybe try a different one?",
+                          associative: "My circuits must be tangled!"
+                      }
+                  };
+              }
+              return foundHint;
+          });
+          return orderedHints;
+        };
+
+        // --- From components/Header.tsx ---
+        const Header = () => {
+          return (
+            React.createElement('header', { className: "w-full text-center py-6" },
+              React.createElement('div', { className: "inline-block relative" },
+                React.createElement('h1', { className: "text-5xl md:text-7xl font-black text-white flex items-center justify-center gap-2 relative z-10", style: { textShadow: '4px 4px 0 rgba(0,0,0,0.2)' } },
+                    React.createElement(SparkleIcon, { className: "text-yellow-300 w-10 h-10 md:w-12 md:h-12 transform -rotate-12" }),
+                    React.createElement('span', null, 'W'),
+                    React.createElement('span', { className: "text-yellow-300" }, 'o'),
+                    React.createElement('span', { className: "text-red-400" }, 'r'),
+                    React.createElement('span', { className: "text-blue-200" }, 'd'),
+                    React.createElement('span', { className: "text-green-400" }, 's'),
+                    React.createElement(SparkleIcon, { className: "text-yellow-300 w-10 h-10 md:w-12 md:h-12 transform rotate-12" })
+                )
+              ),
+              React.createElement('p', { className: "text-white/80 mt-2 text-lg font-semibold" }, "The Super Fun Guessing Game!")
+            )
+          );
+        };
+
+        // --- From components/HintCard.tsx ---
+        const HintCard = ({ index, hints, guess, onGuessChange, isFinished, isCorrect, originalWord }) => {
+          const cardColor = isFinished ? (isCorrect ? 'bg-green-100 border-green-500' : 'bg-red-100 border-red-500') : 'bg-white border-gray-200';
+          const headerColor = isFinished ? (isCorrect ? 'bg-green-500' : 'bg-red-500') : 'bg-blue-500';
+          
+          const handleSpeak = () => {
+            if ('speechSynthesis' in window && originalWord) {
+              window.speechSynthesis.cancel();
+              const utterance = new SpeechSynthesisUtterance(originalWord);
+              utterance.lang = 'en-GB';
+              utterance.rate = 0.9;
+              window.speechSynthesis.speak(utterance);
+            }
+          };
+
+          return (
+            React.createElement('div', { className: `rounded-2xl shadow-lg border-4 ${cardColor} transition-all duration-500 transform hover:-translate-y-1 flex flex-col` },
+              React.createElement('div', { className: `p-4 rounded-t-xl text-white font-bold text-2xl flex items-center justify-between ${headerColor}` },
+                React.createElement('span', null, `Word #${index + 1}`),
+                isFinished && (isCorrect ? React.createElement(CheckIcon, { className: "w-8 h-8" }) : React.createElement(XIcon, { className: "w-8 h-8" }))
+              ),
+              React.createElement('div', { className: "p-6 space-y-4 flex-grow flex flex-col" },
+                React.createElement('div', { className: "flex-grow space-y-4" },
+                  React.createElement('div', { className: "flex items-start gap-3" }, React.createElement(IdeaIcon, { className: "w-6 h-6 text-yellow-500 flex-shrink-0 mt-1" }), React.createElement('p', { className: "text-gray-700 text-lg" }, hints.simple)),
+                  React.createElement('div', { className: "flex items-start gap-3" }, React.createElement(IdeaIcon, { className: "w-6 h-6 text-yellow-500 flex-shrink-0 mt-1" }), React.createElement('p', { className: "text-gray-700 text-lg" }, hints.descriptive)),
+                  React.createElement('div', { className: "flex items-start gap-3" }, React.createElement(IdeaIcon, { className: "w-6 h-6 text-yellow-500 flex-shrink-0 mt-1" }), React.createElement('p', { className: "text-gray-700 text-lg" }, hints.associative))
+                ),
+                React.createElement('div', { className: "mt-6" },
+                  React.createElement('input', { type: "text", value: guess, onChange: (e) => onGuessChange(index, e.target.value), placeholder: "What's the word?", disabled: isFinished, className: "w-full text-center text-xl font-bold p-3 border-4 border-blue-300 rounded-lg focus:ring-4 focus:ring-yellow-400 focus:border-yellow-500 transition disabled:bg-gray-200 disabled:cursor-not-allowed", "aria-label": `Guess for word ${index + 1}` })
+                ),
+                isFinished && (
+                    React.createElement('div', { className: "text-center font-bold text-lg pt-2" },
+                        isCorrect ? (
+                            React.createElement('div', { className: "flex items-center justify-center gap-2 text-green-600" },
+                                React.createElement('span', null, "The word was: ", React.createElement('span', {className: "underline"}, originalWord)),
+                                React.createElement('button', { onClick: handleSpeak, "aria-label": `Pronounce ${originalWord}`, title: `Hear "${originalWord}"`, className: "hover:text-green-800 transition" }, React.createElement(SpeakerIcon, { className: "w-6 h-6" }))
+                            )
+                        ) : (
+                            React.createElement('div', { className: "flex items-center justify-center gap-2 text-red-600" },
+                                React.createElement('span', null, "The word was: ", React.createElement('span', {className: "underline"}, originalWord)),
+                                React.createElement('button', { onClick: handleSpeak, "aria-label": `Pronounce ${originalWord}`, title: `Hear "${originalWord}"`, className: "hover:text-red-800 transition" }, React.createElement(SpeakerIcon, { className: "w-6 h-6" }))
+                            )
+                        )
+                    )
+                )
+              )
+            )
+          );
+        };
+        
+        // --- From components/LoadingSpinner.tsx ---
+        const LoadingSpinner = ({ message }) => {
+            return (
+                React.createElement('div', { className: "fixed inset-0 bg-indigo-900/60 backdrop-blur-sm flex flex-col items-center justify-center z-50 text-white p-4" },
+                    React.createElement(SparkleIcon, { className: "w-24 h-24 text-yellow-400 animate-[spin_3s_linear_infinite]" }),
+                    React.createElement('p', { className: "mt-6 text-2xl font-bold text-center animate-pulse" }, message)
+                )
+            );
+        };
+        
+        // --- From components/ScoreBadge.tsx ---
+        const ScoreBadge = ({ score }) => {
+          return (
+            React.createElement('div', { className: "fixed top-6 right-6 bg-gradient-to-br from-yellow-400 to-amber-500 text-white font-black text-2xl py-3 px-6 rounded-full shadow-2xl flex items-center gap-3 z-30 ring-4 ring-white/50 transform transition-transform hover:scale-110", "aria-live": "polite" },
+              React.createElement(TrophyIcon, { className: "w-8 h-8 drop-shadow-lg" }),
+              React.createElement('span', { className: "drop-shadow-lg", "aria-label": `Current score: ${score}` }, score)
+            )
+          );
+        };
+        
+        // --- From components/WinnerCelebration.tsx ---
+        const WinnerCelebration = ({ onPlayAgain }) => {
+          return (
+            React.createElement('div', { className: "fixed inset-0 bg-indigo-900/60 backdrop-blur-sm flex flex-col items-center justify-center z-50 text-white p-4 text-center", role: "alertdialog", "aria-labelledby": "winner-heading" },
+              React.createElement('div', { className: "relative" },
+                React.createElement(TrophyIcon, { className: "w-48 h-48 text-yellow-300 drop-shadow-[0_0_25px_rgba(253,224,71,0.7)] animate-[bounce_1.5s_ease-in-out_infinite]" }),
+                [...Array(8)].map((_, i) => (
+                  React.createElement('div', {
+                    key: i,
+                    className: "absolute bg-yellow-300 rounded-full animate-ping",
+                    style: {
+                      width: `${Math.random() * 10 + 5}px`,
+                      height: `${Math.random() * 10 + 5}px`,
+                      top: `${50 + 45 * Math.sin((i / 8) * 2 * Math.PI)}%`,
+                      left: `${50 + 45 * Math.cos((i / 8) * 2 * Math.PI)}%`,
+                      animationDelay: `${Math.random() * 1}s`,
+                    },
+                    "aria-hidden": "true"
+                  })
+                ))
+              ),
+              React.createElement('h2', { id: "winner-heading", className: "text-5xl md:text-7xl font-black mt-8 text-yellow-300 drop-shadow-lg" }, "YOU ARE A WINNER!"),
+              React.createElement('p', { className: "text-xl md:text-2xl mt-4 font-semibold" }, "You scored 10 points! That's brilliant!"),
+              React.createElement('button', {
+                onClick: onPlayAgain,
+                className: "mt-12 bg-pink-500 text-white font-bold text-2xl md:text-3xl py-4 px-12 rounded-xl shadow-lg hover:bg-pink-600 transform hover:scale-105 transition-transform duration-200"
+              }, "Play Again & Win More!")
+            )
+          );
+        };
+        
+        // --- From App.tsx ---
+        const App = () => {
+            const [gameState, setGameState] = useState(GameState.SETUP);
+            const [words, setWords] = useState(Array(10).fill(''));
+            const [guesses, setGuesses] = useState([]);
+            const [wordHintPairs, setWordHintPairs] = useState([]);
+            const [isLoading, setIsLoading] = useState(false);
+            const [isFetchingRandom, setIsFetchingRandom] = useState(false);
+            const [loadingMessage, setLoadingMessage] = useState("Thinking up some tricky hints...");
+            const [error, setError] = useState(null);
+            const [totalScore, setTotalScore] = useState(0);
+            const [isWinner, setIsWinner] = useState(false);
+            const audioRef = useRef(null);
+
+            const activeWords = useMemo(() => words.map(w => w.trim()).filter(Boolean), [words]);
+            
+            const roundCorrectAnswers = useMemo(() => {
+                if (gameState !== GameState.FINISHED) return 0;
+                return wordHintPairs.reduce((count, pair, index) => {
+                    return count + (guesses[index]?.trim().toLowerCase() === pair.word.toLowerCase() ? 1 : 0);
+                }, 0);
+            }, [gameState, wordHintPairs, guesses]);
+
+            const handleWordChange = useCallback((index, value) => {
+                const newWords = [...words];
+                newWords[index] = value;
+                setWords(newWords);
+            }, [words]);
+
+            const handleSubmitWords = useCallback(async () => {
+                if (activeWords.length === 0) {
+                    setError("Please enter at least one word to start the game!");
+                    return;
+                }
+                setError(null);
+                setIsLoading(true);
+                setLoadingMessage("Warming up the word machine...");
+                try {
+                    const hints = await generateHints(activeWords);
+                    setWordHintPairs(hints);
+                    setGuesses(Array(hints.length).fill(''));
+                    setGameState(GameState.PLAYING);
+                } catch (e) {
+                    setError(e.message);
+                } finally {
+                    setIsLoading(false);
+                }
+            }, [activeWords]);
+            
+            const handleFetchRandomWords = useCallback(async () => {
+                setIsFetchingRandom(true);
+                setError(null);
+                setLoadingMessage("Shuffling the dictionary...");
+                try {
+                    const randomWords = await generateRandomWords();
+                    const newWords = [...randomWords, ...Array(10 - randomWords.length).fill('')];
+                    setWords(newWords);
+                } catch (e) {
+                    setError(e.message);
+                } finally {
+                    setIsFetchingRandom(false);
+                }
+            }, []);
+
+            const handleClearWords = useCallback(() => {
+                setWords(Array(10).fill(''));
+            }, []);
+
+            const handleGuessChange = useCallback((index, value) => {
+                const newGuesses = [...guesses];
+                newGuesses[index] = value;
+                setGuesses(newGuesses);
+            }, [guesses]);
+
+            const handleCheckAnswers = useCallback(() => {
+                const roundScore = wordHintPairs.reduce((score, pair, index) => {
+                    const isCorrect = guesses[index]?.trim().toLowerCase() === pair.word.toLowerCase();
+                    return score + (isCorrect ? 1 : -1);
+                }, 0);
+                const newTotalScore = totalScore + roundScore;
+                setTotalScore(newTotalScore);
+                if (newTotalScore >= 10) {
+                    setIsWinner(true);
+                    audioRef.current?.play();
+                }
+                setGameState(GameState.FINISHED);
+            }, [guesses, wordHintPairs, totalScore]);
+
+            const handleResetGame = useCallback(() => {
+                if (isWinner) {
+                    audioRef.current?.pause();
+                    if (audioRef.current) audioRef.current.currentTime = 0;
+                    setTotalScore(0);
+                    setIsWinner(false);
+                }
+                setGameState(GameState.SETUP);
+                setWords(Array(10).fill(''));
+                setGuesses([]);
+                setWordHintPairs([]);
+                setError(null);
+            }, [isWinner]);
+
+            const renderSetup = () => (
+                React.createElement('div', { className: "bg-white/90 p-8 rounded-2xl shadow-2xl w-full max-w-4xl" },
+                    React.createElement('h2', { className: "text-3xl font-bold text-center text-gray-800 mb-2" }, "Enter Your Words!"),
+                    React.createElement('p', { className: "text-center text-gray-600 mb-6" }, "Type up to 10 words or get some random ones!"),
+                    React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" },
+                        words.map((word, index) => (
+                            React.createElement('input', { key: index, type: "text", value: word, onChange: (e) => handleWordChange(index, e.target.value), placeholder: `Word ${index + 1}`, className: "w-full p-3 border-4 border-blue-200 rounded-lg text-lg font-semibold focus:ring-4 focus:ring-yellow-400 focus:border-yellow-500 transition" })
+                        ))
+                    ),
+                    React.createElement('div', { className: "flex flex-col sm:flex-row justify-center gap-4 mt-6" },
+                        React.createElement('button', { onClick: handleFetchRandomWords, className: "flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 bg-purple-500 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-purple-600 transform hover:scale-105 transition-transform duration-200" }, React.createElement(MagicWandIcon, { className: "w-6 h-6" }), "Random Words"),
+                        React.createElement('button', { onClick: handleClearWords, className: "flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 bg-red-500 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-red-600 transform hover:scale-105 transition-transform duration-200" }, React.createElement(TrashIcon, { className: "w-6 h-6" }), "Clear All")
+                    ),
+                    React.createElement('button', { onClick: handleSubmitWords, disabled: activeWords.length === 0, className: "w-full mt-6 bg-green-500 text-white font-bold text-2xl py-4 rounded-xl shadow-lg hover:bg-green-600 transform hover:scale-105 transition-transform duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none" }, "Let's Play!")
+                )
+            );
+
+            const renderPlayingOrFinished = () => (
+                React.createElement('div', { className: "w-full max-w-7xl" },
+                    gameState === GameState.FINISHED && (
+                         React.createElement('div', { className: "bg-white/90 p-6 rounded-2xl shadow-2xl mb-8 text-center" },
+                            React.createElement('h2', { className: "text-4xl font-black text-yellow-500 drop-shadow-lg" }, "Great Job!"),
+                            React.createElement('p', { className: "text-2xl text-gray-700 mt-2" }, "You got ", React.createElement('span', { className: "font-bold text-blue-600" }, roundCorrectAnswers), " out of ", React.createElement('span', { className: "font-bold text-blue-600" }, wordHintPairs.length), " correct!")
+                         )
+                    ),
+                    React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" },
+                        wordHintPairs.map((pair, index) => (
+                            React.createElement(HintCard, { key: index, index: index, hints: pair.hints, guess: guesses[index], onGuessChange: handleGuessChange, isFinished: gameState === GameState.FINISHED, isCorrect: gameState === GameState.FINISHED ? guesses[index]?.trim().toLowerCase() === pair.word.toLowerCase() : undefined, originalWord: pair.word })
+                        ))
+                    ),
+                     React.createElement('div', { className: "flex justify-center mt-8" },
+                         gameState === GameState.PLAYING ? (
+                            React.createElement('button', { onClick: handleCheckAnswers, className: "bg-yellow-400 text-gray-800 font-bold text-2xl py-4 px-12 rounded-xl shadow-lg hover:bg-yellow-500 transform hover:scale-105 transition-transform duration-200" }, "Check My Answers!")
+                         ) : (
+                            React.createElement('button', { onClick: handleResetGame, className: "bg-pink-500 text-white font-bold text-2xl py-4 px-12 rounded-xl shadow-lg hover:bg-pink-600 transform hover:scale-105 transition-transform duration-200 flex items-center gap-3" }, React.createElement(SparkleIcon, { className: "w-6 h-6" }), "Play Again!", React.createElement(SparkleIcon, { className: "w-6 h-6" }))
+                         )
+                     )
+                )
+            );
+
+            const renderGameState = () => {
+                switch (gameState) {
+                    case GameState.SETUP: return renderSetup();
+                    case GameState.PLAYING:
+                    case GameState.FINISHED: return renderPlayingOrFinished();
+                    default: return null;
+                }
+            };
+            
+            return (
+                React.createElement('div', { className: "min-h-screen bg-gradient-to-br from-blue-400 to-indigo-500 p-4 sm:p-6 flex flex-col items-center" },
+                    React.createElement('audio', { ref: audioRef, src: "https://upload.wikimedia.org/wikipedia/commons/transcoded/b/b1/United_States_Navy_Band_-_God_Save_the_Queen.ogg/United_States_Navy_Band_-_God_Save_the_Queen.ogg.mp3", preload: "auto", loop: true, "aria-hidden": "true" }),
+                    isWinner && React.createElement(WinnerCelebration, { onPlayAgain: handleResetGame }),
+                    (isLoading || isFetchingRandom) && React.createElement(LoadingSpinner, { message: loadingMessage }),
+                    React.createElement(Header, null),
+                    gameState !== GameState.SETUP && (
+                        React.createElement(React.Fragment, null,
+                          React.createElement(ScoreBadge, { score: totalScore }),
+                           React.createElement('button', { onClick: handleResetGame, className: "fixed top-6 left-6 bg-white/80 text-gray-700 font-bold p-3 rounded-full shadow-lg z-30 hover:bg-white hover:text-red-500 transform transition-all hover:scale-110", "aria-label": "End Game and Start Over", title: "End Game" },
+                                React.createElement(RefreshIcon, { className: "w-7 h-7" })
+                           )
+                        )
+                    ),
+                    React.createElement('main', { className: "w-full flex-grow flex flex-col items-center justify-center p-4" },
+                        error && React.createElement('div', { className: "bg-red-500 text-white font-bold p-4 rounded-lg mb-4 max-w-md text-center shadow-lg" }, error),
+                        renderGameState()
+                    )
+                )
+            );
+        };
+
+        // --- From index.tsx ---
+        const rootElement = document.getElementById('root');
+        if (!rootElement) {
+          throw new Error("Could not find root element to mount to");
         }
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(React.createElement(React.StrictMode, null, React.createElement(App, null)));
 
-        function updateScore() {
-            scoreElement.textContent = score;
-            correctCountElement.textContent = correctCount;
-        }
-
-        // Event Listeners
-        generateBtn.addEventListener('click', () => {
-            const numWords = document.getElementById('numWords').value;
-            generateWords(numWords);
-        });
-
-        generate10Btn.addEventListener('click', () => {
-            document.getElementById('numWords').value = 10;
-            generateWords(10);
-        });
-
-        startManualBtn.addEventListener('click', startManualGame);
     </script>
 </body>
 </html>

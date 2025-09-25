@@ -784,4 +784,16 @@ Genera ora 3 suggerimenti per la parola "${word}":`
 
             window.wgaEndGame = function() {
                 document.getElementById('wgaGameSection').style.display = 'none';
-                document.querySelector('#wordsGameApp .wga-input-section').style.
+                document.querySelector('#wordsGameApp .wga-input-section').style.display = 'block';
+                wgaCurrentWordIndex = 0;
+                wgaScore = 0;
+            }
+
+            // Initialize speech synthesis
+            if ('speechSynthesis' in window) {
+                speechSynthesis.getVoices();
+            }
+        })();
+    </script>
+</body>
+</html>

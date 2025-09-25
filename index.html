@@ -114,22 +114,37 @@
                 console.error("Proxy server error:", errorText);
                 throw new Error(`The word generator is napping! (Server Error: ${response.status})`);
             }
-            let data = await response.json();
+            let rawData = await response.json();
+            
             // The proxy might return a stringified JSON object.
-            if (typeof data === 'string') {
+            if (typeof rawData === 'string') {
                 try {
-                    data = JSON.parse(data);
+                    rawData = JSON.parse(rawData);
                 } catch (e) {
-                    console.error("Failed to parse nested JSON string from proxy:", data);
+                    console.error("Failed to parse nested JSON string from proxy for random words:", rawData);
                     throw new Error("The word generator gave a tangled answer! Please try again.");
                 }
             }
 
-            if (!data || !Array.isArray(data.words) || data.words.length === 0) {
-                console.error("Parsed data for random words is invalid:", data);
+            let wordsArray = null;
+            if (Array.isArray(rawData)) {
+                wordsArray = rawData;
+            } else if (typeof rawData === 'object' && rawData !== null) {
+                if (rawData.words && Array.isArray(rawData.words)) {
+                    wordsArray = rawData.words;
+                } else {
+                    const arrayProperty = Object.values(rawData).find(value => Array.isArray(value));
+                    if (arrayProperty) {
+                        wordsArray = arrayProperty;
+                    }
+                }
+            }
+
+            if (!Array.isArray(wordsArray) || wordsArray.length === 0) {
+                console.error("Could not find an array of words in the response from the proxy:", rawData);
                 throw new Error("The AI didn't return any words. Please try again!");
             }
-            return data.words.slice(0, 10);
+            return wordsArray.slice(0, 10);
         };
 
         const generateHints = async (words) => {
@@ -151,25 +166,35 @@
               throw new Error(`The hint machine is sleepy! (Server Error: ${response.status})`);
           }
           
-          let hintsData = await response.json();
+          let rawData = await response.json();
           // The proxy might return a stringified JSON array instead of a direct one.
-          if (typeof hintsData === 'string') {
+          if (typeof rawData === 'string') {
               try {
-                  hintsData = JSON.parse(hintsData);
+                  rawData = JSON.parse(rawData);
               } catch (e) {
-                  console.error("Failed to parse nested JSON string from proxy:", hintsData);
+                  console.error("Failed to parse nested JSON string from proxy:", rawData);
                   throw new Error("The hint machine gave a tangled answer! Please try again.");
               }
           }
+
+          let hintsData = null;
+          if (Array.isArray(rawData)) {
+              hintsData = rawData;
+          } else if (typeof rawData === 'object' && rawData !== null) {
+              const arrayProperty = Object.values(rawData).find(value => Array.isArray(value));
+              if (arrayProperty) {
+                  hintsData = arrayProperty;
+              }
+          }
           
-          // Ensure hintsData is an array before calling .find() on it.
+          // Final check: if we still don't have an array, something is wrong.
           if (!Array.isArray(hintsData)) {
-            console.error("Data received from proxy is not an array after parsing:", hintsData);
+            console.error("Could not find an array of hints in the response from the proxy:", rawData);
             throw new Error("The hint machine didn't return a list of hints. Maybe it's on a tea break?");
           }
 
           const orderedHints = words.map(word => {
-              const foundHint = hintsData.find(h => h.word.toLowerCase() === word.toLowerCase());
+              const foundHint = hintsData.find(h => h && typeof h.word === 'string' && h.word.toLowerCase() === word.toLowerCase());
               if (!foundHint) {
                   return {
                       word: word,

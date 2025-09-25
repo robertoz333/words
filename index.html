@@ -114,8 +114,19 @@
                 console.error("Proxy server error:", errorText);
                 throw new Error(`The word generator is napping! (Server Error: ${response.status})`);
             }
-            const data = await response.json();
-            if (!data.words || data.words.length === 0) {
+            let data = await response.json();
+            // The proxy might return a stringified JSON object.
+            if (typeof data === 'string') {
+                try {
+                    data = JSON.parse(data);
+                } catch (e) {
+                    console.error("Failed to parse nested JSON string from proxy:", data);
+                    throw new Error("The word generator gave a tangled answer! Please try again.");
+                }
+            }
+
+            if (!data || !Array.isArray(data.words) || data.words.length === 0) {
+                console.error("Parsed data for random words is invalid:", data);
                 throw new Error("The AI didn't return any words. Please try again!");
             }
             return data.words.slice(0, 10);
@@ -139,7 +150,24 @@
               console.error("Proxy server error:", errorText);
               throw new Error(`The hint machine is sleepy! (Server Error: ${response.status})`);
           }
-          const hintsData = await response.json();
+          
+          let hintsData = await response.json();
+          // The proxy might return a stringified JSON array instead of a direct one.
+          if (typeof hintsData === 'string') {
+              try {
+                  hintsData = JSON.parse(hintsData);
+              } catch (e) {
+                  console.error("Failed to parse nested JSON string from proxy:", hintsData);
+                  throw new Error("The hint machine gave a tangled answer! Please try again.");
+              }
+          }
+          
+          // Ensure hintsData is an array before calling .find() on it.
+          if (!Array.isArray(hintsData)) {
+            console.error("Data received from proxy is not an array after parsing:", hintsData);
+            throw new Error("The hint machine didn't return a list of hints. Maybe it's on a tea break?");
+          }
+
           const orderedHints = words.map(word => {
               const foundHint = hintsData.find(h => h.word.toLowerCase() === word.toLowerCase());
               if (!foundHint) {

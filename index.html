@@ -1,422 +1,763 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gioco di Parole con Gemini AI</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .loading::after {
-            content: '';
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #6366f1;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 8px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    <title>Words Learning Game 🎮</title>
 </head>
-<body class="bg-blue-200 flex items-center justify-center min-h-screen p-4">
-    <div class="bg-white rounded-[40px] shadow-2xl p-8 max-w-4xl w-full border-4 border-blue-400">
-        <div class="text-center mb-8">
-            <h1 class="text-5xl font-bold text-blue-800 mb-2 drop-shadow-lg">Gioco di Parole! ✨</h1>
-            <p class="text-lg text-gray-600">Prova a indovinare le parole con gli indizi dell'AI.</p>
-        </div>
+<body>
+    <div id="wordsGameApp" class="wga-container">
+        <style>
+            /* Scoped styles - only affect elements inside #wordsGameApp */
+            #wordsGameApp {
+                /* Container isolation */
+                all: initial;
+                font-family: 'Comic Sans MS', cursive, sans-serif !important;
+                display: block;
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+                position: relative;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                padding: 20px;
+                border-radius: 20px;
+                margin: 0 auto;
+            }
 
-        <!-- API Key and Controls Section -->
-        <div class="flex flex-col items-center space-y-4 mb-8">
-            <div class="w-full">
-                <label for="numWords" class="block text-sm font-medium text-gray-700 mb-2">Quante parole vuoi indovinare?</label>
-                <input type="number" id="numWords" value="10" min="1" max="10" class="w-full p-3 border-2 border-pink-400 rounded-2xl text-center shadow-md focus:ring-purple-500 focus:border-purple-500">
+            #wordsGameApp * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            #wordsGameApp .wga-inner-container {
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 30px;
+                padding: 30px;
+                width: 100%;
+                max-width: 900px;
+                margin: 0 auto;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            }
+
+            #wordsGameApp .wga-title {
+                text-align: center;
+                color: #764ba2;
+                font-size: 2.5em;
+                margin-bottom: 20px;
+                font-weight: bold;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+                animation: wga-rainbow 3s ease-in-out infinite;
+                line-height: 1.2;
+            }
+
+            @keyframes wga-rainbow {
+                0%, 100% { color: #764ba2; }
+                25% { color: #f093fb; }
+                50% { color: #4facfe; }
+                75% { color: #43e97b; }
+            }
+
+            #wordsGameApp .wga-input-section {
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                padding: 20px;
+                border-radius: 20px;
+                margin-bottom: 20px;
+            }
+
+            #wordsGameApp .wga-words-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+
+            #wordsGameApp .wga-word-input {
+                padding: 10px;
+                border: 3px solid #fff;
+                border-radius: 15px;
+                font-size: 1.1em;
+                background: rgba(255, 255, 255, 0.9);
+                transition: all 0.3s;
+                width: 100%;
+                font-family: inherit;
+            }
+
+            #wordsGameApp .wga-word-input:focus {
+                transform: scale(1.05);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+                outline: none;
+            }
+
+            #wordsGameApp .wga-button-group {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+                justify-content: center;
+                margin: 20px 0;
+            }
+
+            #wordsGameApp .wga-button {
+                padding: 12px 25px;
+                font-size: 1em;
+                border: none;
+                border-radius: 25px;
+                cursor: pointer;
+                transition: all 0.3s;
+                font-weight: bold;
+                text-transform: uppercase;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+                font-family: inherit;
+                display: inline-block;
+            }
+
+            #wordsGameApp .wga-button:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            }
+
+            #wordsGameApp .wga-button:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                transform: none;
+            }
+
+            #wordsGameApp .wga-start-btn {
+                background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+                color: white;
+            }
+
+            #wordsGameApp .wga-random-btn {
+                background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+                color: white;
+            }
+
+            #wordsGameApp .wga-clear-btn {
+                background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+                color: white;
+            }
+
+            #wordsGameApp .wga-end-btn {
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                color: white;
+            }
+
+            #wordsGameApp .wga-game-section {
+                display: none;
+            }
+
+            #wordsGameApp .wga-hint-card {
+                background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+                padding: 20px;
+                border-radius: 20px;
+                margin-bottom: 20px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            }
+
+            #wordsGameApp .wga-hint {
+                font-size: 1.2em;
+                margin: 10px 0;
+                padding: 10px;
+                background: white;
+                border-radius: 10px;
+                border-left: 5px solid #4facfe;
+                line-height: 1.4;
+            }
+
+            #wordsGameApp .wga-answer-input {
+                padding: 15px;
+                font-size: 1.3em;
+                border: 3px solid #4facfe;
+                border-radius: 15px;
+                width: 100%;
+                margin: 10px 0;
+                text-align: center;
+                transition: all 0.3s;
+                font-family: inherit;
+            }
+
+            #wordsGameApp .wga-answer-input:focus {
+                border-color: #43e97b;
+                transform: scale(1.05);
+                outline: none;
+            }
+
+            #wordsGameApp .wga-score-board {
+                background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 20px;
+                text-align: center;
+                font-size: 1.3em;
+                margin: 20px 0;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            }
+
+            #wordsGameApp .wga-score {
+                font-size: 1.8em;
+                font-weight: bold;
+                display: inline-block;
+                animation: wga-pulse 1s infinite;
+            }
+
+            @keyframes wga-pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+            }
+
+            #wordsGameApp .wga-celebration {
+                display: none;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                text-align: center;
+                z-index: 999999;
+                background: white;
+                padding: 40px;
+                border-radius: 30px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            }
+
+            #wordsGameApp .wga-trophy {
+                font-size: 80px;
+                animation: wga-bounce 1s infinite;
+                display: block;
+                line-height: 1;
+            }
+
+            @keyframes wga-bounce {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-20px); }
+            }
+
+            #wordsGameApp .wga-feedback {
+                font-size: 1.2em;
+                padding: 10px;
+                border-radius: 10px;
+                margin: 10px 0;
+                text-align: center;
+                font-weight: bold;
+            }
+
+            #wordsGameApp .wga-correct {
+                background: #43e97b;
+                color: white;
+                animation: wga-correctAnimation 0.5s;
+            }
+
+            #wordsGameApp .wga-incorrect {
+                background: #ff6b6b;
+                color: white;
+                animation: wga-shake 0.5s;
+            }
+
+            @keyframes wga-correctAnimation {
+                0% { transform: scale(0.8); }
+                50% { transform: scale(1.2); }
+                100% { transform: scale(1); }
+            }
+
+            @keyframes wga-shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+
+            #wordsGameApp .wga-speak-btn {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+
+            #wordsGameApp .wga-api-key-section {
+                background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+                padding: 20px;
+                border-radius: 20px;
+                margin-bottom: 20px;
+            }
+
+            #wordsGameApp .wga-api-input {
+                width: 100%;
+                padding: 10px;
+                border: 2px solid #fcb69f;
+                border-radius: 10px;
+                font-size: 1em;
+                margin-top: 10px;
+                font-family: inherit;
+            }
+
+            #wordsGameApp .wga-info-box {
+                background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+                color: white;
+                padding: 15px;
+                border-radius: 15px;
+                margin: 10px 0;
+                text-align: center;
+                font-size: 1em;
+                line-height: 1.4;
+            }
+
+            #wordsGameApp .wga-category-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 10px;
+                margin: 20px 0;
+            }
+
+            #wordsGameApp .wga-category-btn {
+                padding: 10px;
+                background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+                border: none;
+                border-radius: 15px;
+                cursor: pointer;
+                font-size: 0.95em;
+                transition: all 0.3s;
+                color: #764ba2;
+                font-weight: bold;
+                font-family: inherit;
+            }
+
+            #wordsGameApp .wga-category-btn:hover {
+                transform: scale(1.05);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            }
+
+            #wordsGameApp .wga-loading {
+                text-align: center;
+                padding: 20px;
+                font-size: 1.1em;
+                color: #764ba2;
+            }
+
+            #wordsGameApp .wga-spinner {
+                display: inline-block;
+                width: 40px;
+                height: 40px;
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #764ba2;
+                border-radius: 50%;
+                animation: wga-spin 1s linear infinite;
+                margin: 20px auto;
+            }
+
+            @keyframes wga-spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+
+            #wordsGameApp .wga-h2 {
+                color: white;
+                text-align: center;
+                margin-bottom: 20px;
+                font-size: 1.5em;
+                font-weight: bold;
+            }
+
+            #wordsGameApp .wga-h3 {
+                color: #764ba2;
+                margin-bottom: 15px;
+                font-size: 1.3em;
+                font-weight: bold;
+            }
+        </style>
+
+        <div class="wga-inner-container">
+            <h1 class="wga-title">🌟 Words Learning Game 🌟</h1>
+            
+            <div class="wga-info-box" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); margin-bottom: 20px;">
+                ✅ <strong>App Sicura!</strong> L'API è protetta lato server.<br>
+                📚 Puoi inserire QUALSIASI parola del dizionario inglese!
             </div>
-            <button id="generateBtn" class="w-full px-6 py-3 bg-purple-500 text-white font-bold rounded-2xl shadow-lg hover:bg-purple-600 transition duration-300 transform hover:scale-105">
-                Genera Parole e Indizi!
-            </button>
-            <button id="generate10Btn" class="w-full px-6 py-3 bg-green-500 text-white font-bold rounded-2xl shadow-lg hover:bg-green-600 transition duration-300 transform hover:scale-105">
-                Genera 10 Parole
-            </button>
-        </div>
-        
-        <div class="flex flex-col items-center space-y-4 mb-8">
-            <div class="w-full">
-                <h2 class="text-2xl font-bold text-gray-800 text-center mb-4">Oppure Inserisci le tue 10 parole <span class="text-sm text-gray-500">(Solo parole singole in inglese)</span></h2>
-                <div id="manualInputContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+            <div class="wga-input-section">
+                <h2 class="wga-h2">📝 Inserisci da 1 a 10 parole in inglese</h2>
+                <div class="wga-words-grid">
+                    <input type="text" class="wga-word-input" placeholder="Word 1 (required)">
+                    <input type="text" class="wga-word-input" placeholder="Word 2 (optional)">
+                    <input type="text" class="wga-word-input" placeholder="Word 3 (optional)">
+                    <input type="text" class="wga-word-input" placeholder="Word 4 (optional)">
+                    <input type="text" class="wga-word-input" placeholder="Word 5 (optional)">
+                    <input type="text" class="wga-word-input" placeholder="Word 6 (optional)">
+                    <input type="text" class="wga-word-input" placeholder="Word 7 (optional)">
+                    <input type="text" class="wga-word-input" placeholder="Word 8 (optional)">
+                    <input type="text" class="wga-word-input" placeholder="Word 9 (optional)">
+                    <input type="text" class="wga-word-input" placeholder="Word 10 (optional)">
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <h3 class="wga-h3" style="color: white; text-align: center; margin-bottom: 10px;">🎲 Oppure scegli una categoria:</h3>
+                    <div class="wga-category-grid">
+                        <button class="wga-category-btn" onclick="wgaInsertCategoryWords('animals')">🦁 Animals</button>
+                        <button class="wga-category-btn" onclick="wgaInsertCategoryWords('food')">🍕 Food</button>
+                        <button class="wga-category-btn" onclick="wgaInsertCategoryWords('school')">📚 School</button>
+                        <button class="wga-category-btn" onclick="wgaInsertCategoryWords('colors')">🎨 Colors</button>
+                        <button class="wga-category-btn" onclick="wgaInsertCategoryWords('emotions')">😊 Emotions</button>
+                        <button class="wga-category-btn" onclick="wgaInsertCategoryWords('actions')">🏃 Actions</button>
+                        <button class="wga-category-btn" onclick="wgaInsertCategoryWords('nature')">🌳 Nature</button>
+                        <button class="wga-category-btn" onclick="wgaInsertCategoryWords('transport')">🚗 Transport</button>
+                    </div>
+                </div>
+
+                <div class="wga-button-group">
+                    <button class="wga-button wga-start-btn" onclick="wgaStartGame()">🎮 Start Game</button>
+                    <button class="wga-button wga-random-btn" onclick="wgaInsertRandomWords()">🎲 Random Mix</button>
+                    <button class="wga-button wga-clear-btn" onclick="wgaClearAll()">🧹 Clear All</button>
                 </div>
             </div>
-            <button id="startManualBtn" class="w-full px-6 py-3 bg-red-400 text-white font-bold rounded-2xl shadow-lg hover:bg-red-500 transition duration-300 transform hover:scale-105">
-                Inizia il Gioco con le mie Parole!
-            </button>
-        </div>
 
-        <!-- Loading Indicator -->
-        <div id="loadingIndicator" class="hidden text-center text-gray-500 text-lg mb-8">
-            <span class="loading"></span>
-            Sto generando le parole...
-        </div>
+            <div class="wga-game-section" id="wgaGameSection">
+                <div class="wga-score-board">
+                    <div>🏆 Score: <span class="wga-score" id="wgaScore">0</span></div>
+                    <div>📍 Question: <span id="wgaCurrentQuestion">1 of 1</span></div>
+                </div>
 
-        <!-- Error Message -->
-        <div id="errorMessage" class="hidden bg-red-100 border-2 border-red-500 text-red-700 px-4 py-3 rounded-xl relative mb-8">
-            <strong class="font-bold">Oh no! Errore:</strong>
-            <span id="errorText" class="block sm:inline"></span>
-        </div>
+                <div class="wga-hint-card" id="wgaHintCard">
+                    <h3 class="wga-h3">💡 Suggerimenti:</h3>
+                    <div id="wgaHints">
+                        <div class="wga-loading" id="wgaLoadingHints" style="display: none;">
+                            <div class="wga-spinner"></div>
+                            Generating hints...
+                        </div>
+                    </div>
+                    <input type="text" class="wga-answer-input" id="wgaAnswerInput" placeholder="Scrivi la parola qui..." onkeypress="wgaCheckEnter(event)">
+                    <div style="text-align: center;">
+                        <button class="wga-button wga-start-btn" onclick="wgaCheckAnswer()" id="wgaCheckBtn">✅ Check Answer</button>
+                        <button class="wga-button wga-speak-btn" onclick="wgaSpeakWord()">🔊 Pronuncia</button>
+                    </div>
+                    <div id="wgaFeedback"></div>
+                </div>
 
-        <!-- Game Area -->
-        <div id="gameArea" class="hidden">
-            <div id="wordCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                <!-- Le schede delle parole saranno inserite dinamicamente qui -->
+                <div class="wga-button-group">
+                    <button class="wga-button wga-end-btn" onclick="wgaEndGame()">🔚 End Game</button>
+                </div>
             </div>
-            <div class="mt-8 text-center">
-                <p class="text-3xl font-bold text-blue-700">Punteggio: <span id="score">0</span></p>
-                <p class="text-xl text-gray-500">Parole indovinate: <span id="correctCount">0</span> di <span id="totalWords">0</span></p>
-            </div>
-        </div>
-    </div>
 
-    <!-- Modal for alerts -->
-    <div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-2xl p-6 shadow-xl max-w-sm w-full text-center border-4 border-blue-400">
-            <p id="modalMessage" class="text-gray-700 mb-4 font-semibold"></p>
-            <button onclick="document.getElementById('modalOverlay').classList.add('hidden')" class="px-4 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-colors">OK</button>
+            <div class="wga-celebration" id="wgaCelebration">
+                <div class="wga-trophy">🏆</div>
+                <h2 style="color: #764ba2;">CONGRATULAZIONI!</h2>
+                <p style="font-size: 1.3em; margin: 20px 0;">Hai vinto! Sei un campione!</p>
+                <button class="wga-button wga-start-btn" onclick="wgaCloseCelebration()">Gioca Ancora</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // La chiave API è gestita automaticamente dall'ambiente, lasciala vuota.
-        const apiKey = ""; 
-        
-        // >>>>> PUNTO IMPORTANTE: QUESTO URL PUNTA A UN NUOVO ENDPOINT DI TEST. VERIFICA LA CONFIGURAZIONE IN WORDPRESS. <<<<<
-        const apiUrl = `https://www.robertozanoni.it/wp-json/gemini/v1/generate`;
+        // Namespace all variables to avoid conflicts
+        (function() {
+            let wgaWords = [];
+            let wgaCurrentWordIndex = 0;
+            let wgaScore = 0;
+            let wgaCurrentWord = '';
 
-        const generateBtn = document.getElementById('generateBtn');
-        const generate10Btn = document.getElementById('generate10Btn');
-        const startManualBtn = document.getElementById('startManualBtn');
-        const loadingIndicator = document.getElementById('loadingIndicator');
-        const errorMessage = document.getElementById('errorMessage');
-        const errorText = document.getElementById('errorText');
-        const gameArea = document.getElementById('gameArea');
-        const wordCardsContainer = document.getElementById('wordCardsContainer');
-        const manualInputContainer = document.getElementById('manualInputContainer');
-        const scoreElement = document.getElementById('score');
-        const correctCountElement = document.getElementById('correctCount');
-        const totalWordsElement = document.getElementById('totalWords');
-        const modalOverlay = document.getElementById('modalOverlay');
-        const modalMessage = document.getElementById('modalMessage');
-
-        let wordsData = [];
-        let score = 0;
-        let correctCount = 0;
-
-        // Funzione per mostrare un messaggio personalizzato
-        function showAlert(message) {
-            modalMessage.textContent = message;
-            modalOverlay.classList.remove('hidden');
-        }
-
-        // Crea i 10 campi di input manuali
-        function createManualInputs() {
-            for (let i = 0; i < 10; i++) {
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.id = `manual-word-${i}`;
-                input.placeholder = `Parola #${i + 1}`;
-                input.className = 'w-full p-3 border-2 border-pink-400 rounded-xl text-center shadow-sm focus:ring-purple-500 focus:border-purple-500';
-                manualInputContainer.appendChild(input);
-            }
-        }
-        createManualInputs();
-
-        function clearMessages() {
-            loadingIndicator.classList.add('hidden');
-            errorMessage.classList.add('hidden');
-            gameArea.classList.add('hidden');
-        }
-        
-        // --- Logica principale per l'API di Gemini ---
-        async function generateWords(numWords) {
-            clearMessages();
-            generateBtn.disabled = true;
-            generate10Btn.disabled = true;
-            startManualBtn.disabled = true;
-            loadingIndicator.classList.remove('hidden');
-            
-            if (numWords < 1 || numWords > 10) {
-                showAlert("Per favor, inserisci un numero di parole tra 1 e 10.");
-                return;
-            }
-
-            const prompt = `Generate a JSON array of ${numWords} objects. Each object must have a "word" property (a simple English word) and a "hints" property (an array of 3-5 short phrases describing the word, in English, without mentioning the word itself).`;
-            
-            // Definiamo lo schema JSON che vogliamo ricevere per una risposta affidabile.
-            const payload = {
-                contents: [{
-                    parts: [{
-                        text: prompt
-                    }]
-                }],
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "ARRAY",
-                        items: {
-                            type: "OBJECT",
-                            properties: {
-                                "word": { "type": "STRING" },
-                                "hints": {
-                                    "type": "ARRAY",
-                                    "items": { "type": "STRING" }
-                                }
-                            }
-                        }
-                    }
-                }
+            const wgaWordCategories = {
+                animals: ['elephant', 'giraffe', 'penguin', 'kangaroo', 'dolphin', 'octopus', 'butterfly', 'crocodile', 'hamster', 'peacock'],
+                food: ['pizza', 'hamburger', 'spaghetti', 'sandwich', 'chocolate', 'vegetables', 'breakfast', 'restaurant', 'delicious', 'recipe'],
+                school: ['mathematics', 'geography', 'homework', 'classroom', 'dictionary', 'education', 'library', 'computer', 'science', 'history'],
+                colors: ['turquoise', 'magenta', 'crimson', 'lavender', 'emerald', 'sapphire', 'golden', 'silver', 'rainbow', 'colorful'],
+                emotions: ['excited', 'nervous', 'confident', 'surprised', 'grateful', 'curious', 'peaceful', 'frustrated', 'delighted', 'worried'],
+                actions: ['explore', 'discover', 'imagine', 'celebrate', 'remember', 'practice', 'achieve', 'create', 'understand', 'communicate'],
+                nature: ['mountain', 'ocean', 'forest', 'desert', 'waterfall', 'volcano', 'island', 'canyon', 'glacier', 'meadow'],
+                transport: ['airplane', 'helicopter', 'submarine', 'motorcycle', 'skateboard', 'elevator', 'spaceship', 'ambulance', 'tractor', 'scooter']
             };
-            
-            let response;
-            const MAX_RETRIES = 3;
-            let delay = 1000;
 
-            for (let i = 0; i < MAX_RETRIES; i++) {
+            window.wgaInsertCategoryWords = function(category) {
+                const categoryWords = wgaWordCategories[category];
+                const inputs = document.querySelectorAll('#wordsGameApp .wga-word-input');
+                inputs.forEach((input, index) => {
+                    input.value = categoryWords[index];
+                });
+            }
+
+            window.wgaInsertRandomWords = function() {
+                const allWords = Object.values(wgaWordCategories).flat();
+                const randomWords = [];
+                
+                for (let i = 0; i < 10; i++) {
+                    const randomWord = allWords[Math.floor(Math.random() * allWords.length)];
+                    randomWords.push(randomWord);
+                }
+                
+                const inputs = document.querySelectorAll('#wordsGameApp .wga-word-input');
+                inputs.forEach((input, index) => {
+                    input.value = randomWords[index];
+                });
+            }
+
+            window.wgaClearAll = function() {
+                const inputs = document.querySelectorAll('#wordsGameApp .wga-word-input');
+                inputs.forEach(input => input.value = '');
+                wgaEndGame();
+            }
+
+            window.wgaStartGame = async function() {
+                wgaWords = [];
+                const inputs = document.querySelectorAll('#wordsGameApp .wga-word-input');
+                inputs.forEach(input => {
+                    if (input.value.trim()) {
+                        wgaWords.push(input.value.trim().toLowerCase());
+                    }
+                });
+
+                if (wgaWords.length === 0) {
+                    alert('⚠️ Per favore inserisci almeno una parola per iniziare!');
+                    return;
+                }
+
+                document.querySelector('#wordsGameApp .wga-input-section').style.display = 'none';
+                document.getElementById('wgaGameSection').style.display = 'block';
+                
+                wgaCurrentWordIndex = 0;
+                wgaScore = 0;
+                wgaUpdateScore();
+                wgaUpdateQuestionCounter();
+                await wgaLoadNextWord();
+            }
+
+            window.wgaUpdateQuestionCounter = function() {
+                const questionText = document.getElementById('wgaCurrentQuestion');
+                if (questionText) {
+                    questionText.textContent = `${wgaCurrentWordIndex + 1} of ${wgaWords.length}`;
+                }
+            }
+
+            window.wgaLoadNextWord = async function() {
+                if (wgaCurrentWordIndex >= wgaWords.length) {
+                    wgaShowGameSummary();
+                    return;
+                }
+
+                wgaCurrentWord = wgaWords[wgaCurrentWordIndex];
+                wgaUpdateQuestionCounter();
+                document.getElementById('wgaAnswerInput').value = '';
+                document.getElementById('wgaFeedback').innerHTML = '';
+                document.getElementById('wgaCheckBtn').disabled = false;
+
+                await wgaGenerateHints(wgaCurrentWord);
+            }
+
+            window.wgaGenerateHints = async function(word) {
+                const hintsContainer = document.getElementById('wgaHints');
+                const loadingDiv = document.getElementById('wgaLoadingHints');
+                
+                loadingDiv.style.display = 'block';
+                hintsContainer.innerHTML = '';
+                
                 try {
-                    console.log("Attempting to fetch with URL:", apiUrl);
-                    response = await fetch(apiUrl, {
+                    // Usa l'endpoint sicuro del server WordPress
+                    const response = await fetch('https://www.robertozanoni.it/wp-json/gemini/v1/generate', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            prompt: `Crea suggerimenti pertinenti per aiutare un bambino di 7 anni a indovinare la parola "${word}".
+
+# Steps
+1. Comprensione della Parola: Analizza "${word}" per comprenderne il significato e le caratteristiche principali.
+2. Creazione di Suggerimenti: Sviluppa 3 suggerimenti che siano:
+   - Semplici: Usa un linguaggio adatto a un bambino di 7 anni
+   - Descrittivi: Evidenzia le caratteristiche principali della parola
+   - Associativi: Usa esempi o associazioni che il bambino potrebbe conoscere
+3. IMPORTANTE: Sostituisci SEMPRE la parola "${word}" con "..." in ogni frase
+
+# Output Format
+Fornisci esattamente 3 suggerimenti separati da punto e virgola (;)
+Ogni suggerimento deve essere una frase breve (massimo 10 parole)
+La parola "${word}" DEVE essere sostituita con "..." in ogni frase
+
+# Examples
+Input: "cat"
+Output: The ... says meow and purrs; A ... has whiskers and a tail; Dogs often chase the ...
+
+Input: "tree"
+Output: Birds build nests in the ...; The ... has leaves and branches; We get wood from a ...
+
+# Notes
+- Assicurati che i suggerimenti siano adatti all'età del bambino
+- Evita termini troppo tecnici o complessi
+- Usa esempi della vita quotidiana del bambino
+- SEMPRE sostituisci "${word}" con "..." nei suggerimenti
+
+Genera ora 3 suggerimenti per la parola "${word}":`
+                        })
                     });
 
+                    loadingDiv.style.display = 'none';
+
                     if (response.ok) {
-                        const result = await response.json();
-                        console.log("API Raw Response:", result); // Debugging: logga la risposta completa
-                        wordsData = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                        const data = await response.json();
                         
-                        if (!wordsData || wordsData.length === 0) {
-                            throw new Error("Risposta JSON non valida o vuota.");
+                        // Gestisce diversi formati di risposta possibili
+                        let text = '';
+                        if (data.text) {
+                            text = data.text;
+                        } else if (data.response) {
+                            text = data.response;
+                        } else if (data.content) {
+                            text = data.content;
+                        } else if (typeof data === 'string') {
+                            text = data;
                         }
                         
-                        try {
-                           wordsData = JSON.parse(wordsData);
-                           console.log("Parsed wordsData:", wordsData); // Debugging: logga i dati parsati
-                        } catch (e) {
-                           throw new Error("Impossibile analizzare la risposta JSON: " + e.message);
-                        }
-
-                        renderGame();
-                        break; // Successo! Usciamo dal loop di riprovo.
-                    } else if (response.status === 404) {
-                        throw new Error(`Errore 404: L'URL dell'API non è stato trovato. Verifica l'URL: ${apiUrl}`);
-                    } else {
-                        throw new Error(`Errore di rete: ${response.status} ${response.statusText}`);
-                    }
-                } catch (error) {
-                    console.error("Errore nella generazione delle parole:", error); // Debugging: logga l'errore completo
-                    if (i === MAX_RETRIES - 1) { // Ultimo tentativo
-                        errorText.textContent = `Impossibile generare parole. Per favor, riprova più tardi. Dettagli: ${error.message}`;
-                        errorMessage.classList.remove('hidden');
-                    }
-                } finally {
-                    generateBtn.disabled = false;
-                    generate10Btn.disabled = false;
-                    startManualBtn.disabled = false;
-                    loadingIndicator.classList.add('hidden');
-                }
-            }
-        }
-        
-        // --- Logica di gioco per l'input manuale ---
-        async function startManualGame() {
-            wordsData = [];
-            const manualWords = [];
-            let hasInvalidWord = false;
-
-            for (let i = 0; i < 10; i++) {
-                const input = document.getElementById(`manual-word-${i}`);
-                const word = input.value.trim();
-                
-                if (word !== '') {
-                    // Semplice validazione: controlla se è una singola parola con sole lettere
-                    if (!/^[a-zA-Z]+$/.test(word)) {
-                        showAlert(`"${word}" non è una parola valida. Per favore, inserisci parole singole composte solo da lettere.`)
-                        hasInvalidWord = true;
-                        break;
-                    }
-                    manualWords.push(word.toLowerCase());
-                }
-            }
-
-            if (hasInvalidWord) {
-                return;
-            }
-
-            if (manualWords.length === 0) {
-                showAlert("Per favore, inserisci almeno una parola.");
-                return;
-            }
-            
-            clearMessages();
-            generateBtn.disabled = true;
-            generate10Btn.disabled = true;
-            startManualBtn.disabled = true;
-            loadingIndicator.classList.remove('hidden');
-
-            const prompt = `For the following words, generate a JSON array of objects. Each object should have a 'word' property and a 'hints' property, which is an array of 3-5 hints in English for that word. The words are: ${manualWords.join(', ')}`;
-
-            // Definiamo lo schema JSON anche per la modalità manuale
-            const payload = {
-                contents: [{
-                    parts: [{
-                        text: prompt
-                    }]
-                }],
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "ARRAY",
-                        items: {
-                            type: "OBJECT",
-                            properties: {
-                                "word": { "type": "STRING" },
-                                "hints": {
-                                    "type": "ARRAY",
-                                    "items": { "type": "STRING" }
-                                }
+                        if (text) {
+                            // Parse dei suggerimenti
+                            let hints = text.split(';').map(h => h.trim()).filter(h => h.length > 0);
+                            
+                            if (hints.length > 0) {
+                                const emojis = ['🌟', '💡', '✨'];
+                                hintsContainer.innerHTML = hints.slice(0, 3).map((hint, index) => 
+                                    `<div class="wga-hint">${emojis[index]} ${hint}</div>`
+                                ).join('');
+                            } else {
+                                throw new Error('No hints in response');
                             }
+                        } else {
+                            throw new Error('Invalid response format');
                         }
-                    }
-                }
-            };
-            
-            let response;
-            const MAX_RETRIES = 3;
-            let delay = 1000;
-
-            for (let i = 0; i < MAX_RETRIES; i++) {
-                try {
-                    console.log("Attempting to fetch with URL:", apiUrl);
-                    response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        console.log("API Raw Response:", result); // Debugging: logga la risposta completa
-                        wordsData = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                        
-                        if (!wordsData || wordsData.length === 0) {
-                            throw new Error("Risposta JSON non valida o vuota.");
-                        }
-
-                        try {
-                            wordsData = JSON.parse(wordsData);
-                            console.log("Parsed wordsData:", wordsData); // Debugging: logga i dati parsati
-                        } catch (e) {
-                            throw new Error("Impossibile analizzare la risposta JSON: " + e.message);
-                        }
-
-                        renderGame();
-                        break; // Successo! Usciamo dal loop di riprovo.
-                    } else if (response.status === 404) {
-                        throw new Error(`Errore 404: L'URL dell'API non è stato trovato. Verifica l'URL: ${apiUrl}`);
                     } else {
-                        throw new Error(`Errore di rete: ${response.status} ${response.statusText}`);
+                        throw new Error(`Server error: ${response.status}`);
                     }
                 } catch (error) {
-                    console.error("Errore nella generazione degli indizi:", error); // Debugging: logga l'errore completo
-                    if (i === MAX_RETRIES - 1) { // Ultimo tentativo
-                        errorText.textContent = `Non è stato possibile generare indizi per le parole fornite. Per favore, prova con parole diverse.`;
-                        errorMessage.classList.remove('hidden');
-                    }
-                } finally {
-                    generateBtn.disabled = false;
-                    generate10Btn.disabled = false;
-                    startManualBtn.disabled = false;
-                    loadingIndicator.classList.add('hidden');
+                    console.error('Error generating hints:', error);
+                    loadingDiv.style.display = 'none';
+                    
+                    // Fallback hints migliorati
+                    const fallbackHints = wgaGenerateSmartFallbackHints(word);
+                    
+                    hintsContainer.innerHTML = fallbackHints.map((hint, index) => 
+                        `<div class="wga-hint">📌 ${hint}</div>`
+                    ).join('');
                 }
             }
-        }
 
-        function renderGame() {
-            wordCardsContainer.innerHTML = '';
-            score = 0;
-            correctCount = 0;
-            totalWordsElement.textContent = wordsData.length;
-            updateScore();
-            gameArea.classList.remove('hidden');
-
-            wordsData.forEach((data, index) => {
-                const card = document.createElement('div');
-                card.className = "bg-yellow-100 rounded-3xl p-6 shadow-xl border-2 border-yellow-400 transition-all duration-300 transform hover:scale-105";
+            window.wgaGenerateSmartFallbackHints = function(word) {
+                const hints = [];
+                const wordLength = word.length;
+                const firstLetter = word[0].toUpperCase();
+                const vowels = ['a', 'e', 'i', 'o', 'u'];
+                const vowelCount = word.toLowerCase().split('').filter(char => vowels.includes(char)).length;
                 
-                // Aggiungiamo un controllo per assicurarci che data.hints sia un array prima di chiamare .map()
-                const hintsList = (data.hints || []).map(hint => `<li class="text-gray-700">${hint}</li>`).join('');
+                // Hint 1: Prima lettera e lunghezza
+                hints.push(`The ... starts with '${firstLetter}' and has ${wordLength} letters`);
+                
+                // Hint 2: Pattern vocali/consonanti
+                if (vowelCount > 0) {
+                    hints.push(`The ... has ${vowelCount} vowel${vowelCount > 1 ? 's' : ''} in it`);
+                } else {
+                    hints.push(`The ... has only consonants (unusual!)`);
+                }
+                
+                // Hint 3: Pattern finale della parola
+                if (word.endsWith('ing')) {
+                    hints.push(`The ... is an action word ending in -ing`);
+                } else if (word.endsWith('ed')) {
+                    hints.push(`The ... ends with -ed (past tense)`);
+                } else if (word.endsWith('ly')) {
+                    hints.push(`The ... ends with -ly (describes how)`);
+                } else if (word.endsWith('er')) {
+                    hints.push(`The ... ends with -er (person or comparison)`);
+                } else if (word.endsWith('est')) {
+                    hints.push(`The ... ends with -est (superlative)`);
+                } else if (word.endsWith('s')) {
+                    hints.push(`The ... ends with the letter 's'`);
+                } else {
+                    const lastTwo = word.slice(-2);
+                    hints.push(`The ... ends with '${lastTwo}'`);
+                }
+                
+                return hints;
+            }
 
-                card.innerHTML = `
-                    <div class="text-2xl font-bold mb-4 text-center text-blue-600">Parola #${index + 1}</div>
-                    <ul class="list-disc list-inside space-y-2 mb-6 text-gray-800">${hintsList}</ul>
-                    <div class="flex flex-col space-y-4">
-                        <input type="text" id="input-${index}" placeholder="Indovina la parola..." class="p-3 border-2 border-pink-400 rounded-xl text-center focus:ring-purple-500 focus:border-purple-500">
-                        <button onclick="checkAnswer(this, ${index})" class="check-btn w-full px-4 py-2 bg-pink-500 text-white font-semibold rounded-xl shadow-md hover:bg-pink-600 transition-colors transform hover:scale-105">Controlla</button>
+            window.wgaCheckEnter = function(event) {
+                if (event.key === 'Enter') {
+                    wgaCheckAnswer();
+                }
+            }
+
+            window.wgaCheckAnswer = function() {
+                const answer = document.getElementById('wgaAnswerInput').value.trim().toLowerCase();
+                const feedbackDiv = document.getElementById('wgaFeedback');
+                
+                if (!answer) return;
+                
+                document.getElementById('wgaCheckBtn').disabled = true;
+                
+                if (answer === wgaCurrentWord) {
+                    wgaScore++;
+                    feedbackDiv.innerHTML = '<div class="wga-feedback wga-correct">✨ CORRETTO! Bravissimo! ✨</div>';
+                    
+                    setTimeout(() => {
+                        wgaCurrentWordIndex++;
+                        wgaLoadNextWord();
+                    }, 2000);
+                } else {
+                    feedbackDiv.innerHTML = `<div class="wga-feedback wga-incorrect">❌ La parola corretta è: <strong>${wgaCurrentWord}</strong></div>`;
+                    
+                    setTimeout(() => {
+                        wgaCurrentWordIndex++;
+                        wgaLoadNextWord();
+                    }, 3000);
+                }
+                
+                wgaUpdateScore();
+            }
+
+            window.wgaUpdateScore = function() {
+                document.getElementById('wgaScore').textContent = wgaScore;
+            }
+
+            window.wgaSpeakWord = function() {
+                if ('speechSynthesis' in window) {
+                    speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(wgaCurrentWord);
+                    utterance.lang = 'en-US';
+                    utterance.rate = 0.7;
+                    utterance.pitch = 1.1;
+                    speechSynthesis.speak(utterance);
+                }
+            }
+
+            window.wgaShowGameSummary = function() {
+                const percentage = Math.round((wgaScore / wgaWords.length) * 100);
+                const feedbackDiv = document.getElementById('wgaHintCard');
+                
+                let message = '';
+                let emoji = '';
+                
+                if (percentage === 100) {
+                    emoji = '🏆';
+                    message = 'PERFETTO! Sei un campione!';
+                    if (wgaWords.length >= 10) {
+                        document.getElementById('wgaCelebration').style.display = 'block';
+                    }
+                } else if (percentage >= 80) {
+                    emoji = '🌟';
+                    message = 'Eccellente! Ottimo lavoro!';
+                } else if (percentage >= 60) {
+                    emoji = '😊';
+                    message = 'Bravo! Stai migliorando!';
+                } else {
+                    emoji = '🎯';
+                    message = 'Continua a praticare!';
+                }
+                
+                feedbackDiv.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <div style="font-size: 80px;">${emoji}</div>
+                        <h2 style="color: #764ba2; margin: 20px 0;">${message}</h2>
+                        <div style="font-size: 1.3em; margin: 20px 0;">
+                            Punteggio finale: <strong>${wgaScore}/${wgaWords.length}</strong> (${percentage}%)
+                        </div>
+                        <button class="wga-button wga-start-btn" onclick="wgaEndGame()">🎮 Gioca Ancora</button>
                     </div>
-                    <div id="feedback-${index}" class="mt-4 text-center font-bold"></div>
                 `;
-                wordCardsContainer.appendChild(card);
-            });
-        }
-
-        function checkAnswer(buttonElement, index) {
-            const input = document.getElementById(`input-${index}`);
-            const feedback = document.getElementById(`feedback-${index}`);
-            
-            // Aggiungiamo un controllo per data.word, che potrebbe essere mancante
-            const userAnswer = input.value.trim().toLowerCase();
-            const correctAnswer = (wordsData[index]?.word || "").toLowerCase();
-            
-            if (userAnswer === correctAnswer) {
-                feedback.textContent = "Corretto! 🎉";
-                feedback.className = "mt-4 text-center font-bold text-green-600";
-                correctCount++;
-                score++;
-            } else {
-                feedback.textContent = `Sbagliato. La risposta era: ${correctAnswer}`;
-                feedback.className = "mt-4 text-center font-bold text-red-600";
-                score--;
             }
 
-            buttonElement.disabled = true;
-            input.disabled = true;
-            updateScore();
-        }
+            window.wgaCloseCelebration = function() {
+                document.getElementById('wgaCelebration').style.display = 'none';
+                wgaEndGame();
+            }
 
-        function updateScore() {
-            scoreElement.textContent = score;
-            correctCountElement.textContent = correctCount;
-        }
-
-        // Event Listeners
-        generateBtn.addEventListener('click', () => {
-            const numWords = document.getElementById('numWords').value;
-            generateWords(numWords);
-        });
-
-        generate10Btn.addEventListener('click', () => {
-            document.getElementById('numWords').value = 10;
-            generateWords(10);
-        });
-
-        startManualBtn.addEventListener('click', startManualGame);
-    </script>
-</body>
-</html>
+            window.wgaEndGame = function() {
+                document.getElementById('wgaGameSection').style.display = 'none';
+                document.querySelector('#wordsGameApp .wga-input-section').style.

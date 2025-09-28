@@ -281,15 +281,14 @@
       await generateHints(currentWord);
     }
 
-// ✅ Funzione con payload corretto per Gemini
+    // ✅ Funzione con payload corretto per Gemini e URL corretto
     async function generateHints(word) {
       const hintsDiv = document.getElementById('hints');
       const loadingDiv = document.getElementById('loadingHints');
       loadingDiv.style.display = 'block'; hintsDiv.innerHTML = '';
       try {
-        // --- MODIFICA FONDAMENTALE QUI ---
-        // Sostituisci l'URL qui sotto con l'indirizzo del TUO sito WordPress.
-        const response = await fetch('https://[INDIRIZZO_DEL_TUO_SITO_WORDPRESS]/wp-json/gemini/v1/generate', {
+        // --- ECCO LA RIGA CORRETTA CON IL TUO URL ---
+        const response = await fetch('https://www.robertozanoni.it/wp-json/gemini/v1/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

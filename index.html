@@ -234,7 +234,7 @@
     function insertCategory(category) {
       const catWords = categories[category];
       for (let i = 1; i <= 10; i++) {
-        document.getElementById(\`word\${i}\`).value = catWords[i-1] || '';
+        document.getElementById(`word${i}`).value = catWords[i-1] || '';
       }
     }
 
@@ -242,20 +242,20 @@
       const allWords = Object.values(categories).flat();
       for (let i = 1; i <= 10; i++) {
         const randomWord = allWords[Math.floor(Math.random() * allWords.length)];
-        document.getElementById(\`word\${i}\`).value = randomWord;
+        document.getElementById(`word${i}`).value = randomWord;
       }
     }
 
     function clearAll() {
       for (let i = 1; i <= 10; i++) {
-        document.getElementById(\`word\${i}\`).value = '';
+        document.getElementById(`word${i}`).value = '';
       }
     }
 
     async function startGame() {
       words = [];
       for (let i = 1; i <= 10; i++) {
-        const value = document.getElementById(\`word\${i}\`).value.trim();
+        const value = document.getElementById(`word${i}`).value.trim();
         if (value) words.push(value.toLowerCase());
       }
       if (words.length === 0) {
@@ -281,7 +281,7 @@
       await generateHints(currentWord);
     }
 
-    // ✅ Funzione super-generica
+    // ✅ Funzione con payload corretto per Gemini
     async function generateHints(word) {
       const hintsDiv = document.getElementById('hints');
       const loadingDiv = document.getElementById('loadingHints');
@@ -291,14 +291,21 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            prompt: \`Give me 6 clues for the word "\${word}" without using the word itself.\`
+            contents: [
+              {
+                role: "user",
+                parts: [
+                  { text: `Give me 6 clues for the word "${word}" without using the word itself.` }
+                ]
+              }
+            ]
           })
         });
-        if (!response.ok) throw new Error(\`API error: \${response.status}\`);
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
         const data = await response.json();
         console.log("Gemini API RAW:", data);
 
-        // 🔍 funzione ricorsiva che trova la prima stringa
+        // funzione ricorsiva che trova la prima stringa
         function findFirstString(obj) {
           if (!obj) return null;
           if (typeof obj === "string" && obj.trim().length > 0) return obj;
@@ -314,17 +321,17 @@
         let text = findFirstString(data);
 
         if (!text) {
-          hintsDiv.innerHTML = \`
+          hintsDiv.innerHTML = `
             <div style="background:#fff3cd; color:#856404; padding:15px; border-radius:10px;">
               ⚠️ Nessun testo trovato, ecco il JSON crudo:
             </div>
-            <pre style="font-size:0.8em; background:#eee; padding:10px;">\${JSON.stringify(data, null, 2)}</pre>
-          \`;
+            <pre style="font-size:0.8em; background:#eee; padding:10px;">${JSON.stringify(data, null, 2)}</pre>
+          `;
           return;
         }
 
         let clues = [];
-        if (text.includes("\\n")) clues = text.split("\\n");
+        if (text.includes("\n")) clues = text.split("\n");
         else if (text.includes(". ")) clues = text.split(". ");
         else clues = [text];
 
@@ -334,19 +341,19 @@
         if (clues.length > 0) {
           const emojis = ['🔍','👀','✨','💡','🎯','⭐'];
           hintsDiv.innerHTML = clues.slice(0, 6).map((clue, i) =>
-            \`<div class="hint">\${emojis[i] || '💡'} \${clue}</div>\`
+            `<div class="hint">${emojis[i] || '💡'} ${clue}</div>`
           ).join('');
         } else { throw new Error("No valid clues extracted"); }
 
       } catch (err) {
         console.error("Error generating hints:", err);
-        hintsDiv.innerHTML = \`
+        hintsDiv.innerHTML = `
           <div style="background:#fff3cd; color:#856404; padding:15px; border-radius:10px; margin:10px 0;">
             ⚠️ Problema temporaneo con i suggerimenti.<br>Riprova o contatta l'amministratore.
           </div>
           <div class="hint">🔍 Pensa a cosa potrebbe essere questa parola</div>
           <div class="hint">👀 È una parola inglese importante</div>
-        \`;
+        `;
       } finally { loadingDiv.style.display = 'none'; }
     }
 
@@ -356,11 +363,11 @@
       if (!answer) return;
       if (answer === currentWord) {
         score++;
-        feedbackDiv.innerHTML = \`<div class="feedback correct">✨ CORRETTO! Bravissimo! ✨<br>La parola era: <strong>\${currentWord}</strong></div>
-          <div style="text-align:center;margin-top:15px;"><button class="next-btn" id="nextBtn">➡️ NEXT</button></div>\`;
+        feedbackDiv.innerHTML = `<div class="feedback correct">✨ CORRETTO! Bravissimo! ✨<br>La parola era: <strong>${currentWord}</strong></div>
+          <div style="text-align:center;margin-top:15px;"><button class="next-btn" id="nextBtn">➡️ NEXT</button></div>`;
       } else {
-        feedbackDiv.innerHTML = \`<div class="feedback incorrect">❌ Non esatto. La parola corretta è: <strong>\${currentWord}</strong></div>
-          <div style="text-align:center;margin-top:15px;"><button class="next-btn" id="nextBtn">➡️ NEXT</button></div>\`;
+        feedbackDiv.innerHTML = `<div class="feedback incorrect">❌ Non esatto. La parola corretta è: <strong>${currentWord}</strong></div>
+          <div style="text-align:center;margin-top:15px;"><button class="next-btn" id="nextBtn">➡️ NEXT</button></div>`;
       }
       document.getElementById('checkBtn').disabled = true;
       document.getElementById('answerInput').disabled = true;
@@ -384,8 +391,8 @@
       const hintsDiv = document.getElementById('hints');
       let emoji = percentage===100?'🏆':percentage>=80?'🌟':percentage>=60?'😊':'🎯';
       let message = percentage===100?'PERFETTO!':percentage>=80?'Eccellente!':percentage>=60?'Bravo!':'Continua!';
-      hintsDiv.innerHTML = \`<div style="text-align:center;padding:40px;"><div style="font-size:80px;">\${emoji}</div>
-        <h2 style="color:#764ba2;">\${message}</h2><p style="font-size:1.3em;">Score: \${score}/\${words.length} (\${percentage}%)</p></div>\`;
+      hintsDiv.innerHTML = `<div style="text-align:center;padding:40px;"><div style="font-size:80px;">${emoji}</div>
+        <h2 style="color:#764ba2;">${message}</h2><p style="font-size:1.3em;">Score: ${score}/${words.length} (${percentage}%)</p></div>`;
       document.getElementById('answerInput').style.display='none';
       document.getElementById('checkBtn').style.display='none';
       document.getElementById('speakBtn').style.display='none';

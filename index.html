@@ -125,8 +125,10 @@
 <body>
   <div class="container">
     <h1>🌟 Words Learning Game 🌟</h1>
+
+    <!-- Input Section -->
     <div class="input-section" id="inputSection">
-      <h2 style="color: white; text-align: center; margin-bottom: 20px;">📝 Inserisci da 1 a 10 parole in inglese</h2>
+      <h2 style="color:white; text-align:center; margin-bottom:20px;">📝 Inserisci da 1 a 10 parole in inglese</h2>
       <div class="words-grid">
         <input type="text" class="word-input" placeholder="Word 1" id="word1">
         <input type="text" class="word-input" placeholder="Word 2" id="word2">
@@ -140,7 +142,7 @@
         <input type="text" class="word-input" placeholder="Word 10" id="word10">
       </div>
       <div>
-        <h3 style="color: white; text-align: center; margin: 20px 0 10px;">🎲 Oppure scegli una categoria:</h3>
+        <h3 style="color:white; text-align:center; margin:20px 0 10px;">🎲 Oppure scegli una categoria:</h3>
         <div class="category-grid">
           <button class="category-btn" id="animalsBtn">🦁 Animals</button>
           <button class="category-btn" id="foodBtn">🍕 Food</button>
@@ -159,21 +161,22 @@
       </div>
     </div>
 
+    <!-- Game Section -->
     <div class="game-section" id="gameSection">
       <div class="score-board">
         <div>🏆 Score: <span id="score">0</span></div>
         <div>📍 Question: <span id="currentQuestion">1</span> of <span id="totalQuestions">10</span></div>
       </div>
       <div class="hint-card">
-        <h3 style="color: #764ba2; margin-bottom: 15px;">💡 Suggerimenti:</h3>
+        <h3 style="color:#764ba2; margin-bottom:15px;">💡 Suggerimenti:</h3>
         <div id="hints">
-          <div class="loading" id="loadingHints" style="display: none;">
+          <div class="loading" id="loadingHints" style="display:none;">
             <div class="spinner"></div>
             <p>Generating hints...</p>
           </div>
         </div>
         <input type="text" class="answer-input" id="answerInput" placeholder="Scrivi la parola qui...">
-        <div style="text-align: center;">
+        <div style="text-align:center;">
           <button class="start-btn" id="checkBtn">✅ Check Answer</button>
           <button class="speak-btn" id="speakBtn">🔊 Pronuncia</button>
         </div>
@@ -184,15 +187,17 @@
       </div>
     </div>
 
+    <!-- Celebration -->
     <div class="celebration" id="celebration">
       <div class="trophy">🏆</div>
-      <h2 style="color: #764ba2;">CONGRATULAZIONI!</h2>
-      <p style="font-size: 1.3em; margin: 20px 0;">Hai vinto! Sei un campione!</p>
+      <h2 style="color:#764ba2;">CONGRATULAZIONI!</h2>
+      <p style="font-size:1.3em; margin:20px 0;">Hai vinto! Sei un campione!</p>
       <button class="start-btn" id="closeCelebrationBtn">Gioca Ancora</button>
     </div>
   </div>
 
   <script>
+    // stato di gioco
     let words = [], currentWordIndex = 0, score = 0, currentWord = '';
 
     const categories = {
@@ -206,6 +211,7 @@
       transport: ['car','bus','train','airplane','bicycle','boat','helicopter','motorcycle','truck','subway']
     };
 
+    // event listeners
     document.getElementById('startBtn').addEventListener('click', startGame);
     document.getElementById('randomBtn').addEventListener('click', insertRandomWords);
     document.getElementById('clearBtn').addEventListener('click', clearAll);
@@ -277,40 +283,62 @@
       await generateHints(currentWord);
     }
 
+    // ✅ nuova funzione robusta
     async function generateHints(word) {
       const hintsDiv = document.getElementById('hints');
       const loadingDiv = document.getElementById('loadingHints');
       loadingDiv.style.display = 'block'; hintsDiv.innerHTML = '';
       try {
         const response = await fetch('https://www.robertozanoni.it/wp-json/gemini/v1/generate', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            prompt: `You are helping a 7-year-old child guess the English word "${word}". Generate EXACTLY 6 specific clues that describe it without using the word itself.`
+            prompt: `Give me 6 clues for the word "${word}" without using the word itself.`
           })
         });
         if (response.ok) {
           const data = await response.json();
-          let text = data.text || data.response || data.content || data.result || data.data || '';
+          console.log("Gemini API RAW:", data);
+
+          let text =
+            data.text ||
+            data.result ||
+            data.message ||
+            (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ||
+            (data.choices && data.choices[0] && data.choices[0].text) ||
+            (typeof data === "string" ? data : JSON.stringify(data));
+
+          if (!text || text.trim().length === 0) throw new Error("Empty response from Gemini API");
+
           let clues = [];
-          if (text.includes('\n')) {
-            clues = text.split('\n').map(c=>c.trim()).filter(c=>c.length>5);
+          if (text.includes("\n")) {
+            clues = text.split("\n");
+          } else if (text.includes(". ")) {
+            clues = text.split(". ");
+          } else {
+            clues = [text];
           }
-          clues = clues.map(clue=>clue.replace(/^\d+[\.\)]\s*/,'').trim())
-                       .filter(c=>!c.toLowerCase().includes(word.toLowerCase()));
-          if (clues.length>0) {
+
+          clues = clues.map(c => c.trim()).filter(c => c.length > 3 && !c.toLowerCase().includes(word.toLowerCase()));
+
+          if (clues.length > 0) {
             const emojis = ['🔍','👀','✨','💡','🎯','⭐'];
-            hintsDiv.innerHTML = clues.slice(0,6).map((clue,i)=>`<div class="hint">${emojis[i]} ${clue}</div>`).join('');
-          } else { throw new Error('No valid clues'); }
-        } else { throw new Error('API error'); }
-      } catch (e) {
+            hintsDiv.innerHTML = clues.slice(0,6).map((clue,i) =>
+              `<div class="hint">${emojis[i] || '💡'} ${clue}</div>`
+            ).join('');
+          } else { throw new Error("No valid clues extracted"); }
+        } else { throw new Error(`API error: ${response.status}`); }
+      } catch (err) {
+        console.error("Error generating hints:", err);
+        loadingDiv.style.display = 'none';
         hintsDiv.innerHTML = `
-          <div style="background:#fff3cd; color:#856404; padding:15px; border-radius:10px;">
-            ⚠️ Problema temporaneo con i suggerimenti.<br>Riprova più tardi.
+          <div style="background:#fff3cd; color:#856404; padding:15px; border-radius:10px; margin:10px 0;">
+            ⚠️ Problema temporaneo con i suggerimenti.<br>Riprova o contatta l'amministratore.
           </div>
           <div class="hint">🔍 Pensa a cosa potrebbe essere questa parola</div>
           <div class="hint">👀 È una parola inglese importante</div>
         `;
-      } finally { loadingDiv.style.display='none'; }
+      } finally { loadingDiv.style.display = 'none'; }
     }
 
     function checkAnswer() {
@@ -319,12 +347,10 @@
       if (!answer) return;
       if (answer === currentWord) {
         score++;
-        feedbackDiv.innerHTML = `
-          <div class="feedback correct">✨ CORRETTO! Bravissimo! ✨<br>La parola era: <strong>${currentWord}</strong></div>
+        feedbackDiv.innerHTML = `<div class="feedback correct">✨ CORRETTO! Bravissimo! ✨<br>La parola era: <strong>${currentWord}</strong></div>
           <div style="text-align:center;margin-top:15px;"><button class="next-btn" id="nextBtn">➡️ NEXT</button></div>`;
       } else {
-        feedbackDiv.innerHTML = `
-          <div class="feedback incorrect">❌ Non esatto. La parola corretta è: <strong>${currentWord}</strong></div>
+        feedbackDiv.innerHTML = `<div class="feedback incorrect">❌ Non esatto. La parola corretta è: <strong>${currentWord}</strong></div>
           <div style="text-align:center;margin-top:15px;"><button class="next-btn" id="nextBtn">➡️ NEXT</button></div>`;
       }
       document.getElementById('checkBtn').disabled = true;
